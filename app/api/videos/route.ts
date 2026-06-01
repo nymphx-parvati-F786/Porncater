@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const videos = await prisma.video.findMany({
       include: {
-        pornstar: true, // This will include pornstar info if linked
+        pornstar: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -16,13 +16,13 @@ export async function GET() {
 
     return NextResponse.json(videos);
   } catch (error) {
+    console.error("Prisma Error:", error);
     return NextResponse.json(
       { error: 'Failed to fetch videos' },
       { status: 500 }
     );
   }
 }
-// Add this below the GET function
 
 export async function POST(request: Request) {
   try {
@@ -42,6 +42,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(video, { status: 201 });
   } catch (error) {
+    console.error("Error creating video:", error);
     return NextResponse.json({ error: 'Failed to create video' }, { status: 500 });
   }
 }
