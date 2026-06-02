@@ -1,128 +1,60 @@
+/* 1. Import Luxury Fonts (Inter for UI, Playfair Display for Headings) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400;1,600&display=swap');
+
 @import "tailwindcss";
 
 :root {
+  /* Soften the pure black just a fraction to #050505. It creates depth and feels more expensive than stark #000000 */
   --background: #050505;
-  --foreground: #ffffff;
-  --pink: #ff2d95;
-  --purple: #a855f7;
-  --gold: #f4d35e;
+  /* Soft off-white (equivalent to zinc-200) so text isn't blindingly bright */
+  --foreground: #e4e4e7; 
+  
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif); /* Makes font-serif available in Tailwind */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #050505;
+    --foreground: #e4e4e7;
+  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased; /* Makes fonts look sharper and thinner */
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ==================== PREMIUM DARK THEME ==================== */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Better Selection */
+/* 2. Elegant Text Selection (Replaces default bright blue with a deep rose) */
 ::selection {
-  background-color: #ff2d95;
-  color: white;
+  background-color: #881337; /* Tailwind rose-900 */
+  color: #ffffff;
 }
 
-/* Sexy Custom Scrollbar */
+/* 3. Custom Premium Scrollbar (Hides the clunky default browser scrollbar) */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: #111;
+  background: #050505; 
 }
+
 ::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 20px;
+  background: #27272a; /* Tailwind zinc-800 */
+  border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff2d95;
-}
-
-/* ==================== INPUTS & BUTTONS ==================== */
-input, 
-select, 
-textarea {
-  font-family: inherit;
-}
-
-input:focus, 
-select:focus, 
-textarea:focus {
-  outline: none;
-  border-color: #ff2d95;
-  box-shadow: 0 0 0 1px #ff2d95;
-}
-
-/* ==================== LINKS ==================== */
-a {
-  transition: color 0.2s ease;
-}
-
-a:hover {
-  color: #ff2d95;
-}
-
-/* ==================== SEXY BUTTONS ==================== */
-button {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-button:active {
-  transform: scale(0.985);
-}
-
-/* ==================== VIDEO CARDS (Global Enhancement) ==================== */
-.video-card {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.video-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
-}
-
-/* ==================== PORNSTAR CARDS ==================== */
-.pornstar-card {
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.pornstar-card:hover {
-  transform: translateY(-4px);
-  border-color: #ff2d95;
-}
-
-/* ==================== SECTION TITLES ==================== */
-.section-title {
-  font-size: 1.9rem;
-  font-weight: 700;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-}
-
-/* ==================== BADGES ==================== */
-.badge {
-  font-size: 10px;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-/* ==================== GRADIENT TEXT ==================== */
-.gradient-text {
-  background: linear-gradient(to right, #ff2d95, #a855f7, #ff2d95);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-/* ==================== SUBTLE ANIMATIONS ==================== */
-.fade-in {
-  animation: fadeIn 0.6s ease forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  background: #3f3f46; /* Tailwind zinc-700 */
 }

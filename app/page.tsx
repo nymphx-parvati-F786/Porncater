@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Play, User, TrendingUp, Star } from "lucide-react";
+import { Search, Play, User, Flame, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -31,7 +31,7 @@ export default function Home() {
     "MILF", "Teen", "Anal", "Threesome", "Interracial", "Saree"
   ];
 
-  // Top Pornstars (static for now)
+  // Top Pornstars
   const topPornstars = [
     { id: 1, name: "Sunny Leone", image: "/thumbnails/thmbnl_000007.png", videos: 124, views: "18.2M" },
     { id: 2, name: "Emily Willis", image: "/thumbnails/thmbnl_000005.png", videos: 89, views: "14.7M" },
@@ -40,95 +40,104 @@ export default function Home() {
     { id: 5, name: "Blake Blossom", image: "/thumbnails/thmbnl_0000011.png", videos: 54, views: "9.3M" },
   ];
 
-  // Trending = First 8 videos
+  // Trending = First 8 videos (sliced to 12 in your original logic)
   const trendingVideos = videos.slice(0, 12);
 
-  // Latest = Sort by newest first (using createdAt from database)
+  // Latest = Sort by newest first
   const latestVideos = [...videos]
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 4);
+    .slice(0, 8); // Expanded to 8 to match the grid visually
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center text-white">
-        Loading videos...
+      <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-zinc-400 font-light tracking-widest uppercase text-sm">
+        <div className="w-12 h-12 border-t-2 border-rose-800 rounded-full animate-spin mb-4"></div>
+        Curating Collection...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white">
+    <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white">
       
-      {/* Navbar */}
-      <nav className="bg-black/95 backdrop-blur-2xl border-b border-zinc-800 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-8 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-10">
-            <h1 className="text-4xl font-bold tracking-tighter">
-              <span className="text-pink-500">PORN</span>CATER
+      {/* Navbar: Elegant Frosted Glass */}
+      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
+        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-12">
+            
+            {/* Logo */}
+            <h1 className="text-3xl tracking-widest cursor-pointer">
+              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+              <span className="font-light text-white">Cater</span>
             </h1>
 
-            <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-300">
-              <a href="#" className="hover:text-pink-400 transition">Home</a>
-              <a href="#" className="hover:text-pink-400 transition">Desi</a>
-              <a href="#" className="hover:text-pink-400 transition">Trending</a>
-              <a href="#" className="hover:text-pink-400 transition">Pornstars</a>
-              <a href="#" className="text-pink-500 font-semibold">Live</a>
+            {/* Desktop Links */}
+            <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
+              <a href="#" className="hover:text-white transition duration-300">Home</a>
+              <a href="#" className="hover:text-white transition duration-300">Desi</a>
+              <a href="#" className="hover:text-white transition duration-300">Trending</a>
+              <a href="#" className="hover:text-white transition duration-300">Models</a>
+              <a href="#" className="text-rose-700 flex items-center gap-2 transition duration-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-700 animate-pulse"></span> Live
+              </a>
             </div>
           </div>
 
-          {/* Search */}
-          <div className="flex-1 max-w-2xl mx-8">
-            <div className="relative">
+          {/* Minimalist Search */}
+          <div className="flex-1 max-w-md mx-8 hidden lg:block">
+            <div className="relative group">
               <input
                 type="text"
-                placeholder="Search desi girls, BBC, hardcore..."
+                placeholder="Search fantasies..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 focus:border-pink-500 rounded-full py-3.5 px-6 pl-14 text-sm placeholder-gray-500"
+                className="w-full bg-transparent border-b border-zinc-800 focus:border-rose-800 outline-none py-2 px-2 pl-8 text-sm placeholder-zinc-600 transition-all"
               />
-              <Search className="absolute left-5 top-4 text-gray-400" size={22} />
+              <Search className="absolute left-0 top-2.5 text-zinc-600 group-focus-within:text-rose-800 transition" size={16} />
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="flex items-center gap-2 px-6 py-2.5 rounded-full border border-zinc-700 hover:border-pink-500 transition">
-              <User size={18} /> Login
+          {/* Auth & Upload */}
+          <div className="flex items-center gap-6 text-sm tracking-wide">
+            {/* Login button kept exactly as requested */}
+            <button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
+              <User size={18} strokeWidth={1.5} /> Login
             </button>
-            <button className="bg-gradient-to-r from-pink-600 to-purple-600 px-8 py-2.5 rounded-full font-semibold hover:scale-[1.02] transition">
-              Upload Video
+            <button className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
+              Upload
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Hero Banner */}
-      <div className="relative h-[620px] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-black via-pink-950/80 to-purple-950/70 z-10" />
+      {/* Hero Banner: High-Fashion Editorial Style */}
+      <div className="relative h-[65vh] min-h-[500px] flex flex-col justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-black/20 z-10" />
         <img 
           src="/thumbnails/thmbnl_000001.png" 
-          alt="hero" 
-          className="absolute inset-0 w-full h-full object-cover" 
+          alt="Premium Content" 
+          className="absolute inset-0 w-full h-full object-cover scale-105 opacity-70" 
         />
         
-        <div className="relative z-20 text-center px-6 max-w-5xl">
-          <h2 className="text-6xl md:text-7xl font-bold tracking-tighter mb-4">
-            INDULGE YOUR <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">DEEPEST FANTASIES</span>
+        <div className="relative z-20 px-8 max-w-[1400px] mx-auto w-full text-left">
+          <h2 className="text-5xl md:text-7xl font-serif font-light tracking-wide mb-6 leading-tight text-white drop-shadow-lg">
+            Indulge your <br/>
+            <span className="italic text-rose-700">deepest desires.</span>
           </h2>
-          <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
-            Premium Desi • Interracial • Hardcore • Fresh Uploads Daily
+          <p className="text-lg text-zinc-300 mb-10 max-w-xl font-light tracking-wide drop-shadow-md">
+            Curated premium cinema. Unfiltered, authentic, and exclusively yours. Fresh daily.
           </p>
-          <button className="bg-white text-black text-lg px-14 py-4 rounded-full font-bold hover:bg-gray-100 transition flex items-center gap-3 mx-auto">
-            <Play size={32} fill="black" /> Start Watching Now
+          <button className="bg-rose-800 text-white text-[11px] uppercase tracking-widest px-8 py-3.5 hover:bg-rose-700 transition duration-300 flex items-center gap-3 backdrop-blur-sm border border-rose-800/50">
+             Explore Collection <Play size={14} fill="white" />
           </button>
         </div>
       </div>
 
-      {/* Categories */}
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <h3 className="text-2xl font-semibold mb-6">Explore Categories</h3>
+      {/* Categories: Minimalist Pills */}
+      <div className="max-w-[1400px] mx-auto px-6 py-12">
         <div className="flex flex-wrap gap-3">
           {categories.map((cat, i) => (
-            <a key={i} href="#" className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-pink-500 px-6 py-3 rounded-full text-sm transition-all hover:scale-105">
+            <a key={i} href="#" className="border border-zinc-800 bg-zinc-900/30 hover:border-rose-800/50 hover:bg-zinc-900 hover:text-white px-5 py-2 text-xs tracking-wider uppercase text-zinc-400 transition-all duration-300 rounded-sm">
               {cat}
             </a>
           ))}
@@ -136,99 +145,116 @@ export default function Home() {
       </div>
 
       {/* Trending Section */}
-      <div className="max-w-7xl mx-auto px-8 py-10">
+      <div className="max-w-[1400px] mx-auto px-6 py-10">
         <div className="flex items-center gap-3 mb-8">
-          <TrendingUp className="text-pink-500" size={28} />
-          <h3 className="text-3xl font-bold">Trending Right Now 🔥</h3>
+          <Flame className="text-rose-800" size={24} strokeWidth={1.5} />
+          <h3 className="text-2xl font-serif italic text-white tracking-wide">Trending Cinema</h3>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
           {trendingVideos.length > 0 ? (
             trendingVideos.map((video) => (
-              <Link key={video.id} href={`/watch/${video.id}`} className="group block">
-                <div className="relative overflow-hidden rounded-3xl bg-zinc-950 border border-zinc-800">
-                  <img
-                    src={video.thumbnail}
-                    alt={video.title}
-                    className="w-full aspect-video object-cover transition-all duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute bottom-3 right-3 bg-black/80 px-2.5 py-1 text-xs rounded font-mono">
+              <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+                <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
+                  <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
                     {video.duration}
                   </div>
-                  <div className="absolute top-3 left-3 bg-pink-600 text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
-                    HD
+                  <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">
+                    4K
                   </div>
                 </div>
-                <div className="mt-4 px-1">
-                  <h4 className="font-semibold text-[15px] line-clamp-2 leading-tight group-hover:text-pink-400 transition">
+                <div className="mt-3 px-1">
+                  <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">
                     {video.title}
                   </h4>
-                  <p className="text-gray-400 text-sm mt-2">
+                  <p className="text-zinc-500 text-xs mt-1.5 font-light tracking-wide">
                     {Number(video.views).toLocaleString()} views
                   </p>
                 </div>
               </Link>
             ))
           ) : (
-            <p className="text-gray-400">No videos found.</p>
+            <p className="text-zinc-600 font-light italic">No videos currently trending.</p>
           )}
         </div>
       </div>
 
-      {/* Latest Uploads */}
-      <div className="max-w-7xl mx-auto px-8 py-14 bg-zinc-950">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-3xl font-bold">🆕 Latest Uploads</h3>
-          <a href="#" className="text-pink-500 hover:text-pink-400 flex items-center gap-2 text-sm">View All →</a>
-        </div>
+      {/* Latest Uploads (Darker Section for Contrast) */}
+      <div className="bg-[#030303] border-y border-white/5">
+        <div className="max-w-[1400px] mx-auto px-6 py-16">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Clock className="text-zinc-500" size={24} strokeWidth={1.5} />
+              <h3 className="text-2xl font-serif italic text-white tracking-wide">Latest Arrivals</h3>
+            </div>
+            <a href="#" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">
+              View Directory
+            </a>
+          </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-          {latestVideos.reverse().map((video) => (
-            <Link key={video.id} href={`/watch/${video.id}`} className="group block">
-              <div className="relative overflow-hidden rounded-3xl bg-zinc-950 border border-zinc-800">
-                <img src={video.thumbnail} alt={video.title} className="w-full aspect-video object-cover transition-all duration-500 group-hover:scale-110" />
-                <div className="absolute bottom-3 right-3 bg-black/80 px-2.5 py-1 text-xs rounded font-mono">{video.duration}</div>
-                <div className="absolute top-3 left-3 bg-green-600 text-xs px-3 py-1 rounded-full font-medium">NEW</div>
-              </div>
-              <div className="mt-4 px-1">
-                <h4 className="font-semibold text-[15px] line-clamp-2 leading-tight group-hover:text-pink-400 transition">{video.title}</h4>
-                <p className="text-gray-400 text-sm mt-2">{Number(video.views).toLocaleString()} views</p>
-              </div>
-            </Link>
-          ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+            {latestVideos.map((video) => (
+              <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+                <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
+                  <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{video.duration}</div>
+                  <div className="absolute top-2 left-2 border border-rose-800/50 bg-rose-900/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-rose-100">
+                    NEW
+                  </div>
+                </div>
+                <div className="mt-3 px-1">
+                  <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">{video.title}</h4>
+                  <p className="text-zinc-500 text-xs mt-1.5 font-light tracking-wide">{Number(video.views).toLocaleString()} views</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Top Pornstars */}
-      <div className="max-w-7xl mx-auto px-8 py-16">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-3xl font-bold flex items-center gap-3">
-            <Star className="text-pink-500" /> Top Pornstars
-          </h3>
-          <a href="#" className="text-pink-500 hover:underline text-sm">View All Pornstars →</a>
+      {/* Top Pornstars: Editorial Layout */}
+      <div className="max-w-[1400px] mx-auto px-6 py-20">
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-3">
+            <Sparkles className="text-amber-600" size={24} strokeWidth={1.5} />
+            <h3 className="text-2xl font-serif italic text-white tracking-wide">Featured Muses</h3>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {topPornstars.map((star) => (
-            <div key={star.id} className="group bg-zinc-950 rounded-3xl overflow-hidden border border-zinc-800 hover:border-pink-500/60 transition cursor-pointer">
-              <div className="relative">
-                <img src={star.image} alt={star.name} className="w-full aspect-[16/10] object-cover group-hover:scale-105 transition duration-500" />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/80" />
-                <div className="absolute bottom-4 left-4">
-                  <h4 className="text-white font-semibold text-xl tracking-tight">{star.name}</h4>
+            <div key={star.id} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
+              <img 
+                src={star.image} 
+                alt={star.name} 
+                className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="absolute bottom-0 left-0 w-full p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                <h4 className="text-white font-serif italic text-xl tracking-wide mb-1">{star.name}</h4>
+                <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
+                  <span>{star.videos} scenes</span>
                 </div>
-              </div>
-              <div className="px-4 py-4 flex justify-between text-sm text-gray-400">
-                <span>{star.videos} videos</span>
-                <span>{star.views} views</span>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <footer className="bg-black border-t border-zinc-800 py-16 text-center text-gray-500 text-sm">
-        © 2026 PornCater.com • All Rights Reserved • 18+ Only
+      {/* Minimalist Footer */}
+      <footer className="border-t border-white/5 py-12 text-center bg-[#020202]">
+        <h2 className="text-xl tracking-widest mb-4">
+          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+          <span className="font-light text-zinc-600">Cater</span>
+        </h2>
+        <p className="text-zinc-600 text-[10px] uppercase tracking-widest">
+          © 2026 • Exclusive Cinema • 18+ Only
+        </p>
       </footer>
     </div>
   );
