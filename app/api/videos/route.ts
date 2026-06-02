@@ -14,7 +14,7 @@ export async function GET(request: Request) {
     // If a pornstar ID is passed, filter videos that include them in the many-to-many relation
     if (pornstarId) {
       whereClause = {
-        pornstars: {
+        pornstar: {
           some: { id: parseInt(pornstarId) }
         }
       };
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
       where: whereClause,
       orderBy: { createdAt: 'desc' },
       include: {
-        pornstars: {
+        pornstar: {
           select: { id: true, name: true, avatarUrl: true }
         }
       }
