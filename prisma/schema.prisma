@@ -9,26 +9,40 @@ datasource db {
 }
 
 model Video {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(500)
-  slug        String    @unique
+  id          Int        @id @default(autoincrement())
+  title       String     @db.VarChar(500)
+  slug        String     @unique
   videoUrl    String
   thumbnail   String
   duration    String
-  views       Int       @default(0)
-  category    String?
-  pornstarId  Int?
-  pornstar    Pornstar? @relation(fields: [pornstarId], references: [id], onDelete: SetNull)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  views       Int        @default(0)
+  likes       Int        @default(0)     // Enables the "Adore" button
+  category    String?                    // Primary category (e.g., "Hardcore")
+  tags        String[]                   // Enables specific tags: ["Anal", "POV", "HD"]
+  
+  // Changed to Many-to-Many: Now a single video can feature 1, 2, or 10 Pornstars
+  pornstars   Pornstar[] 
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Pornstar {
-  id        Int      @id @default(autoincrement())
-  name      String
-  slug      String   @unique
-  image     String?
-  bio       String?  @db.Text
-  videos    Video[]
-  createdAt DateTime @default(now())
+  id          Int        @id @default(autoincrement())
+  name        String
+  slug        String     @unique
+  avatarUrl   String?    // The square profile picture
+  coverImage  String?    // The wide, cinematic banner image
+  bio         String?    @db.Text
+  
+  // Cached Stats for fast loading on the Directory page
+  views       Int        @default(0)     // Total accumulated views
+  subscribers Int        @default(0)     // The "Subscribe" button count
+  tags        String[]                   // Performer traits: ["Brunette", "Petite"]
+  
+  // Implicit Many-to-Many relation with Videos
+  videos      Video[]    
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }

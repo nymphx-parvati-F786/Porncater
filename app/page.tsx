@@ -7,23 +7,35 @@ import Link from "next/link";
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [videos, setVideos] = useState<any[]>([]);
+  const [pornstars, setPornstars] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch videos from database
+  // Fetch both videos and pornstars dynamically from the database
   useEffect(() => {
-    const fetchVideos = async () => {
+    const fetchData = async () => {
       try {
-        const res = await fetch("/api/videos");
-        const data = await res.json();
-        setVideos(data);
+        const [videosRes, pornstarsRes] = await Promise.all([
+          fetch("/api/videos"),
+          fetch("/api/pornstars")
+        ]);
+        
+        const videosData = await videosRes.json();
+        const pornstarsData = await pornstarsRes.json();
+        
+        // SAFTEY CHECK: Ensure we are storing arrays even if the API returns an object or error
+        setVideos(Array.isArray(videosData) ? videosData : (videosData.data || videosData.videos || []));
+        setPornstars(Array.isArray(pornstarsData) ? pornstarsData : (pornstarsData.data || pornstarsData.pornstars || []));
+        
       } catch (error) {
-        console.error("Failed to load videos");
+        console.error("Failed to load database content");
+        setVideos([]);
+        setPornstars([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchVideos();
+    fetchData();
   }, []);
 
   const categories = [
@@ -31,24 +43,22 @@ export default function Home() {
     "MILF", "Teen", "Anal", "Threesome", "Interracial", "Saree"
   ];
 
+  // SAFTEY CHECK: Fallback to empty arrays before slicing
+  const safeVideos = Array.isArray(videos) ? videos : [];
+  const safePornstars = Array.isArray(pornstars) ? pornstars : [];
 
-
-  // Top Pornstars
-  const topPornstars = [
-    { id: 1, name: "Sunny Leone", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/sunnyleone_thmbnl_0001.jpg", videos: 124, views: "18.2M" },
-    { id: 2, name: "Emily Willis", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/emilywillis_thmbnl_0002.jpg", videos: 89, views: "14.7M" },
-    { id: 3, name: "Lana Rhoades", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/lanarhoades_thmbnl_0005.jpg", videos: 67, views: "22.4M" },
-    { id: 4, name: "Mia Malkova", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/miamalkova_thmbnl_0009.jpg", videos: 95, views: "19.8M" },
-    { id: 5, name: "Blake Blossom", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/blakeblossom_thmbnl_0008.jpg", videos: 54, views: "9.3M" },
-  ];
-
-  // Trending = First 8 videos (sliced to 12 in your original logic)
-  const trendingVideos = videos.slice(0, 12);
+  // Trending = First 12 videos
+  const trendingVideos = safeVideos.slice(0, 12);
 
   // Latest = Sort by newest first
-  const latestVideos = [...videos]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 8); // Expanded to 8 to match the grid visually
+  const latestVideos = [...safeVideos]
+    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
+    .slice(0, 8);
+
+  // Top Pornstars = Sort by highest views
+  const topPornstars = [...safePornstars]
+    .sort((a, b) => (b.views || 0) - (a.views || 0))
+    .slice(0, 5); 
 
   if (loading) {
     return (
@@ -60,28 +70,27 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white">
+    <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
       
-      {/* Navbar: Elegant Frosted Glass */}
+      {/* Navbar */}
       <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
         <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-12">
             
-            {/* Logo */}
-            <h1 className="text-3xl tracking-widest cursor-pointer">
+            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
               <span className="font-serif italic text-rose-800 pr-1">Porn</span>
               <span className="font-light text-white">Cater</span>
-            </h1>
+            </Link>
 
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
-              <a href="#" className="hover:text-white transition duration-300">Home</a>
-              <a href="#" className="hover:text-white transition duration-300">Desi</a>
-              <a href="#" className="hover:text-white transition duration-300">Trending</a>
-              <a href="#" className="hover:text-white transition duration-300">Models</a>
-              <a href="#" className="text-rose-700 flex items-center gap-2 transition duration-300">
+              <Link href="/" className="hover:text-white transition duration-300">Home</Link>
+              <Link href="/category/desi" className="hover:text-white transition duration-300">Desi</Link>
+              <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
+              <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
+              <Link href="/live" className="text-rose-700 flex items-center gap-2 transition duration-300">
                 <span className="w-1.5 h-1.5 rounded-full bg-rose-700 animate-pulse"></span> Live
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -101,18 +110,17 @@ export default function Home() {
 
           {/* Auth & Upload */}
           <div className="flex items-center gap-6 text-sm tracking-wide">
-            {/* Login button kept exactly as requested */}
             <button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
               <User size={18} strokeWidth={1.5} /> Login
             </button>
-            <button className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
+            <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
               Upload
-            </button>
+            </Link>
           </div>
         </div>
       </nav>
 
-      {/* Hero Banner: High-Fashion Editorial Style */}
+      {/* Hero Banner */}
       <div className="relative h-[65vh] min-h-[500px] flex flex-col justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-black/20 z-10" />
         <img 
@@ -135,13 +143,13 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Categories: Minimalist Pills */}
+      {/* Categories */}
       <div className="max-w-[1400px] mx-auto px-6 py-12">
         <div className="flex flex-wrap gap-3">
           {categories.map((cat, i) => (
-            <a key={i} href="#" className="border border-zinc-800 bg-zinc-900/30 hover:border-rose-800/50 hover:bg-zinc-900 hover:text-white px-5 py-2 text-xs tracking-wider uppercase text-zinc-400 transition-all duration-300 rounded-sm">
+            <Link key={i} href={`/category/${cat.toLowerCase()}`} className="border border-zinc-800 bg-zinc-900/30 hover:border-rose-800/50 hover:bg-zinc-900 hover:text-white px-5 py-2 text-xs tracking-wider uppercase text-zinc-400 transition-all duration-300 rounded-sm">
               {cat}
-            </a>
+            </Link>
           ))}
         </div>
       </div>
@@ -173,18 +181,18 @@ export default function Home() {
                     {video.title}
                   </h4>
                   <p className="text-zinc-500 text-xs mt-1.5 font-light tracking-wide">
-                    {Number(video.views).toLocaleString()} views
+                    {Number(video.views || 0).toLocaleString()} views
                   </p>
                 </div>
               </Link>
             ))
           ) : (
-            <p className="text-zinc-600 font-light italic">No videos currently trending.</p>
+            <p className="text-zinc-600 font-light italic">No porn videos currently trending.</p>
           )}
         </div>
       </div>
 
-      {/* Latest Uploads (Darker Section for Contrast) */}
+      {/* Latest Uploads */}
       <div className="bg-[#030303] border-y border-white/5">
         <div className="max-w-[1400px] mx-auto px-6 py-16">
           <div className="flex items-center justify-between mb-8">
@@ -192,9 +200,9 @@ export default function Home() {
               <Clock className="text-zinc-500" size={24} strokeWidth={1.5} />
               <h3 className="text-2xl font-serif italic text-white tracking-wide">Latest Porn Videos</h3>
             </div>
-            <a href="#" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">
+            <Link href="/videos/latest" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">
               View Directory
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
@@ -210,7 +218,7 @@ export default function Home() {
                 </div>
                 <div className="mt-3 px-1">
                   <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">{video.title}</h4>
-                  <p className="text-zinc-500 text-xs mt-1.5 font-light tracking-wide">{Number(video.views).toLocaleString()} views</p>
+                  <p className="text-zinc-500 text-xs mt-1.5 font-light tracking-wide">{Number(video.views || 0).toLocaleString()} views</p>
                 </div>
               </Link>
             ))}
@@ -218,20 +226,27 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Top Pornstars: Editorial Layout */}
+      {/* Top Pornstars Section */}
       <div className="max-w-[1400px] mx-auto px-6 py-20">
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
             <Sparkles className="text-amber-600" size={24} strokeWidth={1.5} />
             <h3 className="text-2xl font-serif italic text-white tracking-wide">Top Pornstars</h3>
           </div>
+          <Link href="/pornstars" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">
+            View All Pornstars
+          </Link>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {topPornstars.map((star) => (
-            <div key={star.id} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
+            <Link 
+              key={star.id} 
+              href={`/pornstars/${star.id}`} 
+              className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]"
+            >
               <img 
-                src={star.image} 
+                src={star.avatarUrl || '/thumbnails/default-avatar.png'} 
                 alt={star.name} 
                 className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0" 
               />
@@ -240,22 +255,22 @@ export default function Home() {
               <div className="absolute bottom-0 left-0 w-full p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                 <h4 className="text-white font-serif italic text-xl tracking-wide mb-1">{star.name}</h4>
                 <div className="flex justify-between text-[10px] uppercase tracking-widest text-zinc-400 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
-                  <span>{star.videos} scenes</span>
+                  <span>{Number(star.views || 0).toLocaleString()} views</span>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>
 
       {/* Minimalist Footer */}
-      <footer className="border-t border-white/5 py-12 text-center bg-[#020202]">
+      <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
         <h2 className="text-xl tracking-widest mb-4">
           <span className="font-serif italic text-rose-800 pr-1">Porn</span>
           <span className="font-light text-zinc-600">Cater</span>
         </h2>
         <p className="text-zinc-600 text-[10px] uppercase tracking-widest">
-          © 2026 • Exclusive Cinema • 18+ Only
+          © 2026 • Exclusive Adult Cinema • 18+ Only
         </p>
       </footer>
     </div>

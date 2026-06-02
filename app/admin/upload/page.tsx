@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   UploadCloud,
   Film,
@@ -8,27 +8,60 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
+  Users
 } from "lucide-react";
 
 export default function AdminUpload() {
   const [title, setTitle] = useState("");
   const [duration, setDuration] = useState("");
   const [category, setCategory] = useState("");
-  const [pornstarId, setPornstarId] = useState("");
+  
+  // Updated for Many-to-Many: Now an array of selected IDs
+  const [selectedPornstarIds, setSelectedPornstarIds] = useState<string[]>([]);
+  const [availablePornstars, setAvailablePornstars] = useState<any[]>([]);
+  
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  
   const [loading, setLoading] = useState(false);
+  const [fetchingPornstars, setFetchingPornstars] = useState(true);
+  
   const [message, setMessage] = useState<{
     type: "success" | "error" | "";
     text: string;
   }>({ type: "", text: "" });
+
+  // Fetch real pornstars from DB on mount to populate the dropdown
+  useEffect(() => {
+    const loadPornstars = async () => {
+      try {
+        const res = await fetch("/api/pornstars");
+        if (res.ok) {
+          const data = await res.json();
+          // Safety check in case API returns unexpected format
+          setAvailablePornstars(Array.isArray(data) ? data : (data.data || []));
+        }
+      } catch (error) {
+        console.error("Failed to fetch pornstars for dropdown:", error);
+      } finally {
+        setFetchingPornstars(false);
+      }
+    };
+    loadPornstars();
+  }, []);
+
+  // Handle Multi-Select Dropdown
+  const handlePornstarSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = Array.from(e.target.selectedOptions, option => option.value);
+    setSelectedPornstarIds(value);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!videoFile || !thumbnailFile) {
       setMessage({
         type: "error",
-        text: "Please provide both video and cover art.",
+        text: "Please provide both video and thumbnail files.",
       });
       return;
     }
@@ -40,7 +73,10 @@ export default function AdminUpload() {
     formData.append("title", title);
     formData.append("duration", duration);
     formData.append("category", category);
-    formData.append("pornstarId", pornstarId);
+    
+    // Append array of IDs for the new Many-to-Many schema
+    formData.append("pornstarIds", JSON.stringify(selectedPornstarIds));
+    
     formData.append("video", videoFile);
     formData.append("thumbnail", thumbnailFile);
 
@@ -55,13 +91,13 @@ export default function AdminUpload() {
       if (res.ok) {
         setMessage({
           type: "success",
-          text: "Scene curated and uploaded successfully.",
+          text: "Porn video uploaded and linked successfully.",
         });
         // Reset form
         setTitle("");
         setDuration("");
         setCategory("");
-        setPornstarId("");
+        setSelectedPornstarIds([]);
         setVideoFile(null);
         setThumbnailFile(null);
       } else {
@@ -80,18 +116,15 @@ export default function AdminUpload() {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans py-16 px-6 selection:bg-rose-900 selection:text-white">
       <div className="max-w-3xl mx-auto">
+        
         {/* Header */}
         <div className="mb-12 border-b border-white/5 pb-6">
           <h1 className="text-4xl font-serif font-light tracking-wide text-white flex items-center gap-4">
-            <UploadCloud
-              className="text-rose-800"
-              size={32}
-              strokeWidth={1.5}
-            />
+            <UploadCloud className="text-rose-800" size={32} strokeWidth={1.5} />
             Upload <span className="italic text-rose-700">New Video</span>
           </h1>
           <p className="text-zinc-500 text-[11px] uppercase tracking-widest mt-3 font-medium">
-            Upload high-resolution Porn video.
+            Upload high-resolution porn video directly to the database.
           </p>
         </div>
 
@@ -114,16 +147,17 @@ export default function AdminUpload() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
             {/* Title */}
             <div className="md:col-span-2">
               <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
-                Scene Title
+                Video Title
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter an appropriate title..."
+                placeholder="Enter an explicit title..."
                 className="w-full bg-zinc-900/30 border-b border-zinc-800 focus:border-rose-800 focus:bg-zinc-900/50 outline-none py-3 px-4 text-sm text-zinc-200 transition-all placeholder-zinc-700"
                 required
               />
@@ -158,18 +192,39 @@ export default function AdminUpload() {
               />
             </div>
 
-            {/* Pornstar ID Placeholder (md:col-span-2 to stretch across) */}
+            {/* Dynamic Pornstar Multi-Select */}
             <div className="md:col-span-2">
-              <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
-                Featured Pornstar (Dropdown Incoming)
+              <label className="flex items-center gap-2 text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
+                <Users size={12} /> Assign Pornstars (Hold Ctrl/Cmd to multi-select)
               </label>
-              <div className="w-full bg-zinc-900/20 border border-zinc-800 border-dashed py-3 px-4 text-sm text-zinc-600 italic">
-                Select a model...
-              </div>
+              
+              {fetchingPornstars ? (
+                <div className="w-full bg-zinc-900/20 border border-zinc-800 border-dashed py-3 px-4 text-sm text-zinc-600 flex items-center gap-2">
+                  <Loader2 size={14} className="animate-spin" /> Loading Roster...
+                </div>
+              ) : (
+                <select
+                  multiple
+                  value={selectedPornstarIds}
+                  onChange={handlePornstarSelect}
+                  className="w-full bg-zinc-900/30 border border-zinc-800 focus:border-rose-800 outline-none p-3 text-sm text-zinc-200 transition-all min-h-[120px]"
+                >
+                  {availablePornstars.length > 0 ? (
+                    availablePornstars.map((star) => (
+                      <option key={star.id} value={star.id.toString()} className="py-1">
+                        {star.name}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No pornstars found in database.</option>
+                  )}
+                </select>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+            
             {/* Custom Video File Upload */}
             <div>
               <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
@@ -197,7 +252,7 @@ export default function AdminUpload() {
             {/* Custom Thumbnail File Upload */}
             <div>
               <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">
-                Thumbnail
+                Thumbnail Cover
               </label>
               <label className="flex flex-col items-center justify-center w-full h-40 border border-zinc-800 hover:border-rose-800 bg-zinc-900/30 hover:bg-zinc-900/60 cursor-pointer transition-all duration-300 rounded-sm group">
                 <ImageIcon
@@ -230,7 +285,7 @@ export default function AdminUpload() {
             >
               {loading ? (
                 <>
-                  <Loader2 size={16} className="animate-spin" /> Publishing...
+                  <Loader2 size={16} className="animate-spin" /> Uploading Video...
                 </>
               ) : (
                 "Publish to Collection"
