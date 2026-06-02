@@ -33,11 +33,11 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
 
   // Hardcoded muses
   const pornstars: Pornstar[] = [
-    { id: 1, name: "Sunny Leone", image: "/thumbnails/thmbnl_000007.png", videos: 124, views: "18.2M" },
-    { id: 2, name: "Emily Willis", image: "/thumbnails/thmbnl_000005.png", videos: 89, views: "14.7M" },
-    { id: 3, name: "Lana Rhoades", image: "/thumbnails/thmbnl_000002.png", videos: 67, views: "22.4M" },
-    { id: 4, name: "Mia Malkova", image: "/thumbnails/thmbnl_000008.png", videos: 95, views: "19.8M" },
-    { id: 5, name: "Blake Blossom", image: "/thumbnails/thmbnl_0000011.png", videos: 54, views: "9.3M" },
+    { id: 1, name: "Sunny Leone", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/sunnyleone_thmbnl_0001.jpg", videos: 124, views: "18.2M" },
+    { id: 2, name: "Emily Willis", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/emilywillis_thmbnl_0002.jpg", videos: 89, views: "14.7M" },
+    { id: 3, name: "Lana Rhoades", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/lanarhoades_thmbnl_0005.jpg", videos: 67, views: "22.4M" },
+    { id: 4, name: "Mia Malkova", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/miamalkova_thmbnl_0009.jpg", videos: 95, views: "19.8M" },
+    { id: 5, name: "Blake Blossom", image: "https://porncater-pullzone.b-cdn.net/thumbnails/pornstars/blakeblossom_thmbnl_0008.jpg", videos: 54, views: "9.3M" },
   ];
 
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function WatchPage({ params }: { params: Promise<{ id: string }> 
 
             {/* Video Meta Information */}
             <div className="mt-8 border-b border-white/5 pb-8">
-              <h1 className="text-3xl md:text-4xl font-serif font-light text-white leading-tight tracking-wide pr-4">
+              <h1 className="text-3xl md:text-4xl font-light text-white leading-tight tracking-wide pr-4">
                 {video.title}
               </h1>
               
