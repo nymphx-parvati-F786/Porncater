@@ -116,7 +116,7 @@ export default function Home() {
       <div className="relative h-[65vh] min-h-[500px] flex flex-col justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-black/20 z-10" />
         <img 
-          src="/thumbnails/thmbnl_000001.png" 
+          src="https://porncater-pullzone.b-cdn.net/thumbnails/thmbnl_000006.png" 
           alt="Premium Content" 
           className="absolute inset-0 w-full h-full object-cover scale-105 opacity-70" 
         />
@@ -150,7 +150,7 @@ export default function Home() {
       <div className="max-w-[1400px] mx-auto px-6 py-10">
         <div className="flex items-center gap-3 mb-8">
           <Flame className="text-rose-800" size={24} strokeWidth={1.5} />
-          <h3 className="text-2xl font-serif italic text-white tracking-wide">Trending Cinema</h3>
+          <h3 className="text-2xl font-serif italic text-white tracking-wide">Trending Porn Videos</h3>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
@@ -190,7 +190,7 @@ export default function Home() {
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
               <Clock className="text-zinc-500" size={24} strokeWidth={1.5} />
-              <h3 className="text-2xl font-serif italic text-white tracking-wide">Latest Arrivals</h3>
+              <h3 className="text-2xl font-serif italic text-white tracking-wide">Latest Porn Videos</h3>
             </div>
             <a href="#" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">
               View Directory
@@ -223,7 +223,7 @@ export default function Home() {
         <div className="flex items-center justify-between mb-10">
           <div className="flex items-center gap-3">
             <Sparkles className="text-amber-600" size={24} strokeWidth={1.5} />
-            <h3 className="text-2xl font-serif italic text-white tracking-wide">Featured Muses</h3>
+            <h3 className="text-2xl font-serif italic text-white tracking-wide">Top Pornstars</h3>
           </div>
         </div>
 
