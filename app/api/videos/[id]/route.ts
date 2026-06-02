@@ -22,7 +22,7 @@ export async function GET(
       include: {
         // OPTIMIZATION: Only fetch the specific pornstar data needed for the Watch Page UI
         // This keeps the API response tiny and lightning fast.
-        pornstars: {
+        pornstar: {
           select: {
             id: true,
             name: true,
