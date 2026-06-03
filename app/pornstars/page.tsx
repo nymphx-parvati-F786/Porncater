@@ -86,7 +86,7 @@ export default function PornstarsDirectory() {
               <Link key={star.id} href={`/pornstars/${star.id}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[2/3]">
                 {/* Note: Ensure 'star.image' contains the full Bunny.net URL from your DB */}
                 <img 
-                  src={star.image || star.avatarUrl} 
+                  src={star.avatarUrl} 
                   alt={star.name} 
                   className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" 
                 />
