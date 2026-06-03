@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
+// ⚠️ WARNING: Never hardcode API keys in your files!
+// Move these to your .env file and use process.env to access them.
 const BUNNY_LIBRARY_ID = '673639';
 const BUNNY_API_KEY = '668e31ab-6ca9-4a67-8d758cec2dc2-5c4d-46c0';
 const BUNNY_CDN = 'vz-dd9533b0-79d.b-cdn.net';
@@ -108,7 +110,10 @@ export async function POST(request: NextRequest) {
         thumbnail: thumbnailUrl,
         duration,
         category: category || null,
-        pornstarId: pornstarId ? parseInt(pornstarId) : null,
+        // ✅ FIX APPLIED HERE:
+        pornstars: pornstarId 
+          ? { connect: { id: parseInt(pornstarId) } } 
+          : undefined,
       },
     });
 

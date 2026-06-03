@@ -39,8 +39,8 @@ export default function Home() {
   }, []);
 
   const categories = [
-    "Desi", "Indian", "BBC", "Lesbian", "Blowjob", "Creampie", 
-    "MILF", "Teen", "Anal", "Threesome", "Interracial", "Saree"
+    "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", 
+    "MILF", "Teen", "Anal", "Threesome", "Interracial"
   ];
 
   // SAFTEY CHECK: Fallback to empty arrays before slicing
@@ -85,7 +85,6 @@ export default function Home() {
             {/* Desktop Links */}
             <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
               <Link href="/" className="hover:text-white transition duration-300">Home</Link>
-              <Link href="/category/desi" className="hover:text-white transition duration-300">Desi</Link>
               <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
               <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
               <Link href="/live" className="text-rose-700 flex items-center gap-2 transition duration-300">
