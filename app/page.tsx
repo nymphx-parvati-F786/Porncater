@@ -130,7 +130,7 @@ export default function Home() {
         
         <div className="relative z-20 px-8 max-w-[1400px] mx-auto w-full text-left">
           <h2 className="text-5xl md:text-7xl font-serif font-light tracking-wide mb-6 leading-tight text-white drop-shadow-lg">
-            Indulge your <br/>
+            Indulge in your <br/>
             <span className="italic text-rose-700">deepest desires.</span>
           </h2>
           <p className="text-lg text-zinc-300 mb-10 max-w-xl font-light tracking-wide drop-shadow-md">
