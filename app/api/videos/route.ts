@@ -31,15 +31,8 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(videos);
-  } catch (error: any) {
-    return NextResponse.json({ 
-      error: "Failed to fetch videos", 
-      details: error.message 
-    }, { status: 500 });
+} catch (error) {
+    console.error("Database Error in /api/videos:", error);
+    return NextResponse.json({ error: "Failed to fetch porn videos from database." }, { status: 500 });
   }
 }
-// } catch (error) {
-//     console.error("Database Error in /api/videos:", error);
-//     return NextResponse.json({ error: "Failed to fetch porn videos from database." }, { status: 500 });
-//   }
-// }
