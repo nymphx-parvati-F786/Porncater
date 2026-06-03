@@ -86,7 +86,7 @@ export default function PornstarProfile() {
         <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-10">
           
           <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-sm overflow-hidden border-4 border-[#050505] bg-zinc-900 shadow-2xl flex-shrink-0">
-            <img src={star.avatar || star.image} alt={star.name} className="w-full h-full object-cover" />
+            <img src={star.avatarUrl || star.image} alt={star.name} className="w-full h-full object-cover" />
           </div>
 
           <div className="flex-1 pb-2 w-full">
