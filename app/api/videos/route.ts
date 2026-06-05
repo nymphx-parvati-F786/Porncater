@@ -5,18 +5,34 @@ const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   try {
-    // Check if we are requesting videos for a specific pornstar
     const { searchParams } = new URL(request.url);
     const pornstarId = searchParams.get('pornstarId');
-
-    let whereClause = {};
     
-    // If a pornstar ID is passed, filter videos that include them in the many-to-many relation
+    // Grab the new parameters for browsing and searching
+    const tag = searchParams.get('tag');
+    const searchQuery = searchParams.get('q');
+
+    let whereClause: any = {};
+    
+    // 1. Filter by Pornstar (Your existing logic)
     if (pornstarId) {
-      whereClause = {
-        pornstars: {
-          some: { id: parseInt(pornstarId) }
-        }
+      whereClause.pornstars = {
+        some: { id: parseInt(pornstarId) }
+      };
+    }
+
+    // 2. Filter by Category/Tag (Case-insensitive check in Postgres array)
+    if (tag) {
+      whereClause.tags = {
+        has: tag
+      };
+    }
+
+    // 3. Filter by Search Bar Query (Title matching)
+    if (searchQuery) {
+      whereClause.title = {
+        contains: searchQuery,
+        mode: 'insensitive' // Ignores uppercase/lowercase
       };
     }
 
@@ -31,7 +47,7 @@ export async function GET(request: Request) {
     });
 
     return NextResponse.json(videos);
-} catch (error) {
+  } catch (error) {
     console.error("Database Error in /api/videos:", error);
     return NextResponse.json({ error: "Failed to fetch porn videos from database." }, { status: 500 });
   }
