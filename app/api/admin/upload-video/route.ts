@@ -7,9 +7,9 @@ const BUNNY_LIBRARY_ID = '673639';
 const BUNNY_API_KEY = '668e31ab-6ca9-4a67-8d758cec2dc2-5c4d-46c0';
 const BUNNY_CDN = 'vz-dd9533b0-79d.b-cdn.net';
 
-const STORAGE_ZONE = 'thumbnails-porncater';
-const STORAGE_API_KEY = 'cdc1f21f-ec1b-4a1f-a7231f687261-0f42-4381';
-const STORAGE_PULLZONE = 'porncater-pullzone.b-cdn.net';
+const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
+const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
+const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
 
 export async function POST(request: NextRequest) {
   try {
