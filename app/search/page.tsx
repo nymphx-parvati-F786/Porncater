@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense} from "react";
 import { Search as SearchIcon, Clock, Eye } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -13,7 +13,7 @@ interface Video {
   views: number;
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const query = searchParams?.get("q") ?? "";
 
@@ -125,5 +125,20 @@ export default function SearchPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense 
+      fallback={
+        <div className="min-h-screen bg-[#050505] flex flex-col items-center justify-center text-zinc-400 font-light tracking-widest uppercase text-sm">
+          <div className="w-12 h-12 border-t-2 border-rose-800 rounded-full animate-spin mb-4"></div>
+          Loading Search Engine...
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }

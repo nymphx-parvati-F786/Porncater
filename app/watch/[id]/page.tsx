@@ -295,7 +295,7 @@ export default function WatchPage({
                         });
                       } catch (error) {
                         console.error(
-                          "Failed to register adore action:",
+                          "Failed to register like action:",
                           error,
                         );
                         // If it fails, revert the heart icon back
@@ -309,7 +309,7 @@ export default function WatchPage({
                       size={16}
                       strokeWidth={1.5}
                     />
-                    {liked ? "Adored" : "Adore"}
+                    {liked ? "Liked" : "Like"}
                   </button>
                   <button className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest">
                     <Share2 size={16} strokeWidth={1.5} /> Share
@@ -517,7 +517,7 @@ export default function WatchPage({
                       {Number(vid.views).toLocaleString()} views
                     </span>
                     {vid.likes > 0 && (
-                      <span className="text-rose-800/80">{vid.likes} Adored</span>
+                      <span className="text-rose-800/80">{vid.likes} ❤️</span>
                     )}
                   </div>
                 </div>
