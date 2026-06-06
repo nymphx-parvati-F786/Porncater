@@ -40,10 +40,11 @@ export default function WatchPage({
   params: Promise<{ id: string }>;
 }) {
   const [video, setVideo] = useState<Video | null>(null);
-  const [relatedVideos, setRelatedVideos] = useState<Video[]>([]);
+  const [relatedVideos, setRelatedVideos] = useState<any[]>([]);
   const [topPornstars, setTopPornstars] = useState<Pornstar[]>([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  
 
   const router = useRouter();
 
@@ -59,16 +60,16 @@ export default function WatchPage({
           const videoData = await videoRes.json();
           setVideo(videoData);
 
-          // 2. Fetch related videos (excluding the current one)
-          const allVideosRes = await fetch("/api/videos");
-          const allVideosData = await allVideosRes.json();
-          const safeVideos = Array.isArray(allVideosData)
-            ? allVideosData
-            : allVideosData.data || [];
-          const filteredVideos = safeVideos.filter(
-            (v: Video) => v.id !== parseInt(id),
-          );
-          setRelatedVideos(filteredVideos);
+          // 2. THE RABBIT HOLE ENGINE: Fetch smart related videos
+          // This hits our new API which returns highly targeted, addictive recommendations 
+          // based on the current scene's tags and pornstars.
+          const relatedRes = await fetch(`/api/videos/${id}/related`);
+          if (relatedRes.ok) {
+            const relatedData = await relatedRes.json();
+            setRelatedVideos(Array.isArray(relatedData) ? relatedData : []);
+          } else {
+            setRelatedVideos([]);
+          }
 
           // 3. Fetch top pornstars for the bottom section
           const pornstarsRes = await fetch("/api/pornstars");
@@ -76,11 +77,13 @@ export default function WatchPage({
           const safePornstars = Array.isArray(pornstarsData)
             ? pornstarsData
             : pornstarsData.data || [];
+            
           // Sort by views and take top 5
           const sortedPornstars = safePornstars
             .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
             .slice(0, 5);
           setTopPornstars(sortedPornstars);
+          
         } else {
           setVideo(null);
         }
@@ -473,6 +476,56 @@ export default function WatchPage({
             ))}
           </div>
         </div>
+
+        {/* -------------------------------------------------- */}
+      {/* THE RABBIT HOLE ENGINE (Related Scenes) */}
+      {/* -------------------------------------------------- */}
+      {relatedVideos.length > 0 && (
+        <div className="max-w-[1400px] mx-auto px-6 mt-16 pt-10 border-t border-white/5">
+          <div className="flex items-center gap-3 mb-8">
+            <Film className="text-rose-800" size={24} strokeWidth={1.5} />
+            <h3 className="text-2xl font-serif italic text-white tracking-wide">
+              Continue Watching
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
+            {relatedVideos.map((vid) => (
+              <Link key={vid.id} href={`/watch/${vid.id}`} className="group block cursor-pointer">
+                <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                  <img 
+                    src={vid.thumbnail} 
+                    alt={vid.title} 
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  
+                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
+                    {vid.duration}
+                  </div>
+                  <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">
+                    HD
+                  </div>
+                </div>
+                
+                <div className="mt-3 px-1">
+                  <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">
+                    {vid.title}
+                  </h4>
+                  <div className="flex items-center justify-between mt-2 text-zinc-500 text-[10px] uppercase tracking-widest">
+                    <span className="flex items-center gap-1">
+                      {Number(vid.views).toLocaleString()} views
+                    </span>
+                    {vid.likes > 0 && (
+                      <span className="text-rose-800/80">{vid.likes} Adored</span>
+                    )}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
