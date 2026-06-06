@@ -273,14 +273,39 @@ export default function WatchPage({
 
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => setLiked(!liked)}
+                    onClick={async () => {
+                      // 1. Optimistically update the UI instantly so it feels lightning fast
+                      const newLikedState = !liked;
+                      setLiked(newLikedState);
+
+                      // Optional: Optimistically update the total likes number if you are displaying it next to the button
+                      // setVideo(prev => prev ? { ...prev, likes: (prev.likes || 0) + (newLikedState ? 1 : -1) } : null);
+
+                      // 2. Fire the network request in the background to update the database
+                      try {
+                        await fetch(`/api/videos/${video.id}/like`, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                          },
+                          body: JSON.stringify({ isLiking: newLikedState }),
+                        });
+                      } catch (error) {
+                        console.error(
+                          "Failed to register adore action:",
+                          error,
+                        );
+                        // If it fails, revert the heart icon back
+                        setLiked(!newLikedState);
+                      }
+                    }}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-sm border transition-all duration-300 text-[11px] uppercase tracking-widest ${liked ? "border-rose-800/50 bg-rose-900/20 text-rose-500" : "border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white"}`}
                   >
                     <Heart
                       className={liked ? "fill-rose-500" : ""}
                       size={16}
                       strokeWidth={1.5}
-                    />{" "}
+                    />
                     {liked ? "Adored" : "Adore"}
                   </button>
                   <button className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest">
