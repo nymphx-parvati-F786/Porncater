@@ -1,7 +1,5 @@
 "use client";
 
-export const revalidate = 60;
-
 import { useState, useEffect } from "react";
 import { Search, Play, User, Flame, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
