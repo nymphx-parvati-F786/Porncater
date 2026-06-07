@@ -3,62 +3,67 @@
 import { useEffect, useRef } from "react";
 
 interface AdSpaceProps {
-  zoneId: string; // The specific ID given to you by ExoClick / JuicyAds
-  format: "banner-728x90" | "banner-300x250" | "native" | "popunder";
+  zoneId: string; // Enter your ExoClick Zone ID here: "5944198"
+  format: "banner-300x250" | "banner-728x90";
   className?: string;
 }
 
 export default function AdSpace({ zoneId, format, className = "" }: AdSpaceProps) {
-  const adRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Prevent execution if we are in development mode and don't want real ads loading
+    // 1. Guard clause for local testing environment
     if (process.env.NODE_ENV === "development") return;
-    if (!adRef.current) return;
+    if (!containerRef.current) return;
 
-    // Clear any existing ad to prevent duplication on re-renders
-    adRef.current.innerHTML = "";
+    // 2. Wipe clean to prevent duplicating ads during Next.js hydration or hot reloads
+    containerRef.current.innerHTML = "";
 
-    // 1. Create the configuration script object required by adult networks
-    const configScript = document.createElement("script");
-    configScript.type = "text/javascript";
-    
-    // This structure mirrors standard ExoClick/JuicyAds synchronous script injections
-    configScript.innerHTML = `
-      var ad_idzone = "${zoneId}";
-      var ad_width = "${format.includes("728x90") ? "728" : "300"}";
-      var ad_height = "${format.includes("728x90") ? "90" : "250"}";
+    // 3. Inject the core processing engine script (<script async src="..."></script>)
+    // Checking if the script is already present globally so we don't load it multiple times
+    if (!document.querySelector('script[src="https://a.magsrv.com/ad-provider.js"]')) {
+      const coreScript = document.createElement("script");
+      coreScript.async = true;
+      coreScript.type = "application/javascript";
+      coreScript.src = "https://a.magsrv.com/ad-provider.js";
+      document.head.appendChild(coreScript);
+    }
+
+    // 4. Build the unique targeting element (<ins class="eas6a97888e2" data-zoneid="..."></ins>)
+    const insTag = document.createElement("ins");
+    insTag.className = "eas6a97888e2";
+    insTag.setAttribute("data-zoneid", zoneId);
+    containerRef.current.appendChild(insTag);
+
+    // 5. Initialize the specific ad space trigger array 
+    const triggerScript = document.createElement("script");
+    triggerScript.innerHTML = `
+      (window.AdProvider = window.AdProvider || []).push({"serve": {}});
     `;
-    
-    adRef.current.appendChild(configScript);
+    containerRef.current.appendChild(triggerScript);
 
-    // 2. Load the network's processing engine script
-    const engineScript = document.createElement("script");
-    engineScript.type = "text/javascript";
-    engineScript.src = "https://syndication.exoclick.com/ads.js"; // Replace with your network's script URL
-    engineScript.async = true;
+  }, [zoneId]);
 
-    adRef.current.appendChild(engineScript);
-  }, [zoneId, format]);
-
-  // Dimensions based on ad layout choice
+  // Handle dimensions based on your dashboard setup
   const dimensions = format === "banner-728x90" 
     ? "w-[728px] h-[90px]" 
     : "w-[300px] h-[250px]";
 
   return (
     <div className={`flex flex-col items-center justify-center my-6 ${className}`}>
-      {/* Subtle styling to show it's an advertisement container */}
-      <span className="text-[9px] uppercase tracking-widest text-zinc-600 mb-2 font-mono block text-center">
+      <span className="text-[9px] uppercase tracking-widest text-zinc-600 mb-2 font-mono">
         Advertisement
       </span>
+      
       <div 
-        ref={adRef} 
-        className={`${dimensions} bg-zinc-950 border border-zinc-900 rounded-sm overflow-hidden shadow-inner`}
+        ref={containerRef} 
+        className={`${dimensions} bg-zinc-950 border border-zinc-900 rounded-sm overflow-hidden flex items-center justify-center`}
       >
+        {/* Placeholder displays ONLY when working locally on localhost */}
         {process.env.NODE_ENV === "development" && (
-          <div className="w-full h-full flex items-center justify-center text-[10px] text-zinc-500 font-mono uppercase bg-zinc-900/40">
-            Ad Space Zone {zoneId} ({format})
+          <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider text-center">
+            ExoClick Zone: {zoneId} <br />
+            <span className="text-[9px] text-zinc-600">({format})</span>
           </div>
         )}
       </div>
