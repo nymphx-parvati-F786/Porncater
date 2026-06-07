@@ -21,6 +21,10 @@ export default function Home() {
         const [videosRes, pornstarsRes] = await Promise.all([
           fetch("/api/videos"),
           fetch("/api/pornstars"),
+          {
+            // This tells Next.js to cache the API response for 60 seconds
+            next: { revalidate: 60 }
+          }
         ]);
 
         const videosData = await videosRes.json();
