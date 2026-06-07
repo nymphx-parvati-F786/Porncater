@@ -177,7 +177,7 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero Banner */}
+      {/* Hero Banner
       <div className="relative h-[65vh] min-h-[500px] flex flex-col justify-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-black/20 z-10" />
         <img
@@ -199,7 +199,7 @@ export default function Home() {
             Explore Collection <Play size={14} fill="white" />
           </button>
         </div>
-      </div>
+      </div> */}
 
       {/* Categories */}
       <div className="max-w-[1400px] mx-auto px-6 py-12">

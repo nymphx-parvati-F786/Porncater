@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 
 interface AdSpaceProps {
   zoneId: string; // Enter your ExoClick Zone ID here: "5944198"
-  format: "banner-300x250" | "banner-728x90";
+  format: "banner-300x250" | "banner-728x90" | "banner-900x250";
   className?: string;
 }
 
@@ -44,10 +44,10 @@ export default function AdSpace({ zoneId, format, className = "" }: AdSpaceProps
 
   }, [zoneId]);
 
-  // Handle dimensions based on your dashboard setup
-  const dimensions = format === "banner-728x90" 
-    ? "w-[728px] h-[90px]" 
-    : "w-[300px] h-[250px]";
+  // 2. Map the technical design widths for the viewport frame
+  let dimensions = "w-[300px] h-[250px]";
+  if (format === "banner-728x90") dimensions = "w-[728px] h-[90px]";
+  if (format === "banner-900x250") dimensions = "w-full max-w-[900px] h-[250px]"; // Scales down gracefully on smaller screens
 
   return (
     <div className={`flex flex-col items-center justify-center my-6 ${className}`}>

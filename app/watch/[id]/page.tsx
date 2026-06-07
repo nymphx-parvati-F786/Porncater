@@ -273,7 +273,9 @@ export default function WatchPage({
                       </div>
                     </div>
                   )}
+
                 </div>
+
 
                 <div className="flex items-center gap-3">
                   <button
@@ -340,6 +342,14 @@ export default function WatchPage({
                   </div>
                 </div>
               )}
+              {/* -------------------------------------------------- */}
+              {/* NEW HIGH-CTR HORIZONTAL BANNER ZONE (BELOW TAGS)  */}
+              {/* -------------------------------------------------- */}
+              <AdSpace
+                zoneId="5944222"
+                format="banner-900x250"
+                className="mt-10 pt-4 border-t border-white/5"
+              />
             </div>
           </div>
 
@@ -347,7 +357,7 @@ export default function WatchPage({
           <div className="w-full lg:w-[32%]">
             {/* Live ExoClick Banner Space */}
             <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
-            
+
             <h3 className="text-xl font-serif italic text-white mb-6">
               Up Next
             </h3>
