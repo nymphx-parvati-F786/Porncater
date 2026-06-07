@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const searchQuery = searchParams.get('q');
 
     let whereClause: any = {};
-    
+
     // 1. Filter by Pornstar ID
     if (pornstarParam && pornstarParam !== 'undefined') {
       const parsedId = parseInt(pornstarParam);
@@ -32,12 +32,18 @@ export async function GET(request: Request) {
       whereClause.title = { contains: searchQuery, mode: 'insensitive' };
     }
 
+    // Fast query setup for feeds and grids
     const videos = await prisma.video.findMany({
-      where: whereClause,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        pornstars: { select: { id: true, name: true, avatarUrl: true } }
-      }
+      take: 20,
+      select: {
+        id: true,
+        title: true,
+        thumbnail: true,
+        duration: true,
+        views: true,
+        slug: true
+      },
+      orderBy: { createdAt: 'desc' }
     });
 
     return NextResponse.json(videos);
