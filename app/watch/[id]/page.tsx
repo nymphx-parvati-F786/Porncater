@@ -13,6 +13,7 @@ import {
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
+import AdSpace from "@/src/components/ui/ads/AdSpace";
 
 interface Pornstar {
   id: number;
@@ -344,6 +345,12 @@ export default function WatchPage({
 
           {/* RIGHT: Up Next Sidebar */}
           <div className="w-full lg:w-[32%]">
+          {/* High CPM Sidebar Ad Box */}
+  <AdSpace zoneId="789101" format="banner-300x250" className="mb-8" />
+
+<h3 className="text-xl font-serif italic text-white mb-6">
+  Up Next
+</h3>
             <h3 className="text-xl font-serif italic text-white mb-6">
               Up Next
             </h3>
