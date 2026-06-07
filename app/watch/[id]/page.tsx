@@ -55,38 +55,34 @@ export default function WatchPage({
         const resolvedParams = await params;
         const id = resolvedParams.id;
 
-        // 1. Fetch current video
-        const videoRes = await fetch(`/api/videos/${id}`);
+        // 🚀 THE FIX: Fire all 3 network requests AT THE EXACT SAME TIME
+        // Notice we are passing ?limit=5 to the pornstars API so it's a tiny payload
+        const [videoRes, relatedRes, pornstarsRes] = await Promise.all([
+          fetch(`/api/videos/${id}`),
+          fetch(`/api/videos/${id}/related`),
+          fetch(`/api/pornstars?limit=5`)
+        ]);
+
+        // Only proceed if the main video actually exists
         if (videoRes.ok) {
           const videoData = await videoRes.json();
           setVideo(videoData);
 
-          // 2. THE RABBIT HOLE ENGINE: Fetch smart related videos
-          // This hits our new API which returns highly targeted, addictive recommendations 
-          // based on the current scene's tags and pornstars.
-          const relatedRes = await fetch(`/api/videos/${id}/related`);
+          // Handle the related videos
           if (relatedRes.ok) {
             const relatedData = await relatedRes.json();
             setRelatedVideos(Array.isArray(relatedData) ? relatedData : []);
-          } else {
-            setRelatedVideos([]);
           }
 
-          // 3. Fetch top pornstars for the bottom section
-          const pornstarsRes = await fetch("/api/pornstars");
-          const pornstarsData = await pornstarsRes.json();
-          const safePornstars = Array.isArray(pornstarsData)
-            ? pornstarsData
-            : pornstarsData.data || [];
-
-          // Sort by views and take top 5
-          const sortedPornstars = safePornstars
-            .sort((a: any, b: any) => (b.views || 0) - (a.views || 0))
-            .slice(0, 5);
-          setTopPornstars(sortedPornstars);
+          // Handle the tiny payload of 5 pornstars
+          if (pornstarsRes.ok) {
+            const pornstarsData = await pornstarsRes.json();
+            const safePornstars = Array.isArray(pornstarsData) ? pornstarsData : (pornstarsData.data || []);
+            setTopPornstars(safePornstars);
+          }
 
         } else {
-          setVideo(null);
+          setVideo(null); // Video 404
         }
       } catch (err) {
         console.error("Failed to load Watch Page data", err);
