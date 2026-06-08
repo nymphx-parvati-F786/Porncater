@@ -9,14 +9,14 @@ export async function GET(request: Request) {
     // 2. Parse the URL to look for the ?limit= param
     const { searchParams } = new URL(request.url);
     const limitParam = searchParams.get('limit');
-    
+
     // 3. If a limit exists, use it. Otherwise, default to 50 for the main directory.
     const takeCount = limitParam ? parseInt(limitParam) : 50;
 
     const pornstars = await prisma.pornstar.findMany({
       take: takeCount, // 4. Tell Prisma exactly how many to fetch
       orderBy: { views: 'desc' },
-      
+
       // Tell Prisma to dynamically count the joined videos
       include: {
         _count: {
@@ -26,9 +26,10 @@ export async function GET(request: Request) {
     });
 
     // Map the data so the frontend receives the 'videoCount' property it expects
-    const formattedPornstars = pornstars.map(star => ({
+    // Map the data so the frontend receives the 'videoCount' property it expects
+    const formattedPornstars = pornstars.map((star: any) => ({
       ...star,
-      videoCount: star._count.videos
+      videoCount: star._count?.videos || 0
     }));
 
     return NextResponse.json(formattedPornstars);
