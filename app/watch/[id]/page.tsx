@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { Metadata, ResolvingMetadata } from 'next';
 import { Share2, Download, Sparkles, Film, Eye, User } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +11,71 @@ import LikeButton from "@/src/components/ui/watch/LikeButton";
 import ViewTracker from "@/src/components/ui/watch/ViewTracker";
 
 const prisma = new PrismaClient();
+
+// 🚀 THE SEO ENGINE
+// This runs on the server before the page even renders
+export async function generateMetadata(
+  { params }: { params: Promise<{ id: string }> },
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const resolvedParams = await params;
+  const videoId = parseInt(resolvedParams.id);
+
+  if (isNaN(videoId)) {
+    return { title: 'Video Not Found | PornCater' };
+  }
+
+  // Fetch just enough data to build the SEO tags
+  const video = await prisma.video.findUnique({
+    where: { id: videoId },
+    include: {
+      pornstars: { select: { name: true } }
+    }
+  });
+
+  if (!video) {
+    return { title: 'Video Removed | PornCater' };
+  }
+
+  // 1. Build dynamic keyword strings
+  const starNames = video.pornstars.map(s => s.name).join(', ');
+  const tags = video.tags?.join(', ') || '';
+  const seoKeywords = `${starNames}, ${tags}, ${video.title}, free porn, HD adult video, stream`;
+
+  // 2. Build the description
+  const seoDescription = `Watch ${video.title}${starNames ? ` featuring ${starNames}` : ''}. Stream exclusive HD cinema on PornCater.`;
+
+  return {
+    title: `${video.title} - PornCater`,
+    description: seoDescription,
+    keywords: seoKeywords,
+
+    // OpenGraph makes the link look beautiful when shared on Reddit/Discord/Twitter
+    openGraph: {
+      title: video.title,
+      description: seoDescription,
+      url: `https://porncater.com/watch/${video.id}`,
+      siteName: 'PornCater',
+      images: [
+        {
+          url: video.thumbnail,
+          width: 1280,
+          height: 720,
+          alt: video.title,
+        },
+      ],
+      type: 'video.movie',
+    },
+
+    // Twitter-specific massive image card
+    twitter: {
+      card: 'summary_large_image',
+      title: video.title,
+      description: seoDescription,
+      images: [video.thumbnail],
+    },
+  };
+}
 
 export default async function WatchPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = await params;
