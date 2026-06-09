@@ -91,6 +91,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
           <div className="w-full lg:w-[68%]">
             <div className="bg-black aspect-video rounded-sm overflow-hidden ring-1 ring-white/5 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
               <VideoPlayer
+                key={video.id}
                 src={video.videoUrl}
                 poster={video.thumbnail}
                 title={video.title}
@@ -101,7 +102,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
             <div className="mt-8 border-b border-white/5 pb-8">
               <h1 className="text-3xl md:text-4xl font-serif font-light text-white leading-tight tracking-wide pr-4">
                 {video.title}
-              </h1>
+              </h1>F
 
               <div className="flex flex-wrap items-center justify-between mt-6 gap-y-6">
                 <div className="flex flex-col gap-2">
