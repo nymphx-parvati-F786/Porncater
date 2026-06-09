@@ -95,8 +95,9 @@ export default async function Home() {
             <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                 <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+                {/* Duration Disabled due to data mess up */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{video.duration}</div>
+                {/* <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{video.duration}</div> */}
                 <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">4K</div>
               </div>
               <div className="mt-3 px-1">
@@ -124,8 +125,9 @@ export default async function Home() {
               <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                   <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+                  {/* Duratiion DISABLED */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{video.duration}</div>
+                  {/* <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{video.duration}</div> */}
                   <div className="absolute top-2 left-2 border border-rose-800/50 bg-rose-900/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-rose-100">NEW</div>
                 </div>
                 <div className="mt-3 px-1">
