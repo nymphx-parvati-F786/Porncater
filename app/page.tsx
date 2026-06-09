@@ -62,9 +62,9 @@ export default async function Home() {
 
           {/* Auth */}
           <div className="flex items-center gap-6 text-sm tracking-wide">
-            <button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
+           {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
               <User size={18} strokeWidth={1.5} /> Login
-            </button>
+            </button>*/}
             <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
               Upload
             </Link>

@@ -57,7 +57,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-      
+
       {/* Invisible View Tracker */}
       <ViewTracker videoId={video.id} />
 
@@ -86,11 +86,16 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
       {/* Main Layout */}
       <div className="max-w-[1400px] mx-auto px-6 pt-10">
         <div className="flex flex-col lg:flex-row gap-10">
-          
+
           {/* LEFT: Cinematic Player + Details */}
           <div className="w-full lg:w-[68%]">
             <div className="bg-black aspect-video rounded-sm overflow-hidden ring-1 ring-white/5 shadow-[0_0_30px_rgba(0,0,0,0.8)]">
-              <VideoPlayer src={video.videoUrl} poster={video.thumbnail} title={video.title} />
+              <VideoPlayer
+                src={video.videoUrl}
+                poster={video.thumbnail}
+                title={video.title}
+                vastTagUrl="https://s.magsrv.com/v1/vast.php?idz=5945800"
+              />
             </div>
 
             <div className="mt-8 border-b border-white/5 pb-8">
@@ -124,7 +129,7 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
                 <div className="flex items-center gap-3">
                   {/* Replaced old HTML with the Client Component */}
                   <LikeButton videoId={video.id} />
-                  
+
                   <button className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest">
                     <Share2 size={16} strokeWidth={1.5} /> Share
                   </button>
@@ -146,13 +151,14 @@ export default async function WatchPage({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
               )}
-              
+
               <AdSpace zoneId="5944222" format="banner-900x250" className="mt-10 pt-4 border-t border-white/5" />
             </div>
           </div>
 
           {/* RIGHT: Up Next Sidebar */}
           <div className="w-full lg:w-[32%]">
+            <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
             <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
             <h3 className="text-xl font-serif italic text-white mb-6">Up Next</h3>
             <div className="flex flex-col gap-5">
