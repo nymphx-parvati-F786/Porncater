@@ -52,4 +52,4 @@ model Pornstar {
   updatedAt   DateTime   @updatedAt
   // Add this!
   @@index([views(sort: Desc)])
-}z
+}

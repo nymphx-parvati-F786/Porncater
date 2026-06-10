@@ -14,12 +14,12 @@ export default async function Home() {
   // We use "select" to only fetch small data packets (skipping heavy model data weights)
   const [trendingVideos, latestVideos, topPornstars] = await Promise.all([
     prisma.video.findMany({
-      take: 12,
+      take: 20,
       orderBy: { views: "desc" },
       select: { id: true, title: true, thumbnail: true, duration: true, views: true }
     }),
     prisma.video.findMany({
-      take: 8,
+      take: 20,
       orderBy: { createdAt: "desc" },
       select: { id: true, title: true, thumbnail: true, duration: true, views: true }
     }),
@@ -90,7 +90,7 @@ export default async function Home() {
           <h3 className="text-2xl font-serif italic text-white tracking-wide">Trending Porn Videos</h3>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
           {trendingVideos.map((video) => (
             <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
@@ -120,7 +120,7 @@ export default async function Home() {
             <Link href="/videos/latest" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">View Directory</Link>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
             {latestVideos.map((video) => (
               <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">

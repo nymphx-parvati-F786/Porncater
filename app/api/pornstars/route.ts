@@ -26,11 +26,7 @@ export async function GET(request: Request) {
     });
 
     // Map the data so the frontend receives the 'videoCount' property it expects
-    // Map the data so the frontend receives the 'videoCount' property it expects
-    const formattedPornstars = pornstars.map((star: any) => ({
-      ...star,
-      videoCount: star._count?.videos || 0
-    }));
+    const formattedPornstars = pornstars.map((star: any) => ({...star,videoCount: star._count?.videos || 0 }));
 
     return NextResponse.json(formattedPornstars);
   } catch (error) {
