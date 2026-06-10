@@ -56,7 +56,7 @@ export default async function TrendingPage({
         <div className="flex items-center gap-3 mb-10 border-b border-white/5 pb-6">
           <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
           <h1 className="text-3xl md:text-4xl font-serif italic text-white tracking-wide">
-            Trending Videos
+            Latest Videos
           </h1>
           <span className="ml-auto text-zinc-500 text-xs tracking-widest uppercase">
             Page {currentPage} of {totalPages}

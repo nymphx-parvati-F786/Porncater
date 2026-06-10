@@ -14,7 +14,7 @@ export default function PornstarsDirectory() {
   useEffect(() => {
     const fetchPornstars = async () => {
       try {
-        const res = await fetch('/api/pornstars',{ cache: 'no-store' });
+        const res = await fetch('/api/pornstars');
         const data = await res.json();
         setPornstars(data);
       } catch (error) {
