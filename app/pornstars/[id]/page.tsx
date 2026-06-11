@@ -90,18 +90,8 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
         </div>
       </nav>
 
-      {/* Cinematic Cover Banner */}
-      <div className="relative h-[40vh] min-h-[300px] w-full bg-zinc-900 overflow-hidden">
-        <img
-          src={star.coverImage || "/thumbnails/default-banner.png"}
-          alt={`${star.name} Cover`}
-          className="w-full h-full object-cover opacity-60 grayscale-[30%]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/40 to-transparent" />
-      </div>
-
       {/* Profile Info Section */}
-      <div className="max-w-[1400px] mx-auto px-6 relative -mt-24 sm:-mt-32">
+      <div className="max-w-[1400px] mx-auto px-6 relative mt-8 sm:mt-12">
         <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-10">
           <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-sm overflow-hidden border-4 border-[#050505] bg-zinc-900 shadow-2xl flex-shrink-0">
             <img

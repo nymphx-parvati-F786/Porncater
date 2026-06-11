@@ -31,8 +31,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const videosPerPage = 20;
 
   // Set Prisma sorting condition mapping
-  const orderByCondition = currentSort === "views" 
-    ? { views: "desc" as const } 
+  const orderByCondition = currentSort === "views"
+    ? { views: "desc" as const }
     : { createdAt: "desc" as const };
 
   // 3. Query DB via Promise.all to fetch the specific slice and counts simultaneously
@@ -69,7 +69,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-      
+
       {/* Navbar */}
       <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
         <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
@@ -95,7 +95,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
           {/* Auth */}
           <div className="flex items-center gap-6 text-sm tracking-wide">
-           {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
+            {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
               <User size={18} strokeWidth={1.5} /> Login
             </button>*/}
             <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
@@ -125,17 +125,17 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <div className="text-[11px] uppercase tracking-widest text-zinc-500 font-mono">
             Showing {videos.length} of {totalVideos} Scenes
           </div>
-          
+
           {/* 🔥 PREMIUM TUBE-STYLE FILTER TOGGLES */}
           <div className="flex gap-6 text-[11px] uppercase tracking-widest font-bold">
-            <Link 
+            <Link
               href={`/category/${rawSlug}?sort=latest`}
               className={`pb-2 transition-colors relative ${currentSort === "latest" ? "text-rose-500 font-black" : "text-zinc-500 hover:text-zinc-300"}`}
             >
               Newest
               {currentSort === "latest" && <span className="absolute bottom-0 left-0 w-full h-[2px] bg-rose-600 shadow-[0_0_8px_rgba(225,29,72,0.6)]" />}
             </Link>
-            <Link 
+            <Link
               href={`/category/${rawSlug}?sort=views`}
               className={`pb-2 transition-colors relative ${currentSort === "views" ? "text-rose-500 font-black" : "text-zinc-500 hover:text-zinc-300"}`}
             >
@@ -166,7 +166,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                       {video.title}
                     </h4>
                     <div className="flex items-center gap-3 mt-2 text-zinc-500 text-[10px] uppercase tracking-widest">
-                      <span className="flex items-center gap-1"><Eye size={12}/> {Number(video.views).toLocaleString()} views</span>
+                      <span className="flex items-center gap-1"><Eye size={12} /> {Number(video.views).toLocaleString()} views</span>
                     </div>
                   </div>
                 </Link>
@@ -198,11 +198,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                     <Link
                       key={pageNum}
                       href={`/category/${rawSlug}?sort=${currentSort}&page=${pageNum}`}
-                      className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${
-                        isCurrent
+                      className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${isCurrent
                           ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
                           : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </Link>
