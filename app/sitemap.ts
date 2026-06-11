@@ -8,38 +8,40 @@ const BASE_URL = 'https://porncater.com';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 1. Fetch the latest videos from Supabase
-  // We take 10,000 to stay well under Google's 50,000 URL limit per sitemap, 
-  // while keeping the Vercel serverless function fast.
+  // 🚀 UPDATE: We now select 'slug' along with 'id'
   const videos = await prisma.video.findMany({
-    select: { id: true, createdAt: true },
+    select: { id: true, slug: true, createdAt: true },
     orderBy: { createdAt: 'desc' },
     take: 10000, 
   });
 
   // 2. Fetch the pornstars
+  // 🚀 UPDATE: We select 'slug' instead of 'id'
   const pornstars = await prisma.pornstar.findMany({
-    select: { id: true },
+    select: { slug: true },
     take: 1000,
   });
 
   // 3. Map the Video URLs
+  // 🚀 UPDATE: Matches the premium /watch/[id]/[slug] professional architecture
   const videoUrls = videos.map((video) => ({
-    url: `${BASE_URL}/watch/${video.id}`,
+    url: `${BASE_URL}/watch/${video.id}/${video.slug || 'scene'}`,
     lastModified: video.createdAt,
-    changeFrequency: 'never' as const, // Videos usually don't change once uploaded
+    changeFrequency: 'never' as const, 
     priority: 0.8,
   }));
 
   // 4. Map the Pornstar URLs
+  // 🚀 UPDATE: Matches the clean /pornstars/[slug] alphanumeric path
   const pornstarUrls = pornstars.map((star) => ({
-    url: `${BASE_URL}/pornstars/${star.id}`,
+    url: `${BASE_URL}/pornstars/${star.slug}`,
     lastModified: new Date(),
     changeFrequency: 'weekly' as const,
     priority: 0.7,
   }));
 
   // 5. Define your Static Core Routes
-  const categories = ["desi", "lesbian", "milf", "teen", "hardcore"]; // Add your main ones
+  const categories = ["desi", "lesbian", "milf", "teen", "hardcore"]; 
   
   const staticRoutes = [
     '',             // Homepage
@@ -50,8 +52,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ].map((route) => ({
     url: `${BASE_URL}${route}`,
     lastModified: new Date(),
-    changeFrequency: 'daily' as const, // These pages update often as new content flows in
-    priority: route === '' ? 1.0 : 0.9, // Homepage gets top priority
+    changeFrequency: 'daily' as const, 
+    priority: route === '' ? 1.0 : 0.9, 
   }));
 
   // 6. Combine and return the full array
