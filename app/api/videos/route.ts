@@ -35,6 +35,7 @@ export async function GET(request: Request) {
     // Fast query setup for feeds and grids
     const videos = await prisma.video.findMany({
       take: 20,
+      where: whereClause,
       select: {
         id: true,
         title: true,
