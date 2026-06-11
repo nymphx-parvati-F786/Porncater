@@ -16,22 +16,22 @@ export default async function Home() {
     prisma.video.findMany({
       take: 20,
       orderBy: { views: "desc" },
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true }
+      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true }
     }),
     prisma.video.findMany({
       take: 20,
       orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true }
+      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true }
     }),
     prisma.pornstar.findMany({
       take: 5,
       orderBy: { views: "desc" },
-      select: { id: true, name: true, avatarUrl: true, views: true }
+      select: { id: true, slug: true, name: true, avatarUrl: true, views: true }
     })
   ]);
 
   const categories = [
-    "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", 
+    "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie",
     "MILF", "Teen", "Anal", "Threesome", "Interracial"
   ];
 
@@ -62,7 +62,7 @@ export default async function Home() {
 
           {/* Auth */}
           <div className="flex items-center gap-6 text-sm tracking-wide">
-           {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
+            {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
               <User size={18} strokeWidth={1.5} /> Login
             </button>*/}
             <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
@@ -92,7 +92,7 @@ export default async function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
           {trendingVideos.map((video) => (
-            <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+            <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                 <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
                 {/* Duration Disabled due to data mess up */}
@@ -106,7 +106,7 @@ export default async function Home() {
               </div>
             </Link>
           ))}
-        </div> 
+        </div>
       </div>
 
       {/* Latest Uploads */}
@@ -122,7 +122,7 @@ export default async function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
             {latestVideos.map((video) => (
-              <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                   <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
                   {/* Duratiion DISABLED */}
@@ -152,7 +152,7 @@ export default async function Home() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {topPornstars.map((star) => (
-            <Link key={star.id} href={`/pornstars/${star.id}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
+            <Link key={star.id} href={`/pornstars/${star.slug}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
               <img src={star.avatarUrl || "/thumbnails/default-avatar.png"} alt={star.name} className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute bottom-0 left-0 w-full p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">

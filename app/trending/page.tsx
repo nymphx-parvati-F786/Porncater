@@ -23,7 +23,7 @@ export default async function TrendingPage({
       take: videosPerPage,
       skip: (currentPage - 1) * videosPerPage, // If page 2, skip first 20
       orderBy: { views: "desc" },
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true },
+      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
     }),
     prisma.video.count(), // Total number of videos in database
   ]);
@@ -67,7 +67,7 @@ export default async function TrendingPage({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
           {videos.length > 0 ? (
             videos.map((video) => (
-              <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                   <img
                     src={video.thumbnail}
@@ -127,8 +127,8 @@ export default async function TrendingPage({
                   key={pageNum}
                   href={`/trending?page=${pageNum}`}
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                      ? "border-rose-800 bg-rose-900/20 text-white"
-                      : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
+                    ? "border-rose-800 bg-rose-900/20 text-white"
+                    : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
                     }`}
                 >
                   {pageNum}

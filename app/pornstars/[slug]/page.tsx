@@ -9,14 +9,14 @@ const prisma = new PrismaClient();
 
 interface PageProps {
   // 🚀 FIXED: Interface must expect slug, not id!
-  params: Promise<{ slug: string }>; 
+  params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function PornstarProfile({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
-  
+
   // 🚀 FIXED: Extract the slug directly from the main URL path parameter
   const starSlug = resolvedParams.slug;
   if (!starSlug) return notFound();
@@ -42,7 +42,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       take: videosPerPage,
       skip: (currentPage - 1) * videosPerPage,
       orderBy: { createdAt: "desc" },
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true }
+      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true }
     }),
     prisma.video.count({
       where: {
@@ -173,7 +173,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
               {videos.map((video) => (
-                <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+                <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_20px_rgba(0,0,0,0.4)]">
                     <img
                       src={video.thumbnail}
@@ -233,11 +233,10 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                     <Link
                       key={pageNum}
                       href={`/pornstars/${star.slug}?page=${pageNum}`}
-                      className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${
-                        isCurrent
+                      className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${isCurrent
                           ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
                           : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </Link>
