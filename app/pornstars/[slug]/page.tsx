@@ -8,30 +8,35 @@ import SubscribeButton from "@/src/components/ui/SubscribeButton";
 const prisma = new PrismaClient();
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  // 🚀 FIXED: Interface must expect slug, not id!
+  params: Promise<{ slug: string }>; 
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function PornstarProfile({ params, searchParams }: PageProps) {
-  // Await params securely on Next.js server runtime
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
   
-  const starId = parseInt(resolvedParams.id);
-  if (isNaN(starId)) return notFound();
+  // 🚀 FIXED: Extract the slug directly from the main URL path parameter
+  const starSlug = resolvedParams.slug;
+  if (!starSlug) return notFound();
 
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
-  const videosPerPage = 16; // 4x4 clean block grid for premium catalogs
+  const videosPerPage = 16;
 
-  // 1. Concurrent DB hit fetching performer data and paginated videos simultaneously
-  const [star, videos, totalVideos] = await Promise.all([
-    prisma.pornstar.findUnique({
-      where: { id: starId },
-    }),
+  // 1. Fetch the pornstar bio first using their unique text slug
+  const star = await prisma.pornstar.findUnique({
+    where: { slug: starSlug }
+  });
+
+  if (!star) return notFound();
+
+  // 2. Now that we have the valid star object, use star.id to pull their videos concurrently
+  const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: {
         pornstars: {
-          some: { id: starId }
+          some: { id: star.id } // Scans relational table mapping using the verified ID
         }
       },
       take: videosPerPage,
@@ -42,17 +47,14 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
     prisma.video.count({
       where: {
         pornstars: {
-          some: { id: starId }
+          some: { id: star.id }
         }
       }
     })
   ]);
 
-  if (!star) return notFound();
-
   const totalPages = Math.ceil(totalVideos / videosPerPage);
 
-  // Elite tube pagination logic engine
   const generatePagination = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
@@ -113,7 +115,6 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
               </div>
 
               <div className="flex gap-3">
-                {/* Hydrated Interactive Component Insertion */}
                 <SubscribeButton />
                 <button className="px-4 py-3 rounded-sm bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 text-white transition-all">
                   <Share2 size={16} strokeWidth={1.5} />
@@ -210,8 +211,9 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
             {totalPages > 1 && (
               <div className="mt-24 pt-12 border-t border-zinc-900/60 flex items-center justify-center gap-1.5 select-none">
                 {currentPage > 1 ? (
+                  /* 🚀 FIXED: Map links back to star.slug so pagination stays on the alphanumeric route path */
                   <Link
-                    href={`/pornstars/${star.id}?page=${currentPage - 1}`}
+                    href={`/pornstars/${star.slug}?page=${currentPage - 1}`}
                     className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-900/40 text-zinc-300 hover:text-white transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
                   >
                     <ChevronLeft size={16} className="mr-1" /> Prev
@@ -230,7 +232,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                   return (
                     <Link
                       key={pageNum}
-                      href={`/pornstars/${star.id}?page=${pageNum}`}
+                      href={`/pornstars/${star.slug}?page=${pageNum}`}
                       className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${
                         isCurrent
                           ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
@@ -244,7 +246,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
 
                 {currentPage < totalPages ? (
                   <Link
-                    href={`/pornstars/${star.id}?page=${currentPage + 1}`}
+                    href={`/pornstars/${star.slug}?page=${currentPage + 1}`}
                     className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-800 text-zinc-300 hover:text-white font-bold transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
                   >
                     Next <ChevronRight size={16} className="ml-1" />
