@@ -98,7 +98,7 @@ export default async function Home() {
                 {/* Duration Disabled due to data mess up */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 {/* <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{video.duration}</div> */}
-                <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">4K</div>
+                <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">HD</div>
               </div>
               <div className="mt-3 px-1">
                 <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">{video.title}</h4>
@@ -106,7 +106,7 @@ export default async function Home() {
               </div>
             </Link>
           ))}
-        </div>
+        </div> 
       </div>
 
       {/* Latest Uploads */}
@@ -117,7 +117,7 @@ export default async function Home() {
               <Clock className="text-zinc-500" size={24} strokeWidth={1.5} />
               <h3 className="text-2xl font-serif italic text-white tracking-wide">Latest Porn Videos</h3>
             </div>
-            <Link href="/videos/latest" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">View Directory</Link>
+            <Link href="/latest" className="text-rose-800 hover:text-rose-600 text-xs uppercase tracking-widest transition duration-300">View Directory</Link>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
