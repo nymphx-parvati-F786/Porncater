@@ -35,6 +35,14 @@ export default async function Home() {
     "MILF", "Teen", "Anal", "Threesome", "Interracial"
   ];
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'name': 'PornCater',
+    'alternateName': 'Porn Cater',
+    'url': 'https://porncater.com/',
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
       {/* Navbar */}
