@@ -46,7 +46,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       take: videosPerPage,
       skip: (currentPage - 1) * videosPerPage,
       orderBy: orderByCondition,
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true }
+      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true }
     }),
     prisma.video.count({
       where: {
@@ -150,7 +150,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
               {videos.map((video) => (
-                <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+                <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
                     <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -199,8 +199,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                       key={pageNum}
                       href={`/category/${rawSlug}?sort=${currentSort}&page=${pageNum}`}
                       className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${isCurrent
-                          ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
-                          : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                        ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
+                        : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                         }`}
                     >
                       {pageNum}
