@@ -23,7 +23,14 @@ export default async function TrendingPage({
       take: videosPerPage,
       skip: (currentPage - 1) * videosPerPage, // If page 2, skip first 20
       orderBy: { views: "desc" },
-      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        thumbnail: true,
+        duration: true,
+        views: true,
+      },
     }),
     prisma.video.count(), // Total number of videos in database
   ]);
@@ -33,19 +40,38 @@ export default async function TrendingPage({
 
   // Helper function to build page numbers array (e.g., [1, 2, 3, "...", 10])
   const generatePagination = () => {
-    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 5)
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
-    if (currentPage >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+    if (currentPage >= totalPages - 2)
+      return [
+        1,
+        "...",
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    return [
+      1,
+      "...",
+      currentPage - 1,
+      currentPage,
+      currentPage + 1,
+      "...",
+      totalPages,
+    ];
   };
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-
       {/* Basic Navbar (You can replace this with your full global navbar) */}
       <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-6 py-4">
-          <Link href="/" className="text-3xl tracking-widest hover:opacity-80 transition duration-300">
+          <Link
+            href="/"
+            className="text-3xl tracking-widest hover:opacity-80 transition duration-300"
+          >
             <span className="font-serif italic text-rose-800 pr-1">Porn</span>
             <span className="font-light text-white">Cater</span>
           </Link>
@@ -67,7 +93,11 @@ export default async function TrendingPage({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
           {videos.length > 0 ? (
             videos.map((video) => (
-              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
+              <Link
+                key={video.id}
+                href={`/watch/${video.id}/${video.slug}`}
+                className="group block cursor-pointer"
+              >
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                   <img
                     src={video.thumbnail}
@@ -96,12 +126,30 @@ export default async function TrendingPage({
           )}
         </div>
 
+        {/* === WIDE BANNER AD === */}
+        <div className="max-w-[1400px] mx-auto px-6 py-6 flex justify-center">
+          <div className="border border-zinc-800/50 bg-black/40 rounded-sm p-4">
+            <iframe
+              style={{ backgroundColor: "white" }}
+              width="900"
+              height="250"
+              scrolling="no"
+              frameBorder="0"
+              allowTransparency={true}
+              marginHeight={0}
+              marginWidth={0}
+              name="spot_id_10013327"
+              src="//a.adtng.com/get/10013327?ata=deviparvatilovemuslimcocks"
+              title="Advertisement"
+            />
+          </div>
+        </div>
+
         {/* ========================================================= */}
         {/* PAGINATION CONTROLS (The 1, 2, 3 Buttons)                 */}
         {/* ========================================================= */}
         {totalPages > 1 && (
           <div className="mt-20 pt-10 border-t border-white/5 flex items-center justify-center gap-2">
-
             {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
@@ -119,17 +167,25 @@ export default async function TrendingPage({
             {/* The Page Numbers */}
             {generatePagination().map((pageNum, index) => {
               if (pageNum === "...") {
-                return <span key={`ellipsis-${index}`} className="px-2 text-zinc-600">...</span>;
+                return (
+                  <span
+                    key={`ellipsis-${index}`}
+                    className="px-2 text-zinc-600"
+                  >
+                    ...
+                  </span>
+                );
               }
 
               return (
                 <Link
                   key={pageNum}
                   href={`/trending?page=${pageNum}`}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                    ? "border-rose-800 bg-rose-900/20 text-white"
-                    : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
-                    }`}
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
+                    currentPage === pageNum
+                      ? "border-rose-800 bg-rose-900/20 text-white"
+                      : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
+                  }`}
                 >
                   {pageNum}
                 </Link>
@@ -149,7 +205,6 @@ export default async function TrendingPage({
                 <ChevronRight size={16} />
               </div>
             )}
-
           </div>
         )}
       </div>

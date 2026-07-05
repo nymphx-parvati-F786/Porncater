@@ -9,6 +9,8 @@ import AdSpace from "@/src/components/ui/ads/AdSpace";
 // Import our interactive client islands
 import LikeButton from "@/src/components/ui/watch/LikeButton";
 import ViewTracker from "@/src/components/ui/watch/ViewTracker";
+import DirectBanner from "@/src/components/ui/ads/DirectBanner";
+import { blackedSuperLeaderboards } from "@/src/data/adConfig";
 
 const prisma = new PrismaClient();
 
@@ -93,7 +95,7 @@ export default async function WatchPage({ params }: PageProps) {
     }
   });
 
-  if (!video) notFound(); 
+  if (!video) notFound();
 
   // 2. Fetch related blocks and performer slots in parallel (Zero network waterfall)
   const starIds = video.pornstars.map(s => s.id);
@@ -220,7 +222,12 @@ export default async function WatchPage({ params }: PageProps) {
                 </div>
               )}
 
-              <AdSpace zoneId="5944222" format="banner-900x250" className="mt-10 pt-4 border-t border-white/5" />
+              {/* Below the video player */}
+              <DirectBanner
+                banners={blackedSuperLeaderboards}
+                format="banner-970x90"
+                className="mb-10"
+              />
             </div>
           </div>
 
