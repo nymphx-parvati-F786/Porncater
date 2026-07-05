@@ -29,19 +29,20 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
     return <div className={`my-6 ${className} opacity-0`} aria-hidden="true" />;
   }
 
+  // Increased max-widths to make the banners slightly bigger
   let dimensionsClasses = "";
   switch (format) {
     case "banner-300x250":
-      dimensionsClasses = "w-full max-w-[300px] aspect-[6/5]";
+      dimensionsClasses = "w-full max-w-[340px] aspect-[6/5]";
       break;
     case "banner-728x90":
-      dimensionsClasses = "w-full max-w-[728px] aspect-[728/90]";
+      dimensionsClasses = "w-full max-w-[800px] aspect-[728/90]";
       break;
     case "banner-970x70":
-      dimensionsClasses = "w-full max-w-[970px] aspect-[97/7]";
+      dimensionsClasses = "w-full max-w-[1050px] aspect-[97/7]";
       break;
     case "banner-900x250":
-      dimensionsClasses = "w-full max-w-[900px] aspect-[18/5]";
+      dimensionsClasses = "w-full max-w-[1000px] aspect-[18/5]";
       break;
   }
 
@@ -50,15 +51,19 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
       {/* Stealthy / Premium Label */}
       <div className="flex items-center gap-2 mb-2 w-full max-w-max">
         <span className="w-2 h-[1px] bg-zinc-700"></span>
+        <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-mono">
+          Sponsored Content
+        </span>
         <span className="w-2 h-[1px] bg-zinc-700"></span>
       </div>
       
       {/* The Clickable Ad Layer */}
+      {/* Removed red hover effects, kept a clean subtle border lighten on hover */}
       <a 
         href={activeBanner.targetUrl} 
         target="_blank" 
         rel="noopener noreferrer nofollow"
-        className={`block relative ${dimensionsClasses} bg-black border border-zinc-800/50 rounded-sm overflow-hidden group hover:border-rose-900/50 hover:shadow-[0_0_20px_rgba(225,29,72,0.2)] transition-all duration-300 w-full`}
+        className={`block relative ${dimensionsClasses} bg-zinc-950 border border-zinc-800/50 rounded-sm overflow-hidden group hover:border-zinc-700 transition-colors duration-300`}
       >
         {/* Loading Skeleton */}
         {!isImageLoaded && (
@@ -74,9 +79,9 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
           }}
           onLoad={() => setIsImageLoaded(true)}
           onError={() => setIsImageLoaded(true)} 
-          // 🔥 CHANGED: object-contain prevents ANY cutting of the image.
-          className={`absolute inset-0 w-full h-full object-contain transition-transform duration-700 ${
-            isImageLoaded ? "opacity-90 group-hover:opacity-100" : "opacity-0"
+          // Set to w-full and h-auto to completely eliminate cropping and black bars
+          className={`block w-full h-auto transition-transform duration-700 ease-out ${
+            isImageLoaded ? "opacity-100 group-hover:scale-[1.02]" : "opacity-0"
           }`}
         />
       </a>
