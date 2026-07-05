@@ -29,47 +29,43 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
     return <div className={`my-6 ${className} opacity-0`} aria-hidden="true" />;
   }
 
-  // Increased max-widths to make the banners slightly bigger
+  // Notice: We removed the strict 'aspect-[]' classes! 
+  // Now the container will stretch naturally to fit whatever image you feed it.
   let dimensionsClasses = "";
   switch (format) {
     case "banner-300x250":
-      dimensionsClasses = "w-full max-w-[340px] aspect-[6/5]";
+      dimensionsClasses = "w-full max-w-[340px]";
       break;
     case "banner-728x90":
-      dimensionsClasses = "w-full max-w-[800px] aspect-[728/90]";
+      dimensionsClasses = "w-full max-w-[800px]";
       break;
     case "banner-970x70":
-      dimensionsClasses = "w-full max-w-[1050px] aspect-[97/7]";
+      dimensionsClasses = "w-full max-w-[1050px]";
       break;
     case "banner-900x250":
-      dimensionsClasses = "w-full max-w-[1000px] aspect-[18/5]";
+      dimensionsClasses = "w-full max-w-[1000px]";
       break;
   }
 
   return (
     <div className={`flex flex-col items-center justify-center my-6 w-full ${className}`}>
-      {/* Stealthy / Premium Label */}
-      <div className="flex items-center gap-2 mb-2 w-full max-w-max">
-        <span className="w-2 h-[1px] bg-zinc-700"></span>
-        <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-mono">
-          Sponsored Content
-        </span>
-        <span className="w-2 h-[1px] bg-zinc-700"></span>
-      </div>
       
       {/* The Clickable Ad Layer */}
-      {/* Removed red hover effects, kept a clean subtle border lighten on hover */}
       <a 
         href={activeBanner.targetUrl} 
         target="_blank" 
         rel="noopener noreferrer nofollow"
-        className={`block relative ${dimensionsClasses} bg-zinc-950 border border-zinc-800/50 rounded-sm overflow-hidden group hover:border-zinc-700 transition-colors duration-300`}
+        className={`block relative ${dimensionsClasses} bg-zinc-950 border border-zinc-800/50 rounded-sm overflow-hidden transition-colors duration-300`}
       >
         {/* Loading Skeleton */}
         {!isImageLoaded && (
-          <div className="absolute inset-0 bg-zinc-900 animate-pulse" />
+          <div className="absolute inset-0 bg-zinc-900 animate-pulse z-10" />
         )}
 
+        {/* 
+          1. Kept w-full and h-auto so the image pushes the container height naturally.
+          2. Removed the group-hover:scale so the image never expands and gets cropped.
+        */}
         <img
           src={activeBanner.imageUrl}
           alt={activeBanner.altText}
@@ -79,9 +75,8 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
           }}
           onLoad={() => setIsImageLoaded(true)}
           onError={() => setIsImageLoaded(true)} 
-          // Set to w-full and h-auto to completely eliminate cropping and black bars
-          className={`block w-full h-auto transition-transform duration-700 ease-out ${
-            isImageLoaded ? "opacity-100 group-hover:scale-[1.02]" : "opacity-0"
+          className={`block w-full h-auto transition-opacity duration-700 ease-out ${
+            isImageLoaded ? "opacity-100" : "opacity-0"
           }`}
         />
       </a>
