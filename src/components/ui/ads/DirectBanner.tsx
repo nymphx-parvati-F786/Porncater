@@ -50,9 +50,6 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
       {/* Stealthy / Premium Label */}
       <div className="flex items-center gap-2 mb-2 w-full max-w-max">
         <span className="w-2 h-[1px] bg-zinc-700"></span>
-        <span className="text-[9px] uppercase tracking-widest text-zinc-600 font-mono">
-          Sponsored Content
-        </span>
         <span className="w-2 h-[1px] bg-zinc-700"></span>
       </div>
       
@@ -78,18 +75,10 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
           onLoad={() => setIsImageLoaded(true)}
           onError={() => setIsImageLoaded(true)} 
           // 🔥 CHANGED: object-contain prevents ANY cutting of the image.
-          className={`absolute inset-0 w-full h-full object-contain transition-transform duration-700 ease-out group-hover:scale-[1.02] ${
+          className={`absolute inset-0 w-full h-full object-contain transition-transform duration-700 ${
             isImageLoaded ? "opacity-90 group-hover:opacity-100" : "opacity-0"
           }`}
         />
-        
-        {/* 🔥 CHANGED: Static, always-visible Watch Now button */}
-        <div className="absolute bottom-2 right-2 sm:bottom-3 sm:right-3 pointer-events-none z-10">
-          <span className="bg-rose-800 text-white text-[9px] sm:text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 sm:px-4 sm:py-2 shadow-[0_4px_10px_rgba(0,0,0,0.8)] rounded-sm flex items-center gap-2 border border-rose-600/50 group-hover:bg-rose-700 transition-colors">
-            <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse shadow-[0_0_5px_rgba(255,255,255,0.8)]" />
-            Watch Now
-          </span>
-        </div>
       </a>
     </div>
   );
