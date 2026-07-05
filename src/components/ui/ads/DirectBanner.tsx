@@ -79,7 +79,15 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
           src={activeBanner.imageUrl}
           alt={activeBanner.altText}
           loading="lazy"
+          // Force state to true if the image is already cached
+          ref={(img) => {
+            if (img && img.complete) {
+              setIsImageLoaded(true);
+            }
+          }}
           onLoad={() => setIsImageLoaded(true)}
+          // If the image breaks or is blocked, force reveal so it doesn't stay stuck at opacity-0
+          onError={() => setIsImageLoaded(true)} 
           className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.03] ${
             isImageLoaded ? "opacity-90 group-hover:opacity-100" : "opacity-0"
           }`}
