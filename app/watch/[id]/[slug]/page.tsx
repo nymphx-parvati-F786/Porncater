@@ -225,7 +225,7 @@ export default async function WatchPage({ params }: PageProps) {
               {/* Below the video player */}
               <DirectBanner
                 banners={blackedSuperLeaderboards}
-                format="banner-970x90"
+                format="banner-970x70"
                 className="mb-10"
               />
             </div>

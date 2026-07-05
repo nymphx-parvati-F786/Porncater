@@ -11,7 +11,8 @@ export interface AffiliateBanner {
 
 interface DirectBannerProps {
   banners: AffiliateBanner[];
-  format: "banner-300x250" | "banner-728x90" | "banner-970x90" | "banner-900x250";
+  // Replaced 970x90 with 970x70
+  format: "banner-300x250" | "banner-728x90" | "banner-970x70" | "banner-900x250"; 
   className?: string;
 }
 
@@ -43,8 +44,8 @@ export default function DirectBanner({ banners, format, className = "" }: Direct
     case "banner-728x90":
       dimensionsClasses = "w-full max-w-[728px] aspect-[728/90]";
       break;
-    case "banner-970x90":
-      dimensionsClasses = "w-full max-w-[970px] aspect-[97/9]";
+    case "banner-970x70":
+      dimensionsClasses = "w-full max-w-[970px] aspect-[97/7]";
       break;
     case "banner-900x250":
       dimensionsClasses = "w-full max-w-[900px] aspect-[18/5]";
