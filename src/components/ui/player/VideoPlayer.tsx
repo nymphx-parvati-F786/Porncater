@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Minimize, 
-  SkipBack, SkipForward, Settings, ExternalLink
+  SkipBack, SkipForward, Settings, ExternalLink, Repeat
 } from 'lucide-react';
 
 interface VideoPlayerProps {
@@ -29,6 +29,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLoadingAd, setIsLoadingAd] = useState(false);
+  const [isLooping, setIsLooping] = useState(false); // 🔥 NEW: Retention hook
 
   const [adState, setAdState] = useState<{
     isPlaying: boolean;
@@ -48,12 +49,9 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
 
   const [adCountdown, setAdCountdown] = useState(5);
 
-  // Clean up any running network requests if the component unmounts
   useEffect(() => {
     return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
+      if (abortControllerRef.current) abortControllerRef.current.abort();
     };
   }, []);
 
@@ -62,7 +60,6 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     urls.forEach(url => {
       if (url && !firedTrackingEvents.current.has(url)) {
         firedTrackingEvents.current.add(url);
-        // Using a modern, native image beacon fallback to prevent UI thread blockage
         const img = new Image();
         img.src = url;
       }
@@ -72,20 +69,14 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   const loadAd = async (): Promise<boolean> => {
     if (!vastTagUrl || adState.hasPlayed) return false;
     
-    // Cancel any previous pending requests safely
     if (abortControllerRef.current) abortControllerRef.current.abort();
     abortControllerRef.current = new AbortController();
 
     setIsLoadingAd(true);
 
     try {
-      // Set a strict 3-second timeout for the ad network to respond. 
-      // If their server is slow or blocked by an ad-blocker, we bypass it immediately.
       const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), 3000);
-
-      const response = await fetch(vastTagUrl, { 
-        signal: abortControllerRef.current.signal 
-      });
+      const response = await fetch(vastTagUrl, { signal: abortControllerRef.current.signal });
       clearTimeout(timeoutId);
       
       const text = await response.text();
@@ -129,7 +120,6 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       setAdCountdown(5);
       return true;
     } catch (error) {
-      // Catches network failures, adblock dropouts, or timeouts gracefully
       setIsLoadingAd(false);
       return false;
     }
@@ -201,7 +191,12 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       fireTrackingPixel(adState.trackingUrls['complete']);
       skipAd();
     } else {
-      setIsPlaying(false);
+      // Loop logic is handled automatically by the video HTML element's 'loop' attribute,
+      // but we need to reset UI state if NOT looping.
+      if (!isLooping) {
+        setIsPlaying(false);
+        setShowControls(true);
+      }
     }
   };
 
@@ -290,7 +285,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   return (
     <div 
       ref={containerRef}
-      className="relative bg-black w-full h-full group flex items-center justify-center font-sans select-none overflow-hidden"
+      className="relative bg-black w-full h-full group flex items-center justify-center font-sans select-none overflow-hidden ring-1 ring-white/5"
       onMouseMove={() => setShowControls(true)}
       onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
     >
@@ -298,12 +293,16 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
         ref={videoRef}
         src={adState.isPlaying ? (adState.mediaUrl || undefined) : src}
         poster={adState.isPlaying ? undefined : poster}
+        loop={!adState.isPlaying && isLooping} // 🔥 Applies the loop if enabled
         className="w-full h-full object-contain cursor-pointer"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleVideoEnded}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
         onClick={adState.isPlaying ? undefined : togglePlay}
       />
+
+      {/* 🔥 NEW: Cinematic Vignette Overlay. Creates a dark gradient around the edges to lock in focus */}
+      <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_120px_rgba(0,0,0,0.9)] z-0" />
 
       {/* --- Ad Interaction Layers --- */}
       {adState.isPlaying && (
@@ -315,7 +314,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
               rel="noopener noreferrer" 
               className="absolute inset-0 z-20 cursor-pointer flex items-start justify-end p-4"
             >
-              <div className="bg-black/60 backdrop-blur-sm border border-white/10 text-white text-xs px-3 py-2 rounded-sm flex items-center gap-2 hover:bg-rose-950/80 transition-all opacity-0 group-hover:opacity-100">
+              <div className="bg-black/80 backdrop-blur-sm border border-white/10 text-white text-xs px-4 py-2 rounded-sm flex items-center gap-2 hover:bg-rose-900 transition-all opacity-0 group-hover:opacity-100 shadow-[0_0_15px_rgba(225,29,72,0.5)]">
                 Visit Advertiser <ExternalLink size={12} />
               </div>
             </a>
@@ -323,57 +322,53 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
 
           <div className="absolute bottom-24 right-0 z-30 pointer-events-auto">
             {adCountdown > 0 ? (
-              <div className="bg-black/80 border-l-4 border-rose-600 text-zinc-300 font-medium tracking-wide text-xs px-5 py-3 shadow-lg select-none">
+              <div className="bg-black/90 border-l-4 border-rose-600 text-zinc-300 font-medium tracking-wide text-xs px-5 py-3 shadow-2xl select-none">
                 You can skip ad in <span className="text-white font-bold tabular-nums">{adCountdown}s</span>
               </div>
             ) : (
               <button 
                 onClick={(e) => { e.stopPropagation(); skipAd(); }}
-                className="bg-rose-700 hover:bg-rose-600 text-white font-bold tracking-widest text-xs uppercase px-6 py-3 shadow-[0_0_15px_rgba(225,29,72,0.4)] transition-all transform hover:scale-102"
+                className="bg-rose-700 hover:bg-rose-600 text-white font-bold tracking-widest text-xs uppercase px-6 py-3 shadow-[0_0_20px_rgba(225,29,72,0.6)] transition-all transform hover:scale-105"
               >
                 Skip Advertisement
               </button>
             )}
           </div>
-
-          <div className="absolute top-6 left-6 bg-black/50 backdrop-blur-sm border border-white/10 text-[10px] text-zinc-400 font-bold tracking-widest uppercase px-3 py-1.5 rounded-sm pointer-events-none z-30">
-            Advertisement
-          </div>
         </>
       )}
 
-      {/* Cinematic Top Gradient */}
-      <div className={`absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-black/80 to-transparent transition-opacity duration-500 pointer-events-none ${showControls && isFullscreen && !adState.isPlaying ? 'opacity-100' : 'opacity-0'}`}>
+      {/* Cinematic Top Title Gradient */}
+      <div className={`absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/90 to-transparent transition-opacity duration-500 pointer-events-none z-10 ${showControls && isFullscreen && !adState.isPlaying ? 'opacity-100' : 'opacity-0'}`}>
          {title && (
-           <div className="p-6 text-white font-serif italic tracking-wide text-xl">
+           <div className="p-6 text-white font-serif italic tracking-wide text-2xl drop-shadow-lg">
              {title}
            </div>
          )}
       </div>
 
-      {/* Loading Spinner for Slow Ad Server Fetching */}
+      {/* Loading Spinner */}
       {isLoadingAd && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 text-zinc-400 text-xs tracking-wider uppercase">
-          <div className="w-8 h-8 border-2 border-t-rose-600 border-zinc-700 rounded-full animate-spin" />
-          Loading content...
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 text-rose-600 text-xs tracking-wider uppercase z-20 font-bold">
+          <div className="w-10 h-10 border-2 border-t-rose-600 border-rose-900/30 rounded-full animate-spin shadow-[0_0_15px_rgba(225,29,72,0.5)]" />
+          Loading...
         </div>
       )}
 
-      {/* Big Center Play Button */}
+      {/* 🔥 UPGRADED: Aggressive Red Glow Play Button */}
       {!isPlaying && !adState.isPlaying && !isLoadingAd && (
         <button 
           onClick={togglePlay}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white hover:bg-rose-900/40 hover:border-rose-800 hover:scale-105 transition-all duration-500 group-hover:opacity-100"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 flex items-center justify-center rounded-full bg-rose-900/40 backdrop-blur-md border border-rose-500/50 text-white hover:bg-rose-800/80 hover:border-rose-500 hover:scale-110 transition-all duration-300 shadow-[0_0_30px_rgba(225,29,72,0.5)] z-10 group-hover:opacity-100"
         >
-          <Play size={40} className="ml-2 opacity-90" fill="currentColor" strokeWidth={1} />
+          <Play size={44} className="ml-2 text-white" fill="currentColor" strokeWidth={0} />
         </button>
       )}
 
       {/* Custom Controls Bottom Bar */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent px-6 py-8 transition-opacity duration-500 ${showControls ? 'opacity-100' : 'opacity-0'} ${adState.isPlaying || isLoadingAd ? 'pointer-events-none opacity-40' : ''}`}>
+      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/95 via-black/80 to-transparent px-6 py-8 transition-opacity duration-500 z-20 ${showControls ? 'opacity-100' : 'opacity-0'} ${adState.isPlaying || isLoadingAd ? 'pointer-events-none opacity-40' : ''}`}>
         
-        {/* Sleek Progress Bar */}
-        <div className={`relative w-full h-1 bg-white/20 rounded-full mb-6 group/progress ${adState.isPlaying || isLoadingAd ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+        {/* 🔥 UPGRADED: Thicker glowing progress bar with distinct thumb */}
+        <div className={`relative w-full h-1.5 bg-zinc-800 rounded-full mb-6 group/progress flex items-center ${adState.isPlaying || isLoadingAd ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
           <input
             type="range"
             min="0"
@@ -381,68 +376,86 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
             disabled={adState.isPlaying || isLoadingAd}
             value={progress || 0}
             onChange={handleSeek}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:pointer-events-none"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30 disabled:pointer-events-none"
           />
           <div 
-            className={`absolute top-0 left-0 h-full rounded-full pointer-events-none transition-colors ${adState.isPlaying || isLoadingAd ? 'bg-zinc-500' : 'bg-rose-700 group-hover/progress:bg-rose-600'}`}
+            className={`absolute top-0 left-0 h-full rounded-full pointer-events-none transition-all duration-100 ${adState.isPlaying || isLoadingAd ? 'bg-zinc-600' : 'bg-rose-600 group-hover/progress:bg-rose-500 shadow-[0_0_12px_rgba(225,29,72,0.8)]'}`}
             style={{ width: `${progress}%` }}
           />
+          {/* Custom Handle Thumb that appears on hover */}
           {!adState.isPlaying && !isLoadingAd && (
             <div 
-              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 shadow-[0_0_10px_rgba(255,255,255,0.5)] pointer-events-none transition-opacity"
-              style={{ left: `calc(${progress}% - 6px)` }}
+              className="absolute w-3.5 h-3.5 bg-white rounded-full opacity-0 group-hover/progress:opacity-100 shadow-[0_0_10px_rgba(255,255,255,1)] pointer-events-none transition-opacity z-20"
+              style={{ left: `calc(${progress}% - 7px)` }}
             />
           )}
         </div>
 
         <div className="flex items-center justify-between text-zinc-300">
           <div className="flex items-center gap-6 pointer-events-auto">
-            <button disabled={isLoadingAd} onClick={togglePlay} className="hover:text-white transition-colors duration-300 disabled:opacity-50">
-              {isPlaying ? <Pause size={24} strokeWidth={1.5} fill="currentColor" /> : <Play size={24} strokeWidth={1.5} fill="currentColor" />}
+            <button disabled={isLoadingAd} onClick={togglePlay} className="hover:text-rose-500 hover:scale-110 transition-all duration-300 disabled:opacity-50">
+              {isPlaying ? <Pause size={24} strokeWidth={2} fill="currentColor" /> : <Play size={24} strokeWidth={2} fill="currentColor" />}
             </button>
 
             <div className={`flex items-center gap-4 ${adState.isPlaying || isLoadingAd ? 'opacity-30 cursor-not-allowed' : 'text-zinc-400'}`}>
               <button disabled={adState.isPlaying || isLoadingAd} onClick={() => { if (videoRef.current) videoRef.current.currentTime -= 10; }} className="hover:text-white transition-colors duration-300 disabled:hover:text-zinc-400">
-                <SkipBack size={18} strokeWidth={1.5} />
+                <SkipBack size={18} strokeWidth={2} />
               </button>
               <button disabled={adState.isPlaying || isLoadingAd} onClick={() => { if (videoRef.current) videoRef.current.currentTime += 10; }} className="hover:text-white transition-colors duration-300 disabled:hover:text-zinc-400">
-                <SkipForward size={18} strokeWidth={1.5} />
+                <SkipForward size={18} strokeWidth={2} />
               </button>
             </div>
 
             <div className="flex items-center gap-3 group/volume">
               <button onClick={toggleMute} className="hover:text-white transition-colors duration-300">
-                {isMuted ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
+                {isMuted ? <VolumeX size={20} strokeWidth={2} /> : <Volume2 size={20} strokeWidth={2} />}
               </button>
-              <div className="w-0 overflow-hidden group-hover/volume:w-20 transition-all duration-500 ease-out flex items-center">
+              <div className="w-0 overflow-hidden group-hover/volume:w-20 transition-all duration-300 ease-out flex items-center">
+                {/* 🔥 UPGRADED: Sexy Circular Volume Slider Thumb using Tailwind Arbitrary Variants */}
                 <input
                   type="range"
                   min="0"
                   max="1"
-                  step="0.1"
+                  step="0.05"
                   value={isMuted ? 0 : volume}
                   onChange={handleVolumeChange}
-                  className="w-full h-1 accent-white bg-white/20 appearance-none rounded-full cursor-pointer"
+                  className="w-full h-1.5 bg-zinc-700 rounded-full cursor-pointer appearance-none outline-none 
+                             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 
+                             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white 
+                             [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(255,255,255,0.8)] 
+                             [&::-moz-range-thumb]:w-3 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:border-none 
+                             [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white"
                 />
               </div>
             </div>
 
-            <span className="text-[11px] font-medium tabular-nums tracking-widest uppercase ml-2 opacity-80">
-              {formatTime(currentTime)} <span className="opacity-50 mx-1">/</span> {formatTime(duration)}
+            <span className="text-[11px] font-bold tabular-nums tracking-widest uppercase ml-2 text-zinc-400">
+              <span className="text-white">{formatTime(currentTime)}</span> <span className="opacity-40 mx-1">/</span> {formatTime(duration)}
             </span>
           </div>
 
           <div className="flex items-center gap-6 pointer-events-auto">
+            
+            {/* 🔥 NEW: Loop Toggle Button */}
+            <button 
+              onClick={() => setIsLooping(!isLooping)} 
+              disabled={adState.isPlaying || isLoadingAd}
+              className={`transition-all duration-300 ${isLooping ? 'text-rose-500 drop-shadow-[0_0_8px_rgba(225,29,72,0.8)]' : 'text-zinc-500 hover:text-white'} ${adState.isPlaying || isLoadingAd ? 'opacity-30 cursor-not-allowed' : ''}`}
+              title="Loop Scene"
+            >
+              <Repeat size={18} strokeWidth={2} />
+            </button>
+
             <div className={`relative group/speed flex items-center gap-1 hover:text-white transition-colors duration-300 ${adState.isPlaying || isLoadingAd ? 'opacity-30 cursor-not-allowed pointer-events-none' : 'cursor-pointer'}`}>
-              <span className="text-[11px] font-medium tracking-widest">{playbackRate}x</span>
-              <Settings size={14} strokeWidth={1.5} />
+              <span className="text-[11px] font-bold tracking-widest">{playbackRate}x</span>
+              <Settings size={14} strokeWidth={2} />
               
-              <div className="absolute bottom-full right-0 mb-4 bg-black/80 backdrop-blur-md border border-white/10 rounded-sm overflow-hidden opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-all duration-300 translate-y-2 group-hover/speed:translate-y-0">
-                {[0.5, 1, 1.5, 2].map((rate) => (
+              <div className="absolute bottom-full right-0 mb-4 bg-black/90 backdrop-blur-md border border-zinc-800 rounded-sm overflow-hidden opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-all duration-300 translate-y-2 group-hover/speed:translate-y-0">
+                {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
                   <div 
                     key={rate}
                     onClick={() => changeSpeed(rate)}
-                    className={`px-6 py-2 text-[10px] tracking-widest cursor-pointer hover:bg-rose-900/40 transition-colors ${playbackRate === rate ? 'text-rose-500' : 'text-zinc-300'}`}
+                    className={`px-6 py-2.5 text-[11px] font-bold tracking-widest cursor-pointer hover:bg-rose-900/60 transition-colors ${playbackRate === rate ? 'text-rose-500 bg-rose-950/30' : 'text-zinc-300'}`}
                   >
                     {rate}x
                   </div>
@@ -450,8 +463,8 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
               </div>
             </div>
 
-            <button onClick={toggleFullscreen} className="hover:text-white transition-colors duration-300">
-              {isFullscreen ? <Minimize size={20} strokeWidth={1.5} /> : <Maximize size={20} strokeWidth={1.5} />}
+            <button onClick={toggleFullscreen} className="hover:text-white hover:scale-110 transition-all duration-300">
+              {isFullscreen ? <Minimize size={20} strokeWidth={2} /> : <Maximize size={20} strokeWidth={2} />}
             </button>
           </div>
         </div>
