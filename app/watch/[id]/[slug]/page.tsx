@@ -105,7 +105,7 @@ export default async function WatchPage({ params }: PageProps) {
                 <div className="flex gap-3 mt-6 flex-wrap">
                   {video.pornstars.map(star => (
                     <Link key={star.id} href={`/pornstars/${star.slug}`} className="flex items-center gap-2 bg-zinc-900 px-4 py-2 rounded-full hover:bg-zinc-800">
-                      <img src={star.avatarUrl} className="w-8 h-8 rounded-full" alt={star.name} />
+                      <img src={star.avatarUrl ?? "/images/default-avatar.png"} className="w-8 h-8 rounded-full" alt={star.name} />
                       <span>{star.name}</span>
                     </Link>
                   ))}

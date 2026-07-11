@@ -11,6 +11,7 @@ interface VideoPlayerProps {
   poster?: string;
   title?: string;
   vastTagUrl?: string;
+  autoNext?: boolean;
 }
 
 export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPlayerProps) {
