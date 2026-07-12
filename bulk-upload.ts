@@ -91,7 +91,12 @@ async function processVideoUrl(targetUrl: string) {
   console.log(`[Extraction] Querying target media: ${targetUrl}`);
 
   try {
-    const metadata = await ytDlp(targetUrl, { dumpJson: true, noWarnings: true });
+    // 🔥 THE SHIELD: Mask the initial metadata extraction as a real web browser
+    const metadata = await ytDlp(targetUrl, {
+      dumpJson: true,
+      noWarnings: true,
+      addHeader: 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    });
 
     const title = metadata.title || 'Untitled Scene';
 

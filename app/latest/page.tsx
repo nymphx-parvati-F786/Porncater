@@ -19,7 +19,7 @@ export default async function LatestPage({
             take: videosPerPage,
             skip: (currentPage - 1) * videosPerPage, // If page 2, skip first 20
             orderBy: { createdAt: "desc" },
-            select: { id: true, title: true, thumbnail: true, duration: true, views: true },
+            select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
         }),
         prisma.video.count()
     ])
@@ -87,7 +87,7 @@ export default async function LatestPage({
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
                     {videos.length > 0 ? (
                         videos.map((video) => (
-                            <Link key={video.id} href={`/watch/${video.id}`} className="group block cursor-pointer">
+                            <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                                     <img
                                         src={video.thumbnail}
