@@ -4,6 +4,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
+import { getVideoDurationInSeconds } from 'get-video-duration';
+// @ts-ignore
+import ffprobe from 'ffprobe-static';
 
 // Reconstruct __dirname for ES Modules execution context
 const __filename = fileURLToPath(import.meta.url);
@@ -128,6 +131,19 @@ async function processVideoUrl(targetUrl: string) {
     if (ytDlpProcess.stderr) ytDlpProcess.stderr.pipe(process.stderr);
     await ytDlpProcess;
 
+    // 🔥 THE NEW ADDITION: Measure the physical file on your hard drive
+    console.log(`[Duration] Inspecting local .mp4 file to calculate exact length...`);
+    let finalDuration = duration; // Defaults to the metadata fallback if inspection fails
+    try {
+      const durationInSeconds = await getVideoDurationInSeconds(videoPath, ffprobe.path);
+      const m = Math.floor(durationInSeconds / 60);
+      const s = Math.floor(durationInSeconds % 60);
+      finalDuration = `${m}:${s.toString().padStart(2, '0')}`;
+      console.log(`[Duration] Successfully calculated: ${finalDuration}`);
+    } catch (err) {
+      console.log(`[Duration Warning] Could not parse local file duration, using fallback.`);
+    }
+
     // Now it safely moves on to check the thumbnail and upload...
     const finalThumbPath = fs.existsSync(thumbPath) ? thumbPath : videoPath.replace('.mp4', '.jpg');
 
@@ -141,7 +157,7 @@ async function processVideoUrl(targetUrl: string) {
         slug,
         videoUrl,
         thumbnail: thumbnailUrl,
-        duration,
+        duration: finalDuration,
         tags,
         views: Math.floor(Math.random() * 5000) + 1000,
       }
