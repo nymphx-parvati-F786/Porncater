@@ -47,9 +47,10 @@ async function uploadToBunnyStream(title: string, filePath: string) {
   const uploadRes = await fetch(`https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos/${guid}`, {
     method: 'PUT',
     headers: { AccessKey: BUNNY_API_KEY, 'Content-Type': 'video/mp4' },
-    // @ts-ignore
-    body: fileStream
-  });
+    body: fileStream,
+    // Required by Node.js when streaming large files via fetch
+    duplex: 'half'
+  } as any);
 
   if (!uploadRes.ok) throw new Error('Failed to upload video data to Bunny Stream');
 
@@ -61,17 +62,23 @@ async function uploadToBunnyStorage(slug: string, filePath: string) {
   const thumbnailPath = `thumbnails/${slug}-${Date.now()}.jpg`;
 
   const fileStream = fs.createReadStream(filePath);
-  const uploadRes = await fetch(`https://storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`, {
+  // Using the verified Singapore regional server hostname
+  const uploadRes = await fetch(`https://sg.storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`, {
     method: 'PUT',
     headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': 'image/jpeg' },
-    // @ts-ignore
-    body: fileStream
-  });
+    body: fileStream,
+    // Required by Node.js when streaming large files via fetch
+    duplex: 'half'
+  } as any);
 
-  if (!uploadRes.ok) throw new Error('Failed to upload thumbnail to Storage');
+  if (!uploadRes.ok) {
+    const errorText = await uploadRes.text();
+    throw new Error(`Bunny Storage API Error (${uploadRes.status}): ${errorText}`);
+  }
 
   return `https://${STORAGE_PULLZONE}/${thumbnailPath}`;
 }
+
 
 // ------------------------------------------------------------------
 // MAIN PROCESSING ENGINE
@@ -99,31 +106,29 @@ async function processVideoUrl(targetUrl: string) {
 
     console.log(`[Download] Starting engine. You should see a progress bar below...`);
 
-    // 🔥 THE FIX: Tell TypeScript to ignore the missing definition and force the execution!
+    // 🔥 THE OVERKILL UPGRADE: Hand the download off to aria2c
     const ytDlpProcess = (ytDlp as any).exec(targetUrl, {
       output: videoPath,
       format: 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
       writeThumbnail: true,
-      convertThumbnails: 'jpg',
-      
-      // 🔥 STEALTH LIMITS: Drop to 5. Anything higher triggers their anti-bot firewall.
-      concurrentFragments: 15, 
-      
-      // 🔥 THE BYPASS: Refresh the connection every 10MB so they don't throttle the stream
-      httpChunkSize: '10M', 
-      
+
+      // 1. Tell yt-dlp to use aria2c as the engine
+      downloader: 'aria2c',
+
+      // 2. Pass IDM-level thread configuration:
+      downloaderArgs: 'aria2c:-x 16 -s 16 -k 1M',
+
       addHeader: [
         'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
       ],
     } as any);
 
-    // Stream the output to the console in real-time
+    // 🔥 THE MISSING PIECES: Show the live progress bar, and WAIT for the download to finish!
     if (ytDlpProcess.stdout) ytDlpProcess.stdout.pipe(process.stdout);
     if (ytDlpProcess.stderr) ytDlpProcess.stderr.pipe(process.stderr);
-
-    // Wait for the download to finish
     await ytDlpProcess;
 
+    // Now it safely moves on to check the thumbnail and upload...
     const finalThumbPath = fs.existsSync(thumbPath) ? thumbPath : videoPath.replace('.mp4', '.jpg');
 
     const videoUrl = await uploadToBunnyStream(title, videoPath);
