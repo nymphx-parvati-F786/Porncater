@@ -8,39 +8,36 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configuration
-const TARGET_CATEGORY_URL = 'https://www.xmegadrive.com/search/luna-star/';
+const TARGET_CATEGORY_URL = 'https://www.whoreshub.com/models/luna-star/';
 const OUTPUT_FILE = path.join(__dirname, 'urls.txt');
-const URL_MATCH_PATTERN = '/videos/'; // Adjusted for WhoresHub
+
+// The URL pattern or selector that identifies a direct video link
+const URL_MATCH_PATTERN = '/videos/';
 
 async function harvest() {
-    console.log(`[Harvester] Launching browser...`);
-    
-    // Keeping it headless for speed, but you can set to false if you want to watch
+    console.log(`[Harvester] Launching headless browser...`);
     const browser = await chromium.launch({ headless: true });
 
+    // 1. Create a browser context and set the User-Agent globally here
     const context = await browser.newContext({
-        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        viewport: { width: 1920, height: 1080 }
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     });
 
+    // 2. Generate the page directly out of the custom context
     const page = await context.newPage();
 
     try {
         console.log(`[Harvester] Navigating to: ${TARGET_CATEGORY_URL}`);
-        
-        // Wait for the HTML structure to load, not the endless background trackers
-        await page.goto(TARGET_CATEGORY_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.goto(TARGET_CATEGORY_URL, { waitUntil: 'networkidle' });
 
         console.log(`[Harvester] Scrolling page to trigger lazy-loaded items...`);
-        
         // Scroll down progressively to ensure thumbnails and links render
         for (let i = 0; i < 5; i++) {
             await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-            await page.waitForTimeout(1500); // Wait a bit for lazy-loaded content
+            await page.waitForTimeout(1000);
         }
 
         console.log(`[Harvester] Extracting anchor links...`);
-        
         // Gather all href attributes from the page
         const hrefs = await page.evaluate(() => {
             const anchors = Array.from(document.querySelectorAll('a'));
@@ -50,6 +47,7 @@ async function harvest() {
         // Filter links to keep only unique direct video URLs
         const videoUrls = Array.from(new Set(hrefs)).filter(url => url.includes(URL_MATCH_PATTERN));
 
+        // Display the links in real-time to your terminal window
         console.log(`\n--- [LAUNCHING PARSED LINKS VIA CONSOLE] ---`);
         videoUrls.forEach((url, index) => {
             console.log(`[${index + 1}] Target link found: ${url}`);
@@ -59,6 +57,7 @@ async function harvest() {
         console.log(`[Harvester] Found ${videoUrls.length} valid video links.`);
 
         if (videoUrls.length > 0) {
+            // Append or write to the text file
             fs.writeFileSync(OUTPUT_FILE, videoUrls.join('\n'), 'utf-8');
             console.log(`[Success] Saved links directly to: ${OUTPUT_FILE}`);
         } else {
@@ -68,6 +67,7 @@ async function harvest() {
     } catch (error) {
         console.error(`[Error] Sourcing failed:`, error);
     } finally {
+        // This will cleanly close the browser instances along with all contexts and pages
         await browser.close();
     }
 }
