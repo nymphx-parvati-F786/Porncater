@@ -14,9 +14,9 @@ const __dirname = path.dirname(__filename);
 chromium.use(stealth());
 
 // Configuration
-const TARGET_CATEGORY_URL = 'https://www.xmegadrive.com/search/lisa-ann/';
+const TARGET_CATEGORY_URL = 'https://www.tnaflix.com/search?what=audrey+bitoni';
 const OUTPUT_FILE = path.join(__dirname, 'urls.txt');
-const URL_MATCH_PATTERN = '/videos/'; 
+const URL_MATCH_PATTERN = 'Audrey-Bitoni'; // Adjust this pattern to match the desired video URLs
 
 async function harvest() {
     console.log(`[Harvester] Launching stealth browser...`);

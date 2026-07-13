@@ -48,3 +48,5 @@ next-env.d.ts
 /local_videos_to_upload
 
 /urls.txt
+
+/failed_urls.txt

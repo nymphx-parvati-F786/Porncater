@@ -27,16 +27,16 @@ const originalStderrWrite = process.stderr.write.bind(process.stderr);
 // @ts-ignore
 process.stdout.write = function (chunk, encoding, callback) {
   const text = chunk.toString();
-  
+
   // 🔥 THE SPAM FILTER: Identifies aria2c live progress bars and empty line-clearing junk
   const isAriaProgressBar = /\[#[a-f0-9]{6}\s.*?\]/i.test(text);
-  const isAriaSpacer = text.includes('\r') && text.trim() === ''; 
-  
+  const isAriaSpacer = text.includes('\r') && text.trim() === '';
+
   if (!isAriaProgressBar && !isAriaSpacer) {
     // Strip raw carriage returns so the text file formatting stays perfectly clean
     logStream.write(text.replace(/\r/g, ''));
   }
-  
+
   // ALWAYS push everything to the real console so you get the live animation on screen
   return originalStdoutWrite(chunk, encoding, callback);
 };
@@ -80,7 +80,7 @@ async function uploadToBunnyStream(title: string, filePath: string) {
     body: JSON.stringify({ title })
   });
   if (!createRes.ok) throw new Error('Failed to create Bunny Stream entry');
-  
+
   const { guid } = await createRes.json();
   console.log(`[Bunny Stream] Uploading binary to GUID: ${guid}`);
 
@@ -116,17 +116,36 @@ async function uploadToBunnyStorage(slug: string, filePath: string) {
 }
 
 // ------------------------------------------------------------------
+// TIME FORMATTING HELPER
+// ------------------------------------------------------------------
+function formatDuration(totalSeconds: number): string {
+  if (!totalSeconds || isNaN(totalSeconds) || totalSeconds <= 0) return "0:00";
+
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+
+  if (h > 0) {
+    // If it's 1 hour or longer, format as H:MM:SS
+    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  } else {
+    // If it's less than an hour, format as MM:SS
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  }
+}
+
+// ------------------------------------------------------------------
 // MAIN PROCESSING ENGINE
 // ------------------------------------------------------------------
 async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<ProcessResult> {
   console.log(`\n=========================================`);
-  
+
   let attempt = 1;
 
   while (attempt <= maxRetries) {
     try {
       console.log(`[Extraction] Querying target media: ${targetUrl} (Attempt ${attempt}/${maxRetries})`);
-      
+
       const metadata = await ytDlp(targetUrl, {
         dumpJson: true,
         noWarnings: true,
@@ -135,9 +154,7 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
 
       const title = metadata.title || 'Untitled Scene';
       const durationRaw = metadata.duration || 0;
-      const mins = Math.floor(durationRaw / 60) || 0;
-      const secs = Math.floor(durationRaw % 60) || 0;
-      const duration = durationRaw > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : "0:00";
+      const duration = formatDuration(durationRaw);
 
       const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       const tags = metadata.tags || [];
@@ -166,9 +183,10 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
       let finalDuration = duration;
       try {
         const durationInSeconds = await getVideoDurationInSeconds(videoPath, ffprobe.path);
-        const m = Math.floor(durationInSeconds / 60);
-        const s = Math.floor(durationInSeconds % 60);
-        finalDuration = `${m}:${s.toString().padStart(2, '0')}`;
+
+        // 🔥 NEW: Clean physical file formatting
+        finalDuration = formatDuration(durationInSeconds);
+
         console.log(`[Duration] Successfully calculated: ${finalDuration}`);
       } catch (err) {
         console.log(`[Duration Warning] Could not parse local file duration, using fallback.`);
@@ -179,7 +197,7 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
       const thumbnailUrl = await uploadToBunnyStorage(slug, finalThumbPath);
 
       console.log(`[Database] Instantiating Prisma engine payload for: ${slug}`);
-      await prisma.video.create({ 
+      await prisma.video.create({
         data: {
           title,
           slug,
@@ -201,7 +219,7 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
     } catch (error: any) {
       console.error(`\n[ERROR] Attempt ${attempt} failed:`, error.message || error);
       attempt++;
-      
+
       if (attempt <= maxRetries) {
         console.log(`[Cooling] Pausing for 4 seconds before trying again...\n`);
         await new Promise(res => setTimeout(res, 4000));
@@ -238,7 +256,7 @@ async function run() {
 
   for (const url of urlsToScrape) {
     const status = await processVideoUrl(url);
-    
+
     if (status === 'CLEAN_SUCCESS') cleanSucceeded++;
     else if (status === 'RETRY_SUCCESS') retrySucceeded++;
     else if (status === 'FAILED') failedUrls.push(url);
