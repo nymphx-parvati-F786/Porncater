@@ -1,0 +1,464 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-12_21-23-57-466Z.txt
+=========================================
+
+[Loader] Loaded 18 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-welcomes-bbc-s-hard-punching/ (Attempt 1/2)
+(node:22688) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/MyServletApp/porncater.com/porncater/bulk-upload.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to D:\MyServletApp\porncater.com\porncater\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-welcomes-bbc-s-hard-punching/
+[generic] lisa-ann-welcomes-bbc-s-hard-punching: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-welcomes-bbc-s-hard-punching: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 210774: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-welcomes-bbc-s-hard-punching.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-welcomes-bbc-s-hard-punching.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp40ffu2qb.cookies"
+[download] 100% of   65.69MiB in 00:00:18 at 3.57MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 6:49
+[Bunny Stream] Creating entry for: Lisa Ann welcomes BBC's hard punching
+[Bunny Stream] Uploading binary to GUID: bc369f78-bd13-4aff-82fd-eed2acdab75c
+[Bunny Storage] Uploading cover asset for: lisa-ann-welcomes-bbc-s-hard-punching
+[Database] Instantiating Prisma engine payload for: lisa-ann-welcomes-bbc-s-hard-punching
+[Success] Pipeline execution fully finished for: Lisa Ann welcomes BBC's hard punching
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/carly-rae-summers-lisa-ann-reaction/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/carly-rae-summers-lisa-ann-reaction/
+[generic] carly-rae-summers-lisa-ann-reaction: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] carly-rae-summers-lisa-ann-reaction: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 371571: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\carly-rae-summers-lisa-ann-reaction.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\carly-rae-summers-lisa-ann-reaction.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp8zmezw6z.cookies"
+[download] 100% of  176.51MiB in 00:00:33 at 5.22MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 23:34
+[Bunny Stream] Creating entry for: Carly Rae Summers - Lisa Ann Reaction
+[Bunny Stream] Uploading binary to GUID: 53f704f3-d2c9-44a2-a294-65b4d11b355a
+[Bunny Storage] Uploading cover asset for: carly-rae-summers-lisa-ann-reaction
+[Database] Instantiating Prisma engine payload for: carly-rae-summers-lisa-ann-reaction
+[Success] Pipeline execution fully finished for: Carly Rae Summers - Lisa Ann Reaction
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lis...-sickness-right-out/
+[generic] mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 362374: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpxq2keep8.cookies"
+[download] 100% of  371.82MiB in 00:01:00 at 6.17MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 36:01
+[Bunny Stream] Creating entry for: Mature nl Lisa Ann 39 & Manuel Ferrara 36 American MILF Nurse Lisa Ann has the cure for any illness, she sucks & fucks the sickness right out
+[Bunny Stream] Uploading binary to GUID: a25db058-8ed4-4314-a5c4-2fcedd3f2fe0
+[Bunny Storage] Uploading cover asset for: mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out
+[Database] Instantiating Prisma engine payload for: mature-nl-lisa-ann-39-manuel-ferrara-36-american-milf-nurse-lisa-ann-has-the-cure-for-any-illness-she-sucks-fucks-the-sickness-right-out
+[Success] Pipeline execution fully finished for: Mature nl Lisa Ann 39 & Manuel Ferrara 36 American MILF Nurse Lisa Ann has the cure for any illness, she sucks & fucks the sickness right out
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024/
+[generic] mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 254400: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmppooj5y6t.cookies"
+[download] 100% of  257.41MiB in 00:00:48 at 5.27MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 50:31
+[Bunny Stream] Creating entry for: MySistersHotFriend - Jessica Jaymes, Lisa Ann, Nicole Aniston - Remastered 21 07 2024
+[Bunny Stream] Uploading binary to GUID: ce2616c8-175c-4571-89ba-4687af44c1ac
+[Bunny Storage] Uploading cover asset for: mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024
+[Database] Instantiating Prisma engine payload for: mysistershotfriend-jessica-jaymes-lisa-ann-nicole-aniston-remastered-21-07-2024
+[Success] Pipeline execution fully finished for: MySistersHotFriend - Jessica Jaymes, Lisa Ann, Nicole Aniston - Remastered 21 07 2024
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/neighboraffair-lisa-ann-remastered-04-08-2024/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/neighboraffair-lisa-ann-remastered-04-08-2024/
+[generic] neighboraffair-lisa-ann-remastered-04-08-2024: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] neighboraffair-lisa-ann-remastered-04-08-2024: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 254396: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\neighboraffair-lisa-ann-remastered-04-08-2024.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\neighboraffair-lisa-ann-remastered-04-08-2024.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpg7qazgk3.cookies"
+[download] 100% of  159.19MiB in 00:00:39 at 4.07MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 36:57
+[Bunny Stream] Creating entry for: NeighborAffair - Lisa Ann - Remastered 04 08 2024
+[Bunny Stream] Uploading binary to GUID: 41f0768f-0488-42ef-b145-1027ed48956c
+[Bunny Storage] Uploading cover asset for: neighboraffair-lisa-ann-remastered-04-08-2024
+[Database] Instantiating Prisma engine payload for: neighboraffair-lisa-ann-remastered-04-08-2024
+[Success] Pipeline execution fully finished for: NeighborAffair - Lisa Ann - Remastered 04 08 2024
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r/
+[generic] jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 252541: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpd40_0dq3.cookies"
+[download] 100% of  258.15MiB in 00:00:54 at 4.73MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 50:31
+[Bunny Stream] Creating entry for: Jessica Jaymes, Lisa Ann, Nicole Aniston [MSHF] Jul 21, 2024R
+[Bunny Stream] Uploading binary to GUID: 6f6b338b-d786-43c2-80be-d611f8d8acb4
+[Bunny Storage] Uploading cover asset for: jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r
+[Database] Instantiating Prisma engine payload for: jessica-jaymes-lisa-ann-nicole-aniston-mshf-jul-21-2024r
+[Success] Pipeline execution fully finished for: Jessica Jaymes, Lisa Ann, Nicole Aniston [MSHF] Jul 21, 2024R
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-made-bf-high/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-made-bf-high/
+[generic] lisa-ann-made-bf-high: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-made-bf-high: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 210775: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-made-bf-high.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-made-bf-high.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpt969s8av.cookies"
+[download] 100% of   73.50MiB in 00:00:35 at 2.04MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 7:25
+[Bunny Stream] Creating entry for: Lisa Ann made BF high
+[Bunny Stream] Uploading binary to GUID: 214d74b4-48b0-4580-afe0-646c59bafe35
+[Bunny Storage] Uploading cover asset for: lisa-ann-made-bf-high
+[Database] Instantiating Prisma engine payload for: lisa-ann-made-bf-high
+[Success] Pipeline execution fully finished for: Lisa Ann made BF high
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday/
+[generic] lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93671: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp4r36grvi.cookies"
+[download] 100% of  103.04MiB in 00:00:43 at 2.37MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 21:22
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 18 07 2021 2165783935 sexy scene sunday
+[Bunny Stream] Uploading binary to GUID: 4e5872e2-6806-4d7b-95ee-ad662d2b437c
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-18-07-2021-2165783935-sexy-scene-sunday
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 18 07 2021 2165783935 sexy scene sunday
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day/
+[generic] lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93667: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpciwmydg9.cookies"
+[download] 100% of   45.31MiB in 00:00:34 at 1.31MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 9:49
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 18 10 2019 73168286 have an awesome day
+[Bunny Stream] Uploading binary to GUID: 845be12f-1f90-49fc-8844-64d445480229
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-18-10-2019-73168286-have-an-awesome-day
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 18 10 2019 73168286 have an awesome day
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-da...-i-forgot-about-you/
+[generic] lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93666: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpqeo_2ws9.cookies"
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 2:23
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 19 11 2019 88906416 i had a busy day didn t want you all to think i forgot about you
+[Bunny Stream] Uploading binary to GUID: 526b4e4e-b45e-44d5-aa78-a74730b30c28
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-19-11-2019-88906416-i-had-a-busy-day-didn-t-want-you-all-to-think-i-forgot-about-you
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 19 11 2019 88906416 i had a busy day didn t want you all to think i forgot about you
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things...e-with-jacklyn-lick/
+[generic] lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93664: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpxjgq9qc1.cookies"
+[download] 100% of   33.92MiB in 00:00:29 at 1.15MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 11:05
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 18 06 2020 440501028 kicking things off for this throwbackthursday with a classic scene with jacklyn lick
+[Bunny Stream] Uploading binary to GUID: 0b2715e4-9c23-4f54-b70d-728e70e97a44
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-18-06-2020-440501028-kicking-things-off-for-this-throwbackthursday-with-a-classic-scene-with-jacklyn-lick
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 18 06 2020 440501028 kicking things off for this throwbackthursday with a classic scene with jacklyn lick
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go/
+[generic] lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93663: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpiai6sns6.cookies"
+[download] 100% of   79.61MiB in 00:00:35 at 2.26MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 19:59
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 18 07 2020 552605733 sexy scene saturday let s go
+[Bunny Stream] Uploading binary to GUID: a8d08dfe-f6a2-489a-9157-db7dc77166f2
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-18-07-2020-552605733-sexy-scene-saturday-let-s-go
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 18 07 2020 552605733 sexy scene saturday let s go
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday/
+[generic] lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93661: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpyjbdq312.cookies"
+[download] 100% of   34.09MiB in 00:00:23 at 1.44MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 7:10
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 17 07 2021 2165780940 sexy solo saturday
+[Bunny Stream] Uploading binary to GUID: b4da86f8-4260-4af1-b620-77f86dc98c74
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-17-07-2021-2165780940-sexy-solo-saturday
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 17 07 2021 2165780940 sexy solo saturday
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday/
+[generic] lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93659: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpe7c8nfd5.cookies"
+[download] 100% of   33.04MiB in 00:00:24 at 1.35MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 7:42
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 17 10 2021 2248137760 sexy solo saturday
+[Bunny Stream] Uploading binary to GUID: 94a8c059-eef4-4a30-839a-9862d5906644
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-17-10-2021-2248137760-sexy-solo-saturday
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 17 10 2021 2248137760 sexy solo saturday
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday/
+[generic] lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93658: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp8zeptst_.cookies"
+[download] 100% of   48.48MiB in 00:00:27 at 1.75MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 9:50
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 17 04 2021 2084296375 sexy solo saturday
+[Bunny Stream] Uploading binary to GUID: 9fcb98f2-63f3-4067-aef5-a814392ef426
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-17-04-2021-2084296375-sexy-solo-saturday
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 17 04 2021 2084296375 sexy solo saturday
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday/
+[generic] lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93657: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp33vsq22x.cookies"
+[download] 100% of   12.22MiB in 00:00:15 at 808.44KiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 5:00
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 17 07 2021 2165781699 sexy solo saturday
+[Bunny Stream] Uploading binary to GUID: f2c5639d-581d-4eed-9e3a-edc5b0eb7df3
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-17-07-2021-2165781699-sexy-solo-saturday
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 17 07 2021 2165781699 sexy solo saturday
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-to...t-with-you-xoxox-la/
+[generic] lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93656: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpqz_gyf43.cookies"
+[download] 100% of   46.68MiB in 00:00:28 at 1.63MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 10:01
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 17 12 2020 1463779896 this was a totally sexy fun tbt with you xoxox la
+[Bunny Stream] Uploading binary to GUID: 2b0b556e-ca63-4efd-830f-4372fff2d9e3
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-17-12-2020-1463779896-this-was-a-totally-sexy-fun-tbt-with-you-xoxox-la
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 17 12 2020 1463779896 this was a totally sexy fun tbt with you xoxox la
+
+=========================================
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2019-106507713/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2019-106507713/
+[generic] lisa-ann-aka-thereallisaann-17-12-2019-106507713: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-12-2019-106507713: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93655: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp63ynq63c.cookies"
+
+07/13 03:11:45 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.xmegadrive.com/get_file/1/6fcc345a8456eca5db28ab227e3ed5af99368b7eb1/93000/93655/93655.mp4/
+Exception: [AbstractCommand.cc:351] errorCode=22 URI=https://www.xmegadrive.com/get_file/1/6fcc345a8456eca5db28ab227e3ed5af99368b7eb1/93000/93655/93655.mp4/
+  -> [HttpSkipResponseCommand.cc:239] errorCode=22 The response status is not successful. status=500
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 22
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2019-106507713/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 22
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2019-106507713/
+[generic] lisa-ann-aka-thereallisaann-17-12-2019-106507713: Downloading webpage
+[generic] lisa-ann-aka-thereallisaann-17-12-2019-106507713: Extracting information
+[info] 93655: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp63ynq63c.cookies"
+
+07/13 03:11:45 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.xmegadrive.com/get_file/1/6fcc345a8456eca5db28ab227e3ed5af99368b7eb1/93000/93655/93655.mp4/
+Exception: [AbstractCommand.cc:351] errorCode=22 URI=https://www.xmegadrive.com/get_file/1/6fcc345a8456eca5db28ab227e3ed5af99368b7eb1/93000/93655/93655.mp4/
+  -> [HttpSkipResponseCommand.cc:239] errorCode=22 The response status is not successful. status=500
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 4 seconds before trying again...
+
+[Extraction] Querying target media: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2019-106507713/ (Attempt 2/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xmegadrive.com/videos/lisa-ann-aka-thereallisaann-17-12-2019-106507713/
+[generic] lisa-ann-aka-thereallisaann-17-12-2019-106507713: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] lisa-ann-aka-thereallisaann-17-12-2019-106507713: Extracting information
+WARNING: [generic] Untested major version (0.13.15) in player engine - download may fail.
+[info] 93655: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\lisa-ann-aka-thereallisaann-17-12-2019-106507713.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpjsiak4oc.cookies"
+[download] 100% of   49.13MiB in 00:00:29 at 1.68MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 9:50
+[Bunny Stream] Creating entry for: Lisa Ann aka thereallisaann 17 12 2019 106507713
+[Bunny Stream] Uploading binary to GUID: afa1c75e-f289-4823-adca-04b4195325bb
+[Bunny Storage] Uploading cover asset for: lisa-ann-aka-thereallisaann-17-12-2019-106507713
+[Database] Instantiating Prisma engine payload for: lisa-ann-aka-thereallisaann-17-12-2019-106507713
+[Success] Pipeline execution fully finished for: Lisa Ann aka thereallisaann 17 12 2019 106507713
+
+=========================================
+🚀 [PIPELINE EXECUTION COMPLETE]
+=========================================
+Total Target URLs : 18
+Succeeded (Clean) : 17
+Succeeded (Retry) : 1
+Total Failed      : 0
+=========================================
+

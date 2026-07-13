@@ -1,0 +1,642 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-12_20-20-21-914Z.txt
+=========================================
+
+[Loader] Loaded 8 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/535441/hot-messy-threesome/ (Attempt 1/3)
+(node:3564) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/MyServletApp/porncater.com/porncater/bulk-upload-new.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to D:\MyServletApp\porncater.com\porncater\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/535441/hot-messy-threesome/
+[generic] hot-messy-threesome: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] hot-messy-threesome: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 535441: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\hot-messy-threesome.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\hot-messy-threesome.jpg
+[download] D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\hot-messy-threesome.mp4 has already been downloaded
+[download] 100% of  899.49MiB
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 31:50
+[Bunny Stream] Creating entry for: Hot, Messy Threesome
+[Bunny Stream] Uploading binary to GUID: 56cee8e6-1a3d-4278-bd3e-17464e93a216
+[Bunny Storage] Uploading cover asset for: hot-messy-threesome
+[Database] Instantiating Prisma engine payload for: hot-messy-threesome
+[Success] Pipeline execution fully finished for: Hot, Messy Threesome
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-cum-thru-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpnico2qdi.cookies"
+                                                                               [#385738 0B/0B CN:1 DL:0B]                                                                               [#385738 0B/0B CN:1 DL:0B]
+07/13 01:52:10 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk0OTI5fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw2ZDAwZGJmM2YzNjZlNjhiNDY2MjFhYzNlZmNmNTBjMw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+[generic] luna-star-cum-thru-4: Extracting information
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpnico2qdi.cookies"
+                                                                               [#385738 0B/0B CN:1 DL:0B]                                                                               [#385738 0B/0B CN:1 DL:0B]
+07/13 01:52:10 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk0OTI5fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw2ZDAwZGJmM2YzNjZlNjhiNDY2MjFhYzNlZmNmNTBjMw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-cum-thru-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpgbcjh6b_.cookies"
+                                                                               [#e070f6 0B/0B CN:1 DL:0B]                                                                               [#e070f6 0B/0B CN:1 DL:0B]                                                                               [#e070f6 0B/0B CN:1 DL:0B]
+07/13 01:52:29 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk0OTQ4fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwxNjU5Y2YzZjNiNTkxNTYyNDM1YTFkZGNhZWQ3OTEzYg
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 2 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+[generic] luna-star-cum-thru-4: Extracting information
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpgbcjh6b_.cookies"
+                                                                               [#e070f6 0B/0B CN:1 DL:0B]                                                                               [#e070f6 0B/0B CN:1 DL:0B]                                                                               [#e070f6 0B/0B CN:1 DL:0B]
+07/13 01:52:29 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk0OTQ4fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwxNjU5Y2YzZjNiNTkxNTYyNDM1YTFkZGNhZWQ3OTEzYg
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ (Attempt 3/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-cum-thru-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpclxe8hhe.cookies"
+                                                                               [#cbdd5a 0B/0B CN:1 DL:0B]
+07/13 01:52:45 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk0OTY0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw5MTk2OTg2YWJmMDQ0ZTFhZWZmYWUxOWE2ZGJjNmU5Yw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 3 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+[generic] luna-star-cum-thru-4: Extracting information
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpclxe8hhe.cookies"
+                                                                               [#cbdd5a 0B/0B CN:1 DL:0B]
+07/13 01:52:45 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk0OTY0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw5MTk2OTg2YWJmMDQ0ZTFhZWZmYWUxOWE2ZGJjNmU5Yw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[FATAL ERROR] All 3 attempts exhausted. Abandoning URL.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpvfhgjegz.cookies"
+                                                                               [#0bde11 0B/0B CN:1 DL:0B]
+07/13 01:52:59 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk0OTc4fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw0MDc1NmVlNjI1MzJlNDhlN2ZkZWM3YzNiZmI1MDY1OQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpvfhgjegz.cookies"
+                                                                               [#0bde11 0B/0B CN:1 DL:0B]
+07/13 01:52:59 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk0OTc4fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw0MDc1NmVlNjI1MzJlNDhlN2ZkZWM3YzNiZmI1MDY1OQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpdhkb5i1s.cookies"
+                                                                               [#843442 0B/0B CN:1 DL:0B]
+07/13 01:53:15 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk0OTk0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw2MTEwOWEyNzJmNGZhNWE5YzlmOTFiOTZiNDhlZWE2MQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 2 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpdhkb5i1s.cookies"
+                                                                               [#843442 0B/0B CN:1 DL:0B]
+07/13 01:53:15 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk0OTk0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw2MTEwOWEyNzJmNGZhNWE5YzlmOTFiOTZiNDhlZWE2MQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ (Attempt 3/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpdk4wjftt.cookies"
+                                                                               [#e13caa 0B/0B CN:1 DL:0B]
+07/13 01:53:30 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk1MDEwfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxjOTI5NzM3MzcwZTQ4NDBiYjIyZjUzZTNhM2ZmNWIyMA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 3 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpdk4wjftt.cookies"
+                                                                               [#e13caa 0B/0B CN:1 DL:0B]
+07/13 01:53:30 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk1MDEwfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxjOTI5NzM3MzcwZTQ4NDBiYjIyZjUzZTNhM2ZmNWIyMA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[FATAL ERROR] All 3 attempts exhausted. Abandoning URL.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425420/luna-star-dicho/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-dicho: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpyi7eas8f.cookies"
+                                                                               [#5453a3 0B/0B CN:1 DL:0B]
+07/13 01:53:45 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk1MDI0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxlNTc1ZTI3ZmE0ZDU5YjJlNTA2ZDExY2FiMjJjYjcwZg
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/425420/luna-star-dicho/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+[generic] luna-star-dicho: Extracting information
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpyi7eas8f.cookies"
+                                                                               [#5453a3 0B/0B CN:1 DL:0B]
+07/13 01:53:45 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk1MDI0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxlNTc1ZTI3ZmE0ZDU5YjJlNTA2ZDExY2FiMjJjYjcwZg
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425420/luna-star-dicho/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-dicho: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp5g8u7w4n.cookies"
+
+07/13 01:54:00 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=1 URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+  -> [SocketCore.cc:1019] errorCode=1 SSL/TLS handshake failure: Error: An existing connection was forcibly closed by the remote host.
+(2746)
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 1
+
+
+[ERROR] Attempt 2 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/425420/luna-star-dicho/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 1
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+[generic] luna-star-dicho: Extracting information
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp5g8u7w4n.cookies"
+
+07/13 01:54:00 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=1 URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+  -> [SocketCore.cc:1019] errorCode=1 SSL/TLS handshake failure: Error: An existing connection was forcibly closed by the remote host.
+(2746)
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425420/luna-star-dicho/ (Attempt 3/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-dicho: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp51vq35hb.cookies"
+                                                                               [#2d2ca6 0B/0B CN:1 DL:0B]
+07/13 01:54:16 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk1MDU1fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw1ZmYzNGY0ZGY3Y2YxYmZjNjA3MDk4NThkZWNiZDgxMw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 3 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/425420/luna-star-dicho/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+[generic] luna-star-dicho: Extracting information
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp51vq35hb.cookies"
+                                                                               [#2d2ca6 0B/0B CN:1 DL:0B]
+07/13 01:54:16 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk1MDU1fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw1ZmYzNGY0ZGY3Y2YxYmZjNjA3MDk4NThkZWNiZDgxMw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[FATAL ERROR] All 3 attempts exhausted. Abandoning URL.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/523129/package-deal-4/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/523129/package-deal-4/
+[generic] package-deal-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] package-deal-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 523129: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\package-deal-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\package-deal-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\package-deal-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpqi244bbz.cookies"
+                                                                               [#89c3a3 0B/0B CN:1 DL:0B]                                                                               [#89c3a3 16KiB/1.0GiB(0%) CN:16 DL:144KiB ETA:2h7m56s]                                                                               [#89c3a3 2.0MiB/1.0GiB(0%) CN:16 DL:1.6MiB ETA:10m42s]                                                                               [#89c3a3 4.2MiB/1.0GiB(0%) CN:16 DL:2.0MiB ETA:8m57s]                                                                               [#89c3a3 4.4MiB/1.0GiB(0%) CN:16 DL:596KiB ETA:30m45s]                                                                               [#89c3a3 10MiB/1.0GiB(0%) CN:16 DL:913KiB ETA:19m58s]                                                                               [#89c3a3 21MiB/1.0GiB(1%) CN:16 DL:2.0MiB ETA:8m32s]                                                                               [#89c3a3 28MiB/1.0GiB(2%) CN:16 DL:2.6MiB ETA:6m35s]                                                                               [#89c3a3 37MiB/1.0GiB(3%) CN:16 DL:7.3MiB ETA:2m20s]                                                                               [#89c3a3 51MiB/1.0GiB(4%) CN:16 DL:7.7MiB ETA:2m13s]                                                                               [#89c3a3 67MiB/1.0GiB(6%) CN:16 DL:8.9MiB ETA:1m52s]                                                                               [#89c3a3 71MiB/1.0GiB(6%) CN:16 DL:7.8MiB ETA:2m9s]                                                                               [#89c3a3 91MiB/1.0GiB(8%) CN:16 DL:9.1MiB ETA:1m47s]                                                                               [#89c3a3 105MiB/1.0GiB(9%) CN:16 DL:9.6MiB ETA:1m40s]                                                                               [#89c3a3 112MiB/1.0GiB(10%) CN:16 DL:9.2MiB ETA:1m45s]                                                                               [#89c3a3 130MiB/1.0GiB(12%) CN:16 DL:10MiB ETA:1m33s]                                                                               [#89c3a3 140MiB/1.0GiB(12%) CN:16 DL:10MiB ETA:1m28s]                                                                               [#89c3a3 141MiB/1.0GiB(13%) CN:16 DL:9.7MiB ETA:1m36s]                                                                               [#89c3a3 160MiB/1.0GiB(14%) CN:16 DL:10MiB ETA:1m31s]                                                                               [#89c3a3 160MiB/1.0GiB(14%) CN:16 DL:10MiB ETA:1m31s]                                                                               [#89c3a3 181MiB/1.0GiB(16%) CN:16 DL:11MiB ETA:1m21s]                                                                               [#89c3a3 184MiB/1.0GiB(17%) CN:16 DL:9.5MiB ETA:1m33s]                                                                               [#89c3a3 208MiB/1.0GiB(19%) CN:16 DL:10MiB ETA:1m25s]                                                                               [#89c3a3 211MiB/1.0GiB(19%) CN:16 DL:10MiB ETA:1m26s]                                                                               [#89c3a3 230MiB/1.0GiB(21%) CN:16 DL:10MiB ETA:1m22s]                                                                               [#89c3a3 239MiB/1.0GiB(22%) CN:16 DL:10MiB ETA:1m21s]                                                                               [#89c3a3 240MiB/1.0GiB(22%) CN:16 DL:8.8MiB ETA:1m35s]                                                                               [#89c3a3 263MiB/1.0GiB(24%) CN:16 DL:10MiB ETA:1m19s]                                                                               [#89c3a3 279MiB/1.0GiB(25%) CN:16 DL:9.9MiB ETA:1m20s]                                                                               [#89c3a3 288MiB/1.0GiB(26%) CN:16 DL:11MiB ETA:1m11s]                                                                               [#89c3a3 291MiB/1.0GiB(27%) CN:16 DL:8.7MiB ETA:1m30s]                                                                               [#89c3a3 306MiB/1.0GiB(28%) CN:16 DL:9.7MiB ETA:1m18s]                                                                               [#89c3a3 324MiB/1.0GiB(30%) CN:16 DL:10MiB ETA:1m14s]                                                                               [#89c3a3 331MiB/1.0GiB(30%) CN:16 DL:9.8MiB ETA:1m16s]                                                                               [#89c3a3 339MiB/1.0GiB(31%) CN:16 DL:10MiB ETA:1m7s]                                                                               [#89c3a3 356MiB/1.0GiB(33%) CN:16 DL:10MiB ETA:1m10s]                                                                               [#89c3a3 360MiB/1.0GiB(33%) CN:16 DL:8.4MiB ETA:1m24s]                                                                               [#89c3a3 381MiB/1.0GiB(35%) CN:16 DL:9.7MiB ETA:1m11s]                                                                               [#89c3a3 382MiB/1.0GiB(35%) CN:16 DL:9.2MiB ETA:1m15s]                                                                               [#89c3a3 406MiB/1.0GiB(37%) CN:16 DL:10MiB ETA:1m6s]                                                                               [#89c3a3 415MiB/1.0GiB(38%) CN:16 DL:9.3MiB ETA:1m10s]                                                                               [#89c3a3 431MiB/1.0GiB(39%) CN:16 DL:10MiB ETA:1m2s]                                                                               [#89c3a3 444MiB/1.0GiB(41%) CN:16 DL:10MiB ETA:59s]                                                                               [#89c3a3 444MiB/1.0GiB(41%) CN:16 DL:9.6MiB ETA:1m5s]                                                                               [#89c3a3 470MiB/1.0GiB(43%) CN:16 DL:11MiB ETA:53s]                                                                               [#89c3a3 473MiB/1.0GiB(43%) CN:16 DL:9.3MiB ETA:1m5s]                                                                               [#89c3a3 488MiB/1.0GiB(45%) CN:16 DL:10MiB ETA:54s]                                                                               [#89c3a3 493MiB/1.0GiB(45%) CN:16 DL:9.6MiB ETA:1m]                                                                               [#89c3a3 499MiB/1.0GiB(46%) CN:16 DL:9.3MiB ETA:1m2s]                                                                               [#89c3a3 513MiB/1.0GiB(47%) CN:16 DL:8.8MiB ETA:1m3s]                                                                               [#89c3a3 513MiB/1.0GiB(47%) CN:16 DL:8.0MiB ETA:1m10s]                                                                               [#89c3a3 540MiB/1.0GiB(50%) CN:16 DL:9.8MiB ETA:54s]                                                                               [#89c3a3 540MiB/1.0GiB(50%) CN:16 DL:9.9MiB ETA:54s]                                                                               [#89c3a3 566MiB/1.0GiB(52%) CN:16 DL:9.9MiB ETA:51s]                                                                               [#89c3a3 567MiB/1.0GiB(52%) CN:16 DL:9.6MiB ETA:53s]                                                                               [#89c3a3 586MiB/1.0GiB(54%) CN:16 DL:10MiB ETA:49s]                                                                               [#89c3a3 591MiB/1.0GiB(54%) CN:16 DL:9.8MiB ETA:49s]                                                                               [#89c3a3 604MiB/1.0GiB(55%) CN:16 DL:10MiB ETA:46s]                                                                               [#89c3a3 627MiB/1.0GiB(58%) CN:16 DL:12MiB ETA:37s]                                                                               [#89c3a3 638MiB/1.0GiB(59%) CN:16 DL:12MiB ETA:36s]                                                                               [#89c3a3 642MiB/1.0GiB(59%) CN:16 DL:11MiB ETA:38s]                                                                               [#89c3a3 650MiB/1.0GiB(60%) CN:16 DL:9.2MiB ETA:46s]                                                                               [#89c3a3 651MiB/1.0GiB(60%) CN:16 DL:9.6MiB ETA:44s]                                                                               [#89c3a3 679MiB/1.0GiB(62%) CN:16 DL:11MiB ETA:34s]                                                                               [#89c3a3 681MiB/1.0GiB(63%) CN:16 DL:10MiB ETA:39s]                                                                               [#89c3a3 702MiB/1.0GiB(65%) CN:16 DL:10MiB ETA:36s]                                                                               [#89c3a3 723MiB/1.0GiB(66%) CN:16 DL:9.3MiB ETA:38s]                                                                               [#89c3a3 734MiB/1.0GiB(68%) CN:16 DL:9.9MiB ETA:34s]                                                                               [#89c3a3 750MiB/1.0GiB(69%) CN:16 DL:10MiB ETA:30s]                                                                               [#89c3a3 752MiB/1.0GiB(69%) CN:16 DL:10MiB ETA:31s]                                                                               [#89c3a3 779MiB/1.0GiB(72%) CN:16 DL:11MiB ETA:26s]                                                                               [#89c3a3 781MiB/1.0GiB(72%) CN:16 DL:10MiB ETA:29s]                                                                               [#89c3a3 802MiB/1.0GiB(74%) CN:16 DL:11MiB ETA:24s]                                                                               [#89c3a3 804MiB/1.0GiB(74%) CN:16 DL:9.3MiB ETA:29s]                                                                               [#89c3a3 826MiB/1.0GiB(76%) CN:16 DL:10MiB ETA:23s]                                                                               [#89c3a3 828MiB/1.0GiB(76%) CN:16 DL:9.9MiB ETA:25s]                                                                               [#89c3a3 850MiB/1.0GiB(78%) CN:16 DL:10MiB ETA:21s]                                                                               [#89c3a3 858MiB/1.0GiB(79%) CN:16 DL:11MiB ETA:18s]                                                                               [#89c3a3 859MiB/1.0GiB(79%) CN:16 DL:8.2MiB ETA:26s]                                                                               [#89c3a3 890MiB/1.0GiB(82%) CN:16 DL:11MiB ETA:16s]                                                                               [#89c3a3 892MiB/1.0GiB(82%) CN:16 DL:9.0MiB ETA:20s]                                                                               [#89c3a3 911MiB/1.0GiB(84%) CN:16 DL:11MiB ETA:15s]                                                                               [#89c3a3 913MiB/1.0GiB(84%) CN:16 DL:8.9MiB ETA:18s]                                                                               [#89c3a3 0.9GiB/1.0GiB(86%) CN:16 DL:10MiB ETA:13s]                                                                               [#89c3a3 0.9GiB/1.0GiB(87%) CN:16 DL:9.7MiB ETA:14s]                                                                               [#89c3a3 0.9GiB/1.0GiB(88%) CN:16 DL:9.4MiB ETA:13s]                                                                               [#89c3a3 0.9GiB/1.0GiB(89%) CN:16 DL:11MiB ETA:9s]                                                                               [#89c3a3 0.9GiB/1.0GiB(91%) CN:16 DL:11MiB ETA:8s]                                                                               [#89c3a3 0.9GiB/1.0GiB(92%) CN:16 DL:9.6MiB ETA:8s]                                                                               [#89c3a3 0.9GiB/1.0GiB(94%) CN:16 DL:11MiB ETA:4s]                                                                               [#89c3a3 1.0GiB/1.0GiB(95%) CN:16 DL:10MiB ETA:4s]                                                                               [#89c3a3 1.0GiB/1.0GiB(96%) CN:16 DL:10MiB ETA:3s]                                                                               [#89c3a3 1.0GiB/1.0GiB(96%) CN:16 DL:9.9MiB ETA:3s]                                                                               [#89c3a3 1.0GiB/1.0GiB(98%) CN:16 DL:10MiB ETA:1s]                                                                               [#89c3a3 1.0GiB/1.0GiB(99%) CN:16 DL:10MiB]                                                                               [#89c3a3 1.0GiB/1.0GiB(99%) CN:1 DL:9.8MiB][download] 100% of    1.05GiB in 00:02:04 at 8.67MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 40:16
+[Bunny Stream] Creating entry for: PACKAGE DEAL#4
+[Bunny Stream] Uploading binary to GUID: 1e9f5f49-8542-42aa-a14d-d3d9fb2fdc8b
+[Bunny Storage] Uploading cover asset for: package-deal-4
+[Database] Instantiating Prisma engine payload for: package-deal-4
+[Success] Pipeline execution fully finished for: PACKAGE DEAL#4
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/405381/luna-star-loves/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/405381/luna-star-loves/
+[generic] luna-star-loves: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-loves: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 405381: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpgxyhszfx.cookies"
+
+07/13 01:58:26 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/4/a1017417dd89a374860c3b49f51ef1d9/405000/405381/405381_720p.mp4/?v-acctoken=MjMwOXw4MjIyNDF8MHwyMzI2NWY3NWU4OGE4MGU5Y2Y2ZDM0ODUyMjFhZTljYg65bdadf9d312a5e5
+Exception: [AbstractCommand.cc:351] errorCode=1 URI=https://www.whoreshub.com/get_file/4/a1017417dd89a374860c3b49f51ef1d9/405000/405381/405381_720p.mp4/?v-acctoken=MjMwOXw4MjIyNDF8MHwyMzI2NWY3NWU4OGE4MGU5Y2Y2ZDM0ODUyMjFhZTljYg65bdadf9d312a5e5
+  -> [SocketCore.cc:1019] errorCode=1 SSL/TLS handshake failure: Error: An existing connection was forcibly closed by the remote host.
+(2746)
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 1
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/405381/luna-star-loves/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 1
+[generic] Extracting URL: https://www.whoreshub.com/videos/405381/luna-star-loves/
+[generic] luna-star-loves: Downloading webpage
+[generic] luna-star-loves: Extracting information
+[info] 405381: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpgxyhszfx.cookies"
+
+07/13 01:58:26 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/4/a1017417dd89a374860c3b49f51ef1d9/405000/405381/405381_720p.mp4/?v-acctoken=MjMwOXw4MjIyNDF8MHwyMzI2NWY3NWU4OGE4MGU5Y2Y2ZDM0ODUyMjFhZTljYg65bdadf9d312a5e5
+Exception: [AbstractCommand.cc:351] errorCode=1 URI=https://www.whoreshub.com/get_file/4/a1017417dd89a374860c3b49f51ef1d9/405000/405381/405381_720p.mp4/?v-acctoken=MjMwOXw4MjIyNDF8MHwyMzI2NWY3NWU4OGE4MGU5Y2Y2ZDM0ODUyMjFhZTljYg65bdadf9d312a5e5
+  -> [SocketCore.cc:1019] errorCode=1 SSL/TLS handshake failure: Error: An existing connection was forcibly closed by the remote host.
+(2746)
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/405381/luna-star-loves/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/405381/luna-star-loves/
+[generic] luna-star-loves: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-loves: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 405381: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-loves.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpd8xmne6o.cookies"
+                                                                               [#94024a 0B/0B CN:1 DL:0B]                                                                               [#94024a 32KiB/712MiB(0%) CN:16 DL:197KiB ETA:1h1m39s]                                                                               [#94024a 2.4MiB/712MiB(0%) CN:16 DL:1.9MiB ETA:5m59s]                                                                               [#94024a 6.6MiB/712MiB(0%) CN:16 DL:1.2MiB ETA:9m28s]                                                                               [#94024a 19MiB/712MiB(2%) CN:16 DL:2.7MiB ETA:4m14s]                                                                               [#94024a 22MiB/712MiB(3%) CN:16 DL:2.5MiB ETA:4m32s]                                                                               [#94024a 22MiB/712MiB(3%) CN:16 DL:1.7MiB ETA:6m30s]                                                                               [#94024a 47MiB/712MiB(6%) CN:16 DL:5.7MiB ETA:1m55s]                                                                               [#94024a 55MiB/712MiB(7%) CN:16 DL:5.7MiB ETA:1m54s]                                                                               [#94024a 72MiB/712MiB(10%) CN:16 DL:7.0MiB ETA:1m31s]                                                                               [#94024a 73MiB/712MiB(10%) CN:16 DL:6.0MiB ETA:1m45s]                                                                               [#94024a 89MiB/712MiB(12%) CN:16 DL:7.0MiB ETA:1m28s]                                                                               [#94024a 98MiB/712MiB(13%) CN:16 DL:8.2MiB ETA:1m14s]                                                                               [#94024a 110MiB/712MiB(15%) CN:16 DL:9.9MiB ETA:1m]                                                                               [#94024a 130MiB/712MiB(18%) CN:16 DL:9.1MiB ETA:1m3s]                                                                               [#94024a 147MiB/712MiB(20%) CN:16 DL:10MiB ETA:54s]                                                                               [#94024a 156MiB/712MiB(21%) CN:16 DL:10MiB ETA:54s]                                                                               [#94024a 169MiB/712MiB(23%) CN:16 DL:10MiB ETA:49s]                                                                               [#94024a 171MiB/712MiB(24%) CN:16 DL:9.8MiB ETA:54s]                                                                               [#94024a 191MiB/712MiB(26%) CN:16 DL:10MiB ETA:51s]                                                                               [#94024a 194MiB/712MiB(27%) CN:16 DL:10MiB ETA:48s]                                                                               [#94024a 211MiB/712MiB(29%) CN:16 DL:11MiB ETA:45s]                                                                               [#94024a 226MiB/712MiB(31%) CN:16 DL:10MiB ETA:44s]                                                                               [#94024a 227MiB/712MiB(31%) CN:16 DL:9.8MiB ETA:49s]                                                                               [#94024a 245MiB/712MiB(34%) CN:16 DL:9.9MiB ETA:46s]                                                                               [#94024a 249MiB/712MiB(35%) CN:16 DL:8.8MiB ETA:52s]                                                                               [#94024a 275MiB/712MiB(38%) CN:16 DL:11MiB ETA:37s]                                                                               [#94024a 281MiB/712MiB(39%) CN:16 DL:9.8MiB ETA:43s]                                                                               [#94024a 299MiB/712MiB(42%) CN:16 DL:11MiB ETA:36s]                                                                               [#94024a 308MiB/712MiB(43%) CN:16 DL:10MiB ETA:38s]                                                                               [#94024a 309MiB/712MiB(43%) CN:16 DL:8.5MiB ETA:46s]                                                                               [#94024a 336MiB/712MiB(47%) CN:16 DL:11MiB ETA:33s]                                                                               [#94024a 337MiB/712MiB(47%) CN:16 DL:10MiB ETA:36s]                                                                               [#94024a 358MiB/712MiB(50%) CN:16 DL:11MiB ETA:31s]                                                                               [#94024a 359MiB/712MiB(50%) CN:16 DL:8.6MiB ETA:40s]                                                                               [#94024a 382MiB/712MiB(53%) CN:16 DL:10MiB ETA:30s]                                                                               [#94024a 388MiB/712MiB(54%) CN:16 DL:9.5MiB ETA:33s]                                                                               [#94024a 404MiB/712MiB(56%) CN:16 DL:10MiB ETA:28s]                                                                               [#94024a 409MiB/712MiB(57%) CN:16 DL:11MiB ETA:26s]                                                                               [#94024a 414MiB/712MiB(58%) CN:16 DL:8.6MiB ETA:34s]                                                                               [#94024a 439MiB/712MiB(61%) CN:16 DL:11MiB ETA:23s]                                                                               [#94024a 443MiB/712MiB(62%) CN:16 DL:10MiB ETA:24s]                                                                               [#94024a 456MiB/712MiB(64%) CN:16 DL:10MiB ETA:25s]                                                                               [#94024a 471MiB/712MiB(66%) CN:16 DL:11MiB ETA:20s]                                                                               [#94024a 473MiB/712MiB(66%) CN:16 DL:9.3MiB ETA:25s]                                                                               [#94024a 499MiB/712MiB(70%) CN:16 DL:10MiB ETA:20s]                                                                               [#94024a 502MiB/712MiB(70%) CN:16 DL:10MiB ETA:20s]                                                                               [#94024a 516MiB/712MiB(72%) CN:16 DL:11MiB ETA:16s]                                                                               [#94024a 520MiB/712MiB(73%) CN:16 DL:8.5MiB ETA:22s]                                                                               [#94024a 548MiB/712MiB(76%) CN:16 DL:11MiB ETA:14s]                                                                               [#94024a 550MiB/712MiB(77%) CN:16 DL:9.6MiB ETA:16s]                                                                               [#94024a 567MiB/712MiB(79%) CN:16 DL:10MiB ETA:14s]                                                                               [#94024a 578MiB/712MiB(81%) CN:16 DL:10MiB ETA:12s]                                                                               [#94024a 602MiB/712MiB(84%) CN:16 DL:10MiB ETA:10s]                                                                               [#94024a 609MiB/712MiB(85%) CN:16 DL:10MiB ETA:9s]                                                                               [#94024a 615MiB/712MiB(86%) CN:16 DL:9.9MiB ETA:9s]                                                                               [#94024a 627MiB/712MiB(88%) CN:16 DL:11MiB ETA:7s]                                                                               [#94024a 649MiB/712MiB(91%) CN:16 DL:10MiB ETA:5s]                                                                               [#94024a 660MiB/712MiB(92%) CN:16 DL:11MiB ETA:4s]                                                                               [#94024a 664MiB/712MiB(93%) CN:16 DL:10MiB ETA:4s]                                                                               [#94024a 683MiB/712MiB(95%) CN:16 DL:11MiB ETA:2s]                                                                               [#94024a 686MiB/712MiB(96%) CN:16 DL:9.0MiB ETA:2s]                                                                               [#94024a 706MiB/712MiB(99%) CN:13 DL:9.9MiB]                                                                               [#94024a 711MiB/712MiB(99%) CN:1 DL:9.9MiB][download] 100% of  712.21MiB in 00:01:21 at 8.76MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 42:06
+[Bunny Stream] Creating entry for: Luna Star Loves !
+[Bunny Stream] Uploading binary to GUID: d99f4c78-36ee-4240-a4c3-99cde4569f64
+[Bunny Storage] Uploading cover asset for: luna-star-loves
+[Database] Instantiating Prisma engine payload for: luna-star-loves
+[Success] Pipeline execution fully finished for: Luna Star Loves !
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425409/luna-star-red-flags/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425409/luna-star-red-flags/
+[generic] luna-star-red-flags: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-red-flags: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425409: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-red-flags.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-red-flags.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-red-flags.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp8lmu81gq.cookies"
+                                                                               [#afb5e5 0B/0B CN:1 DL:0B]                                                                               [#afb5e5 32KiB/250MiB(0%) CN:16 DL:206KiB ETA:20m43s]                                                                               [#afb5e5 2.0MiB/250MiB(0%) CN:16 DL:1.6MiB ETA:2m27s]                                                                               [#afb5e5 7.2MiB/250MiB(2%) CN:16 DL:3.3MiB ETA:1m12s]                                                                               [#afb5e5 8.0MiB/250MiB(3%) CN:16 DL:2.1MiB ETA:1m50s]                                                                               [#afb5e5 20MiB/250MiB(8%) CN:16 DL:4.2MiB ETA:54s]                                                                               [#afb5e5 23MiB/250MiB(9%) CN:16 DL:3.7MiB ETA:1m]                                                                               [#afb5e5 42MiB/250MiB(17%) CN:16 DL:5.6MiB ETA:36s]                                                                               [#afb5e5 44MiB/250MiB(17%) CN:16 DL:5.0MiB ETA:40s]                                                                               [#afb5e5 60MiB/250MiB(24%) CN:16 DL:6.3MiB ETA:30s]                                                                               [#afb5e5 75MiB/250MiB(30%) CN:16 DL:7.4MiB ETA:23s]                                                                               [#afb5e5 88MiB/250MiB(35%) CN:16 DL:9.2MiB ETA:17s]                                                                               [#afb5e5 102MiB/250MiB(41%) CN:16 DL:8.5MiB ETA:17s]                                                                               [#afb5e5 119MiB/250MiB(47%) CN:16 DL:10MiB ETA:12s]                                                                               [#afb5e5 132MiB/250MiB(52%) CN:16 DL:10MiB ETA:11s]                                                                               [#afb5e5 142MiB/250MiB(56%) CN:16 DL:10MiB ETA:9s]                                                                               [#afb5e5 159MiB/250MiB(63%) CN:16 DL:11MiB ETA:8s]                                                                               [#afb5e5 170MiB/250MiB(68%) CN:16 DL:11MiB ETA:7s]                                                                               [#afb5e5 184MiB/250MiB(73%) CN:16 DL:11MiB ETA:6s]                                                                               [#afb5e5 187MiB/250MiB(74%) CN:16 DL:9.8MiB ETA:6s]                                                                               [#afb5e5 211MiB/250MiB(84%) CN:16 DL:11MiB ETA:3s]                                                                               [#afb5e5 215MiB/250MiB(86%) CN:16 DL:8.7MiB ETA:3s]                                                                               [#afb5e5 238MiB/250MiB(95%) CN:16 DL:10MiB ETA:1s]                                                                               [#afb5e5 243MiB/250MiB(97%) CN:14 DL:9.4MiB]                                                                               [#afb5e5 249MiB/250MiB(99%) CN:2 DL:8.7MiB][download] 100% of  250.61MiB in 00:00:31 at 7.92MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 32:58
+[Bunny Stream] Creating entry for: Luna Star - Red Flags
+[Bunny Stream] Uploading binary to GUID: 4f88ad0e-1149-4dd8-82df-8a971bc3d899
+[Bunny Storage] Uploading cover asset for: luna-star-red-flags
+[Database] Instantiating Prisma engine payload for: luna-star-red-flags
+[Success] Pipeline execution fully finished for: Luna Star - Red Flags
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/528574/brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/528574/brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist/
+[generic] brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 528574: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpsm4lny9m.cookies"
+                                                                               [#da14f6 0B/0B CN:1 DL:0B]                                                                               [#da14f6 0B/0B CN:1 DL:0B]                                                                               [#da14f6 0B/403MiB(0%) CN:16 DL:121KiB ETA:56m35s]                                                                               [#da14f6 720KiB/403MiB(0%) CN:16 DL:657KiB ETA:10m26s]                                                                               [#da14f6 1.9MiB/403MiB(0%) CN:16 DL:0.9MiB ETA:7m16s]                                                                               [#da14f6 3.2MiB/403MiB(0%) CN:16 DL:1.0MiB ETA:6m13s]                                                                               [#da14f6 5.6MiB/403MiB(1%) CN:16 DL:0.9MiB ETA:6m43s]                                                                               [#da14f6 10MiB/403MiB(2%) CN:16 DL:1.2MiB ETA:5m5s]                                                                               [#da14f6 21MiB/403MiB(5%) CN:16 DL:2.2MiB ETA:2m51s]                                                                               [#da14f6 31MiB/403MiB(7%) CN:16 DL:3.3MiB ETA:1m50s]                                                                               [#da14f6 43MiB/403MiB(10%) CN:16 DL:4.2MiB ETA:1m25s]                                                                               [#da14f6 51MiB/403MiB(12%) CN:16 DL:6.1MiB ETA:57s]                                                                               [#da14f6 58MiB/403MiB(14%) CN:16 DL:5.8MiB ETA:58s]                                                                               [#da14f6 71MiB/403MiB(17%) CN:16 DL:8.0MiB ETA:41s]                                                                               [#da14f6 81MiB/403MiB(20%) CN:16 DL:8.2MiB ETA:38s]                                                                               [#da14f6 86MiB/403MiB(21%) CN:16 DL:7.2MiB ETA:43s]                                                                               [#da14f6 98MiB/403MiB(24%) CN:16 DL:7.7MiB ETA:39s]                                                                               [#da14f6 101MiB/403MiB(25%) CN:16 DL:6.1MiB ETA:48s]                                                                               [#da14f6 115MiB/403MiB(28%) CN:16 DL:7.0MiB ETA:40s]                                                                               [#da14f6 116MiB/403MiB(28%) CN:16 DL:6.5MiB ETA:43s]                                                                               [#da14f6 128MiB/403MiB(31%) CN:16 DL:7.1MiB ETA:38s]                                                                               [#da14f6 130MiB/403MiB(32%) CN:16 DL:5.9MiB ETA:46s]                                                                               [#da14f6 142MiB/403MiB(35%) CN:16 DL:6.0MiB ETA:42s]                                                                               [#da14f6 150MiB/403MiB(37%) CN:16 DL:6.9MiB ETA:36s]                                                                               [#da14f6 153MiB/403MiB(38%) CN:16 DL:5.8MiB ETA:42s]                                                                               [#da14f6 163MiB/403MiB(40%) CN:16 DL:7.2MiB ETA:33s]                                                                               [#da14f6 172MiB/403MiB(42%) CN:16 DL:7.3MiB ETA:31s]                                                                               [#da14f6 176MiB/403MiB(43%) CN:16 DL:6.6MiB ETA:34s]                                                                               [#da14f6 189MiB/403MiB(46%) CN:16 DL:6.5MiB ETA:32s]                                                                               [#da14f6 201MiB/403MiB(50%) CN:16 DL:7.9MiB ETA:25s]                                                                               [#da14f6 208MiB/403MiB(51%) CN:16 DL:7.8MiB ETA:24s]                                                                               [#da14f6 214MiB/403MiB(53%) CN:16 DL:7.3MiB ETA:25s]                                                                               [#da14f6 220MiB/403MiB(54%) CN:16 DL:6.9MiB ETA:26s]                                                                               [#da14f6 230MiB/403MiB(57%) CN:16 DL:6.8MiB ETA:24s]                                                                               [#da14f6 233MiB/403MiB(58%) CN:16 DL:6.7MiB ETA:25s]                                                                               [#da14f6 248MiB/403MiB(61%) CN:16 DL:6.6MiB ETA:23s]                                                                               [#da14f6 264MiB/403MiB(65%) CN:16 DL:6.2MiB ETA:22s]                                                                               [#da14f6 277MiB/403MiB(68%) CN:16 DL:6.9MiB ETA:17s]                                                                               [#da14f6 285MiB/403MiB(70%) CN:16 DL:7.1MiB ETA:16s]                                                                               [#da14f6 293MiB/403MiB(72%) CN:16 DL:7.6MiB ETA:14s]                                                                               [#da14f6 307MiB/403MiB(76%) CN:16 DL:8.0MiB ETA:11s]                                                                               [#da14f6 314MiB/403MiB(78%) CN:16 DL:9.0MiB ETA:9s]                                                                               [#da14f6 317MiB/403MiB(78%) CN:16 DL:7.9MiB ETA:10s]                                                                               [#da14f6 327MiB/403MiB(81%) CN:16 DL:7.5MiB ETA:10s]                                                                               [#da14f6 336MiB/403MiB(83%) CN:16 DL:7.3MiB ETA:9s]                                                                               [#da14f6 343MiB/403MiB(85%) CN:16 DL:6.0MiB ETA:9s]                                                                               [#da14f6 349MiB/403MiB(86%) CN:15 DL:5.7MiB ETA:9s]                                                                               [#da14f6 358MiB/403MiB(88%) CN:16 DL:5.2MiB ETA:8s]                                                                               [#da14f6 360MiB/403MiB(89%) CN:16 DL:4.6MiB ETA:9s]                                                                               [#da14f6 378MiB/403MiB(93%) CN:16 DL:6.4MiB ETA:3s]                                                                               [#da14f6 385MiB/403MiB(95%) CN:16 DL:6.5MiB ETA:2s]                                                                               [#da14f6 393MiB/403MiB(97%) CN:16 DL:6.6MiB ETA:1s]                                                                               [#da14f6 398MiB/403MiB(98%) CN:10 DL:6.6MiB]                                                                               [#da14f6 401MiB/403MiB(99%) CN:4 DL:6.4MiB]                                                                               [#da14f6 402MiB/403MiB(99%) CN:1 DL:6.0MiB][download] 100% of  403.03MiB in 00:01:11 at 5.65MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 33:50
+[Bunny Stream] Creating entry for: BrazzersExxtra - Luna Star Jasmine Sherni - The Brazzorcist
+[Bunny Stream] Uploading binary to GUID: cafe490f-54c7-451f-bae2-27fecfe31855
+[Bunny Storage] Uploading cover asset for: brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist
+[Database] Instantiating Prisma engine payload for: brazzersexxtra-luna-star-jasmine-sherni-the-brazzorcist
+[Success] Pipeline execution fully finished for: BrazzersExxtra - Luna Star Jasmine Sherni - The Brazzorcist
+
+=========================================
+🚀 [PIPELINE EXECUTION COMPLETE]
+=========================================
+Total Target URLs : 8
+Succeeded (Clean) : 4
+Succeeded (Retry) : 1
+Total Failed      : 3
+=========================================
+
+[Log] Dumped 3 failed URLs into: D:\MyServletApp\porncater.com\porncater\failed_urls.txt

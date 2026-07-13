@@ -1,0 +1,468 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-12_20-45-52-790Z.txt
+=========================================
+
+[Loader] Loaded 3 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ (Attempt 1/3)
+(node:9136) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/MyServletApp/porncater.com/porncater/bulk-upload-new.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to D:\MyServletApp\porncater.com\porncater\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-cum-thru-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 240670: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpf51_7n9n.cookies"
+
+07/13 02:16:03 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk2MzYyfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw2ZDliN2ViODc1MjRiMWZkMTM2ZTAzOTgzYjY2MTI1Yw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+[generic] luna-star-cum-thru-4: Extracting information
+[info] 240670: Downloading 1 format(s): video_url
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpf51_7n9n.cookies"
+                                                                               [#836e0f 0B/0B CN:1 DL:0B]
+07/13 02:16:03 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk2MzYyfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw2ZDliN2ViODc1MjRiMWZkMTM2ZTAzOTgzYjY2MTI1Yw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-cum-thru-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpp6dwl93q.cookies"
+
+07/13 02:16:19 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk2Mzc4fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxmNjc4Yjk5OTI1NzY4OGNhMjhiZjBmNWUyZGYxOWNiYg
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 2 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+[generic] luna-star-cum-thru-4: Extracting information
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpp6dwl93q.cookies"
+                                                                               [#7540c2 0B/0B CN:1 DL:0B]
+07/13 02:16:19 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk2Mzc4fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxmNjc4Yjk5OTI1NzY4OGNhMjhiZjBmNWUyZGYxOWNiYg
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ (Attempt 3/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-cum-thru-4: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp92vgil0i.cookies"
+
+07/13 02:16:35 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk2Mzk0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwzNGJhMzgxYzdiMGE0NDdiNjg4YzVkNzkwZDJiYjRjYw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 3 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/240670/luna-star-cum-thru-4/
+[generic] luna-star-cum-thru-4: Downloading webpage
+[generic] luna-star-cum-thru-4: Extracting information
+[info] 240670: Downloading 1 format(s): video_url
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-cum-thru-4.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp92vgil0i.cookies"
+                                                                               [#3f9705 0B/0B CN:1 DL:0B]                                                                               [#3f9705 0B/0B CN:1 DL:0B]
+07/13 02:16:35 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/7/e8155d207beb51d40bdbd6953b636ea2/240000/240670/240670.mp4/?v-acctoken=MTI2NnwyNjc0MDV8MHxmMThhODlhZjljMzNjZmYwMjg5MzU1ZmZhMDIyODdkMA7d6539dc5403cfd4
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=TH7OeOmPGwbM8lkg1rLvvoaMOsm3kcPng6jZ3rbUDhYCAdvJ5qRMNtPyOusGhCljmqDJ4U1ydRIYM594VgubP0mIYXAIqn3FHmlSKaCLZlVU7BARuXRd8KOkUviAnLKhNpvzLiUtnKLR3LUvBZn14qcY-uggjMyrJUZj6hjDretiOWeOcPVusn2bGiqKLZH92rg86TieTSA3fF7-zwZIt3trFcEl5w.mp4&acctoken=NmViY2Y2YTdhODc2OGRmNjQwNmNlNDI3MDE0ZDY4ZGRjMDFlMGIyMDFkZTc4OGVmNDFiNzg5MDNmYWU1Y2ZmZXwxNzgzODk2Mzk0fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwzNGJhMzgxYzdiMGE0NDdiNjg4YzVkNzkwZDJiYjRjYw
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[FATAL ERROR] All 3 attempts exhausted. Abandoning URL.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp6dqxfu00.cookies"
+
+07/13 02:16:50 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk2NDA5fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw1NDRiZmNjYWUzMDE1MzU0MDE0YjEzZDdjODg0YjIxMA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp6dqxfu00.cookies"
+                                                                               [#6ea742 0B/0B CN:1 DL:0B]                                                                               [#6ea742 0B/0B CN:1 DL:0B]
+07/13 02:16:50 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk2NDA5fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw1NDRiZmNjYWUzMDE1MzU0MDE0YjEzZDdjODg0YjIxMA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp4s6s6w0d.cookies"
+
+07/13 02:17:07 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk2NDI3fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw4YzQ5MzFlMTJmOGYyNDQwODY1YTk5MDI5YzFmYWE5MA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 2 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp4s6s6w0d.cookies"
+                                                                               [#b81f3b 0B/0B CN:1 DL:0B]                                                                               [#b81f3b 0B/0B CN:1 DL:0B]
+07/13 02:17:07 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk2NDI3fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHw4YzQ5MzFlMTJmOGYyNDQwODY1YTk5MDI5YzFmYWE5MA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ (Attempt 3/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp2achkhy2.cookies"
+
+07/13 02:17:23 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk2NDQzfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwzNjVkZjMxOTI0NDM5N2ExODdjM2I5M2E0OTE4NmFmZA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 3
+
+
+[ERROR] Attempt 3 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/168286/luna-star-the-lonely-housewife-uhd/
+[generic] luna-star-the-lonely-housewife-uhd: Downloading webpage
+[generic] luna-star-the-lonely-housewife-uhd: Extracting information
+[info] 168286: Downloading 1 format(s): 1080p_FHD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-the-lonely-housewife-uhd.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp2achkhy2.cookies"
+                                                                               [#720c50 0B/0B CN:1 DL:0B]
+07/13 02:17:23 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/5/f8b83e98100cbed4714d3181a8d40998/168000/168286/168286_1080p.mp4/?v-acctoken=NDE5NXwyOTcyMjl8MHxjYTgwNjEwYTBkMmQyMzY0MWFiZGI3NjRlMDE5ZTA3Nw9831b1a4b4db8168
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin23-direct.pcdn.cloudswitches.com/remote_control.php?file=6rAhlaYjpYvt3vXx1egLnGjJdzuI97epHDCsboDz4MIT_9B-6N8Z-i1sqH_l7LhGkc73CfD7QeTi8dCssL4CT-dL6hts8J_Ftt_RSLrbyVtMxx1EB6US2b9cOakLzTH9sGTsLREJ6XWPZph33GVA5uSOD06yYyXcgPu5rle5MzmStuk_1uQkKz5yNY20oZ6YSZRO2G2ZLjLM1WG9_rLT3w-NGEwBMwZVRVFoCg.mp4&acctoken=MTY3Y2YyNWJhMTBjZmQ2NjJjMmQ0N2ZkN2JjNTU3NWM1NGRkMTdjYWRhMGU0NzU3OTNlZTA3NGE4ZjkyODk4MHwxNzgzODk2NDQzfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwzNjVkZjMxOTI0NDM5N2ExODdjM2I5M2E0OTE4NmFmZA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[FATAL ERROR] All 3 attempts exhausted. Abandoning URL.
+
+=========================================
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425420/luna-star-dicho/ (Attempt 1/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-dicho: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425420: Downloading 1 format(s): 720p_HD
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpej13qjq3.cookies"
+
+07/13 02:17:38 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk2NDU3fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxkZjNiZDZkZjM5OTZkMmE0OTY1MDMwZTY0M2E2MDUzOQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/425420/luna-star-dicho/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+[generic] luna-star-dicho: Extracting information
+[info] 425420: Downloading 1 format(s): 720p_HD
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpej13qjq3.cookies"
+                                                                               [#5158a6 0B/0B CN:1 DL:0B]
+07/13 02:17:38 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk2NDU3fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxkZjNiZDZkZjM5OTZkMmE0OTY1MDMwZTY0M2E2MDUzOQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425420/luna-star-dicho/ (Attempt 2/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-dicho: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpac6t1q2x.cookies"
+
+07/13 02:17:54 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk2NDczfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxjNWI3YTVkNDc2NjZkYjMwNTlkZWEwYzM0ZGVkM2ZlYQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 2 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/425420/luna-star-dicho/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+[generic] luna-star-dicho: Extracting information
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpac6t1q2x.cookies"
+                                                                               [#d29055 0B/0B CN:1 DL:0B]
+07/13 02:17:54 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk2NDczfDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHxjNWI3YTVkNDc2NjZkYjMwNTlkZWEwYzM0ZGVkM2ZlYQ
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 5 seconds before trying again...
+
+[Extraction] Querying target media: https://www.whoreshub.com/videos/425420/luna-star-dicho/ (Attempt 3/3)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] luna-star-dicho: Extracting information
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp24cfpscz.cookies"
+
+07/13 02:18:10 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk2NDg5fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwzMDU4NjEzMzU4ZDE3NzUyZWU3ZWQ4YmEzM2E5MDIzOA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+
+ERROR: aria2c exited with code 3
+
+[ERROR] Attempt 3 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.whoreshub.com/videos/425420/luna-star-dicho/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (1.12.51) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 3
+[generic] Extracting URL: https://www.whoreshub.com/videos/425420/luna-star-dicho/
+[generic] luna-star-dicho: Downloading webpage
+[generic] luna-star-dicho: Extracting information
+[info] 425420: Downloading 1 format(s): 720p_HD
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\luna-star-dicho.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp24cfpscz.cookies"
+                                                                               [#66ac94 0B/0B CN:1 DL:0B]
+07/13 02:18:10 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.whoreshub.com/get_file/12/b854a879f63d2da37ac762d2823592bd/425000/425420/425420_720p.mp4/?v-acctoken=MTUyMXwzNjAwOXwwfDFhOTQ4MGJmNjcxYjAzMjk5N2FkMjA2ODY2MjQxMmRj66cf0aca5a2bba72
+Exception: [AbstractCommand.cc:351] errorCode=3 URI=https://origin36-direct.pcdn.cloudswitches.com/remote_control.php?file=AU7mgXWgyGT6lpj2SoNWD-9MVpiVOmY267ULtI4cS1PHWWPbgpuoMpOCxvkL56w0A6Oas6w6XGUXm-ppFcjRfc98X1D1jIExxNsQ0gHf1RuLQJ5bWm3k4itr7wuD7CnxeIA5yomEHVUBvSBpFmwB2R1i6rPwpHBWKSXDCpzuw0jHLGZOq4d5y5QVh77z_gEnDT_B-DESMHPPU2SOq0hrVJ00rsTz9WUL1pbW.mp4&acctoken=NzJlN2MzMWIxMGJkYTE4MDBjNDEwMzZmMTljNGEwYzMwZjczODgyNzM3MzIwZWEzYjhhYTE2MjVjNjViMjc1MHwxNzgzODk2NDg5fDI1MDAwMDB8d2hvcmVzaHViLmNvbXwwfHwzMDU4NjEzMzU4ZDE3NzUyZWU3ZWQ4YmEzM2E5MDIzOA
+  -> [HttpSkipResponseCommand.cc:218] errorCode=3 Resource not found
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[FATAL ERROR] All 3 attempts exhausted. Abandoning URL.
+
+=========================================
+🚀 [PIPELINE EXECUTION COMPLETE]
+=========================================
+Total Target URLs : 3
+Succeeded (Clean) : 0
+Succeeded (Retry) : 0
+Total Failed      : 3
+=========================================
+
+[Log] Dumped 3 failed URLs into: D:\MyServletApp\porncater.com\porncater\failed_urls.txt

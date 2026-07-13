@@ -14,7 +14,7 @@ const __dirname = path.dirname(__filename);
 chromium.use(stealth());
 
 // Configuration
-const TARGET_CATEGORY_URL = 'https://www.whoreshub.com/models/luna-star/';
+const TARGET_CATEGORY_URL = 'https://www.xmegadrive.com/search/lisa-ann/';
 const OUTPUT_FILE = path.join(__dirname, 'urls.txt');
 const URL_MATCH_PATTERN = '/videos/'; 
 
