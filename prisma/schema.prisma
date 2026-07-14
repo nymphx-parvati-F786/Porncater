@@ -64,3 +64,16 @@ model Pornstar {
   // Add this!
   @@index([views(sort: Desc)])
 }
+
+// 🔥 CUSTOM ADULT INBOX STORAGE LAYER
+model InboxMessage {
+  id        Int      @id @default(autoincrement())
+  to        String   // e.g., dmca@porncater.com or legal@porncater.com
+  from      String   // The sender's email address
+  subject   String
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([to])
+  @@index([createdAt(sort: Desc)])
+}
