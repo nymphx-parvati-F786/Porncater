@@ -18,10 +18,12 @@ export default async function TrendingPage({
   const videosPerPage = 20;
 
   // 3. Fetch the specific slice of videos AND the total count at the exact same time
+  // 🔥 SEO & DMCA FIX: Added `where: { status: "PUBLISHED" }` so taken down videos disappear from Trending!
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
+      where: { status: "PUBLISHED" },
       take: videosPerPage,
-      skip: (currentPage - 1) * videosPerPage, // If page 2, skip first 20
+      skip: (currentPage - 1) * videosPerPage,
       orderBy: { views: "desc" },
       select: {
         id: true,
@@ -32,7 +34,9 @@ export default async function TrendingPage({
         views: true,
       },
     }),
-    prisma.video.count(), // Total number of videos in database
+    prisma.video.count({
+      where: { status: "PUBLISHED" },
+    }),
   ]);
 
   // 4. Calculate total pages
@@ -65,7 +69,8 @@ export default async function TrendingPage({
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-      {/* Basic Navbar (You can replace this with your full global navbar) */}
+      
+      {/* Navbar */}
       <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-6 py-4">
           <Link
@@ -78,6 +83,7 @@ export default async function TrendingPage({
         </div>
       </nav>
 
+      {/* MAIN CONTENT WRAPPER */}
       <div className="max-w-[1400px] mx-auto px-6 py-12">
         <div className="flex items-center gap-3 mb-10 border-b border-white/5 pb-6">
           <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
@@ -127,7 +133,7 @@ export default async function TrendingPage({
         </div>
 
         {/* === WIDE BANNER AD === */}
-        <div className="max-w-[1400px] mx-auto px-6 py-6 flex justify-center">
+        <div className="max-w-[1400px] mx-auto px-6 py-6 flex justify-center mt-8">
           <div className="border border-zinc-800/50 bg-black/40 rounded-sm p-4">
             <iframe
               style={{ backgroundColor: "white" }}
@@ -149,7 +155,8 @@ export default async function TrendingPage({
         {/* PAGINATION CONTROLS (The 1, 2, 3 Buttons)                 */}
         {/* ========================================================= */}
         {totalPages > 1 && (
-          <div className="mt-20 pt-10 border-t border-white/5 flex items-center justify-center gap-2">
+          <div className="mt-10 pt-10 border-t border-white/5 flex items-center justify-center gap-2">
+            
             {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
@@ -207,7 +214,30 @@ export default async function TrendingPage({
             )}
           </div>
         )}
-      </div>
+      </div> 
+      {/* ⬅️ CRITICAL FIX: The max-w container ends here, BEFORE the footer! */}
+
+      {/* Upgraded Footer with Legal Links (Now spans full width) */}
+      <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
+        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
+          <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
+          <Link href="/privacy" className="hover:text-white transition duration-300">Privacy Policy</Link>
+          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
+          <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
+          <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
+        </div>
+
+        <div className="text-xl tracking-widest mb-4">
+          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+          <span className="font-light text-zinc-600">Cater</span>
+        </div>
+        <p className="text-zinc-600 text-[10px] uppercase tracking-widest max-w-2xl mx-auto px-6 leading-relaxed mb-4">
+          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
+        </p>
+        <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
+          © {new Date().getFullYear()} • Exclusive Adult Cinema • 18+ Only
+        </p>
+      </footer>
     </div>
   );
 }
