@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Metadata, ResolvingMetadata } from 'next';
-import { Share2, Download, Sparkles, Film } from "lucide-react";
+import { Share2, Download, Sparkles, Film, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
@@ -20,7 +20,7 @@ interface PageProps {
 }
 
 // =========================================================
-// 🚀 UPGRADED TUBE SEO ENGINE (METADATA GENERATOR)
+// 🚀 TUBE SEO ENGINE (METADATA GENERATOR + DMCA SHIELD)
 // =========================================================
 export async function generateMetadata(
   { params }: PageProps,
@@ -35,27 +35,38 @@ export async function generateMetadata(
 
   const video = await prisma.video.findUnique({
     where: { id: videoId },
-    include: {
-      pornstars: { select: { name: true } }
-    }
+    select: { title: true, thumbnail: true, tags: true, status: true, pornstars: { select: { name: true } } }
   });
 
   if (!video) {
     return { title: 'Video Removed | PornCater' };
   }
 
+  // 🔥 SEO INJECTION: If taken down, instantly tell crawlers to de-index the route
+  if (video.status === "DMCA_TAKEDOWN") {
+    return {
+      title: "Content Unavailable - Copyright Restriction | PornCater",
+      description: "Access to this performance asset has been disabled in compliance with regulatory copyright protocols.",
+      robots: {
+        index: false,
+        follow: false,
+        nocache: true,
+      }
+    };
+  }
+
   const starNames = video.pornstars.map(s => s.name).join(', ');
   const tags = video.tags?.join(', ') || '';
   const seoKeywords = `${starNames}, ${tags}, ${video.title}, free porn, HD adult video, stream`;
   const seoDescription = `Watch ${video.title}${starNames ? ` featuring ${starNames}` : ''}. Stream exclusive HD adult cinema on PornCater.`;
-  const canonicalUrl = `https://porncater.com/watch/${video.id}/${resolvedParams.slug}`;
+  const canonicalUrl = `https://porncater.com/watch/${videoId}/${resolvedParams.slug}`;
 
   return {
     title: `${video.title} - PornCater`,
     description: seoDescription,
     keywords: seoKeywords,
     alternates: {
-      canonical: canonicalUrl, // 🔥 FIX: Hardcoded canonical URLs protect against parameter catalog splitting
+      canonical: canonicalUrl,
     },
     openGraph: {
       title: video.title,
@@ -99,6 +110,66 @@ export default async function WatchPage({ params }: PageProps) {
 
   if (!video) notFound();
 
+  // 🔥 SAFE CARRIAGE COMPLIANCE: If status is set to DMCA_TAKEDOWN, intercept and swap the UI frame
+  if (video.status === "DMCA_TAKEDOWN") {
+    return (
+      <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
+        
+        {/* Navbar */}
+        <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
+          <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-12">
+              <Link href="/" className="text-3xl tracking-widest hover:opacity-80 transition duration-300">
+                <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+                <span className="font-light text-white">Cater</span>
+              </Link>
+              <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
+                <Link href="/" className="hover:text-white transition duration-300">Home</Link>
+                <Link href="/category/desi" className="hover:text-white transition duration-300">Desi</Link>
+                <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
+                <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
+              </div>
+            </div>
+            <div className="flex items-center gap-6">
+              <button className="text-zinc-400 hover:text-white text-[11px] uppercase tracking-widest transition duration-300">Login</button>
+              <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white transition-all duration-300">Upload</Link>
+            </div>
+          </div>
+        </nav>
+
+        {/* Tombstone Frame */}
+        <div className="max-w-4xl mx-auto px-6 pt-20 text-center">
+          <div className="border border-white/5 bg-[#0a0a0a] rounded-sm p-12 shadow-2xl flex flex-col items-center">
+            <ShieldAlert className="text-rose-800 mb-6 animate-pulse" size={56} strokeWidth={1} />
+            <h2 className="text-2xl font-serif italic text-white tracking-wide mb-4">
+              Content Disabled Under Copyright Law
+            </h2>
+            <p className="text-zinc-400 max-w-xl mx-auto leading-relaxed mb-8 font-light text-xs">
+              Access to this high-definition media module has been permanently disabled in response to a formal notification of alleged copyright infringement submitted under the terms of the Digital Millennium Copyright Act (DMCA).
+            </p>
+            
+            <div className="bg-black/50 border border-white/5 px-6 py-4 rounded-sm mb-8 w-full max-w-md text-left">
+              <span className="text-[9px] uppercase tracking-widest text-zinc-600 block mb-1">Asset Information</span>
+              <p className="text-zinc-300 text-xs font-mono truncate">{video.title}</p>
+              <span className="text-[9px] uppercase tracking-widest text-zinc-600 block mt-3 mb-1">Resolution Protocol</span>
+              <p className="text-rose-700 text-xs font-mono font-medium">Status Code: 512(c) safe harbor validation active</p>
+            </div>
+
+            <div className="flex gap-4">
+              <Link href="/" className="bg-zinc-100 text-black px-6 py-2.5 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white transition-all duration-300">
+                Return to Directory
+              </Link>
+              <Link href="/dmca" className="border border-zinc-800 text-zinc-400 px-6 py-2.5 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:border-zinc-600 hover:text-white transition-all duration-300">
+                View Policy Details
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Resolve recommendations while ignoring other disabled uploads
   const starIds = video.pornstars.map(s => s.id);
   const tags = video.tags || [];
 
@@ -106,6 +177,7 @@ export default async function WatchPage({ params }: PageProps) {
     prisma.video.findMany({
       where: {
         id: { not: videoId },
+        status: "PUBLISHED", // 🛡️ CRITICAL SECURITY STEP: Filters takedowns from recommendations
         OR: [
           ...(starIds.length > 0 ? [{ pornstars: { some: { id: { in: starIds } } } }] : []),
           ...(tags.length > 0 ? [{ tags: { hasSome: tags } }] : [])
@@ -126,7 +198,6 @@ export default async function WatchPage({ params }: PageProps) {
     month: "long", day: "numeric", year: "numeric",
   });
 
-  // 🔥 SEO CONFIGURATION: Convert text duration (MM:SS or HH:MM:SS) into precise ISO 8601 durations
   const durationParts = (video.duration || "0:00").split(':').map(Number);
   let isoDuration = "PT0M0S";
   if (durationParts.length === 2) {
@@ -135,7 +206,6 @@ export default async function WatchPage({ params }: PageProps) {
     isoDuration = `PT${durationParts[0]}H${durationParts[1]}M${durationParts[2]}S`;
   }
 
-  // Generate structured schema data object
   const jsonLdSchema = {
     "@context": "https://schema.org",
     "@type": "VideoObject",
@@ -162,8 +232,6 @@ export default async function WatchPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-      
-      {/* 🔥 FIX: Highly targeted JSON-LD Schema block injects straight into Googlebot indexing stream */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
@@ -267,7 +335,6 @@ export default async function WatchPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Below the video player ad layout */}
               <DirectBanner
                 banners={blackedSuperLeaderboards}
                 format="banner-970x70"
@@ -276,7 +343,7 @@ export default async function WatchPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* RIGHT: Up Next Sidebar Module */}
+          {/* RIGHT: Sidebar Module */}
           <div className="w-full lg:w-[32%]">
             <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
             <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
@@ -293,7 +360,7 @@ export default async function WatchPage({ params }: PageProps) {
                         src={v.thumbnail} 
                         className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out" 
                         alt={v.title}
-                        loading="lazy" // 🔥 FIX: Prevents non-viewport assets from locking main parsing threads
+                        loading="lazy" 
                         decoding="async"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />

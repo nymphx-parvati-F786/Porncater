@@ -9,6 +9,13 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+// ADD THIS ENUM AT THE TOP (Below generator/datasource)
+enum VideoStatus {
+  PUBLISHED
+  DMCA_TAKEDOWN
+  PRIVATE
+}
+
 model Video {
   id          Int        @id @default(autoincrement())
   title       String     @db.VarChar(500)
@@ -22,7 +29,11 @@ model Video {
   tags        String[]                   // Enables specific tags: ["Anal", "POV", "HD"]
   
   // Changed to Many-to-Many: Now a single video can feature 1, 2, or 10 Pornstars
-  pornstars   Pornstar[] 
+  pornstars   Pornstar[]
+
+  // 🔥 ADD THESE TWO LINES FOR DMCA HANDLING
+  status      VideoStatus @default(PUBLISHED)
+  dmcaNotes   String?     @db.Text 
   
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
