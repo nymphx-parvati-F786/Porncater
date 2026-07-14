@@ -1,0 +1,36 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-13_19-50-41-570Z.txt
+=========================================
+
+[Loader] Loaded 100 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/151677/valentina-nappi-fucking-valentina-nappi/ (Attempt 1/2)
+(node:15740) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/MyServletApp/porncater.com/porncater/bulk-upload.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to D:\MyServletApp\porncater.com\porncater\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/151677/valentina-nappi-fucking-valentina-nappi/
+[generic] valentina-nappi-fucking-valentina-nappi: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] valentina-nappi-fucking-valentina-nappi: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 151677: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-nappi-fucking-valentina-nappi.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp6i9wwak7.cookies"
+[download] 100% of  183.88MiB in 00:00:37 at 4.93MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 22:01
+[Bunny Stream] Creating entry for: Valentina Nappi. Fucking - Valentina nappi
+[Bunny Stream] Uploading binary to GUID: da272e9f-99aa-4618-baa8-02bb92d173c0
+[Bunny Storage] Uploading cover asset for: valentina-nappi-fucking-valentina-nappi
+[Error: ENOENT: no such file or directory, open 'D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-nappi-fucking-valentina-nappi.jpg'] {
+  errno: [33m-4058[39m,
+  code: [32m'ENOENT'[39m,
+  syscall: [32m'open'[39m,
+  path: [32m'D:\\MyServletApp\\porncater.com\\porncater\\local_videos_to_upload\\valentina-nappi-fucking-valentina-nappi.jpg'[39m
+}

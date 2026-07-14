@@ -1,0 +1,17 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-14_00-50-45-293Z.txt
+=========================================
+
+[Loader] Loaded 100 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/151677/valentina-nappi-fucking-valentina-nappi/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/151677/valentina-nappi-fucking-valentina-nappi/
+[generic] valentina-nappi-fucking-valentina-nappi: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] valentina-nappi-fucking-valentina-nappi: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 151677: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...

@@ -1,0 +1,24 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-13_19-52-52-886Z.txt
+=========================================
+
+[Loader] Loaded 99 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/29195/valentina-valentina-nappi/ (Attempt 1/2)
+(node:9520) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///D:/MyServletApp/porncater.com/porncater/bulk-upload.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to D:\MyServletApp\porncater.com\porncater\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/29195/valentina-valentina-nappi/
+[generic] valentina-valentina-nappi: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] valentina-valentina-nappi: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 29195: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-valentina-nappi.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpkquchx9p.cookies"

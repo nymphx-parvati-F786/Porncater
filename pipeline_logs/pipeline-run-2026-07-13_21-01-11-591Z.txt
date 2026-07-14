@@ -1,0 +1,41 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-13_21-01-11-591Z.txt
+=========================================
+
+[Loader] Loaded 99 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/29195/valentina-valentina-nappi/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/29195/valentina-valentina-nappi/
+[generic] valentina-valentina-nappi: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] valentina-valentina-nappi: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 29195: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-valentina-nappi.jpg
+[download] D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-valentina-nappi.mp4 has already been downloaded
+[download] 100% of  549.41MiB
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 42:53
+[Bunny Stream] Creating entry for: Valentina - valentina nappi
+[Bunny Stream] Uploading binary to GUID: 81cd2992-6a3d-4b4d-ba51-f8b7da1e48b2
+[Bunny Storage] Uploading cover asset for: valentina-valentina-nappi
+[Database] Instantiating Prisma engine payload for: valentina-valentina-nappi
+[Success] Pipeline execution fully finished for: Valentina - valentina nappi
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/66365/valentina-nappi-italian-passion-valentina-nappi/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/66365/valentina-nappi-italian-passion-valentina-nappi/
+[generic] valentina-nappi-italian-passion-valentina-nappi: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] valentina-nappi-italian-passion-valentina-nappi: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 66365: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-nappi-italian-passion-valentina-nappi.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\valentina-nappi-italian-passion-valentina-nappi.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp_0h16m49.cookies"

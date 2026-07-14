@@ -7,6 +7,15 @@ import 'dotenv/config';
 import { getVideoDurationInSeconds } from 'get-video-duration';
 // @ts-ignore
 import ffprobe from 'ffprobe-static';
+import ffmpeg from 'fluent-ffmpeg';
+// @ts-ignore
+import ffmpegStatic from 'ffmpeg-static';
+if (ffmpegStatic) {
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+} else {
+  // Handle the error however fits your app best
+  throw new Error('Could not find the ffmpeg binary for this system.');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -98,12 +107,12 @@ async function uploadToBunnyStream(title: string, filePath: string) {
 
 async function uploadToBunnyStorage(slug: string, filePath: string) {
   console.log(`[Bunny Storage] Uploading cover asset for: ${slug}`);
-  const thumbnailPath = `thumbnails/${slug}-${Date.now()}.jpg`;
+  const thumbnailPath = `thumbnails/${slug}-${Date.now()}.webp`;
 
   const fileStream = fs.createReadStream(filePath);
   const uploadRes = await fetch(`https://sg.storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`, {
     method: 'PUT',
-    headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': 'image/jpeg' },
+    headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': 'image/webp' },
     body: fileStream,
     duplex: 'half'
   } as any);
@@ -160,7 +169,7 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
       const tags = metadata.tags || [];
 
       const videoPath = path.join(TEMP_DIR, `${slug}.mp4`);
-      const thumbPath = path.join(TEMP_DIR, `${slug}.jpg`);
+      const thumbPath = path.join(TEMP_DIR, `${slug}.webp`);
 
       console.log(`[Download] Starting engine. Waiting for aria2c to finish...`);
 
@@ -181,18 +190,49 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
 
       console.log(`[Duration] Inspecting local .mp4 file to calculate exact length...`);
       let finalDuration = duration;
+      let thumbnailTimestamp = ['00:00:15']; // Default fallback if calculation fails
+
       try {
         const durationInSeconds = await getVideoDurationInSeconds(videoPath, ffprobe.path);
 
-        // 🔥 NEW: Clean physical file formatting
+        // Clean physical file formatting
         finalDuration = formatDuration(durationInSeconds);
 
-        console.log(`[Duration] Successfully calculated: ${finalDuration}`);
+        // Calculate 35% of the video duration
+        const thumbDuration = durationInSeconds * 0.35;
+
+        // Format to HH:MM:SS
+        const thb_h = Math.floor(thumbDuration / 3600);
+        const thb_m = Math.floor((thumbDuration % 3600) / 60); // Added modulo here
+        const thb_s = Math.floor(thumbDuration % 60);
+
+        const formattedThumbTime = `${thb_h.toString().padStart(2, '0')}:${thb_m.toString().padStart(2, '0')}:${thb_s.toString().padStart(2, '0')}`;
+        thumbnailTimestamp = [formattedThumbTime];
+
+        console.log(`[Duration] Successfully calculated: ${finalDuration}. Thumbnail mark set to: ${formattedThumbTime}`);
       } catch (err) {
-        console.log(`[Duration Warning] Could not parse local file duration, using fallback.`);
+        console.log(`[Duration Warning] Could not parse local file duration, using fallback 00:00:15.`);
       }
 
-      const finalThumbPath = fs.existsSync(thumbPath) ? thumbPath : videoPath.replace('.mp4', '.jpg');
+      let finalThumbPath = fs.existsSync(thumbPath) ? thumbPath : videoPath.replace('.mp4', '.webp');
+
+      // 🔥 THE SHIELD: If the target site blocked the thumbnail download, generate our own!
+      if (!fs.existsSync(finalThumbPath)) {
+        console.log(`[Thumbnail Engine] Source image missing (SSL blocked). Extracting high-res frame from local video...`);
+          await new Promise((resolve, reject) => {
+            ffmpeg(videoPath)
+              .on('end', () => resolve(true))
+              .on('error', (err) => reject(err))
+              .screenshots({
+                timestamps: thumbnailTimestamp, // Snaps a picture exactly at 35% of total duration or at 15 seconds seconds into the video
+                filename: path.basename(finalThumbPath),
+                folder: TEMP_DIR,
+                size: '1280x720'
+              });
+          });
+        console.log(`[Thumbnail Engine] Successfully generated custom fallback thumbnail.`);
+      }
+
       const videoUrl = await uploadToBunnyStream(title, videoPath);
       const thumbnailUrl = await uploadToBunnyStorage(slug, finalThumbPath);
 
