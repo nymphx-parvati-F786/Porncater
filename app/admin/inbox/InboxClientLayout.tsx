@@ -193,9 +193,22 @@ export default function InboxClientLayout({
                                 </div>
                             </div>
 
-                            {/* Message Payload Body Box */}
-                            <div className="flex-1 text-sm text-zinc-300 font-light leading-relaxed whitespace-pre-wrap select-text bg-[#030303]/30 border border-white/5 rounded-sm p-6 md:p-8 font-mono text-xs">
-                                {activeMessage.body}
+                            {/* Message Payload Body Box (Upgraded Rich HTML Engine) */}
+                            <div className="flex-1 bg-white rounded-sm overflow-hidden flex flex-col border border-white/10 mt-6 relative shadow-2xl">
+                                {activeMessage.body.trim().startsWith("<") || activeMessage.body.includes("html>") ? (
+                                    /* 🎬 CINEMATIC HTML RENDERER: Quarantines their styles so it doesn't break your dark mode */
+                                    <iframe
+                                        srcDoc={activeMessage.body}
+                                        className="w-full h-full flex-1 border-none bg-white"
+                                        sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"
+                                        title="Email Viewer"
+                                    />
+                                ) : (
+                                    /* 📝 FALLBACK PLAIN TEXT RENDERER */
+                                    <div className="flex-1 p-6 md:p-8 text-sm text-zinc-800 font-medium leading-relaxed whitespace-pre-wrap select-text bg-[#f9f9f9] overflow-y-auto">
+                                        {activeMessage.body}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Secure Administrative Reply Interface Draft Box */}
