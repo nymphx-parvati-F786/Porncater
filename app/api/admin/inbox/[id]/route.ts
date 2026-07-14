@@ -5,11 +5,14 @@ const prisma = new PrismaClient();
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const data = await request.json();
-    const id = parseInt(params.id);
+    
+    // 🔥 THE FIX: We must await the params Promise before reading the ID
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id);
     
     // Dynamically update whatever properties are sent (isRead or isTrashed)
     await prisma.inboxMessage.update({
@@ -19,6 +22,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("Patch Error:", error);
     return NextResponse.json({ error: "Failed to update message" }, { status: 500 });
   }
 }
