@@ -1,27 +1,26 @@
 import { PrismaClient } from "@prisma/client";
 import { Metadata, ResolvingMetadata } from 'next';
-import { Share2, Download, Sparkles, Film, Eye } from "lucide-react";
+import { Share2, Download, Sparkles, Film } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
 import AdSpace from "@/src/components/ui/ads/AdSpace";
 
-// Import our interactive client islands
+// Import interactive client islands
 import LikeButton from "@/src/components/ui/watch/LikeButton";
 import ViewTracker from "@/src/components/ui/watch/ViewTracker";
 import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards } from "@/src/data/adConfig";
-import JuicyAd from "@/src/components/ui/ads/JuicyAdsBanner"; // Adjust path if you kept the name AdSpace
+import JuicyAd from "@/src/components/ui/ads/JuicyAdsBanner"; 
 
 const prisma = new PrismaClient();
 
 interface PageProps {
-  // 🚀 FIXED: Next.js App Router exposes parent parameters as a Promise array
   params: Promise<{ id: string; slug: string }>;
 }
 
 // =========================================================
-// 🚀 PREMIUM TUBE SEO ENGINE (METADATA GENERATOR)
+// 🚀 UPGRADED TUBE SEO ENGINE (METADATA GENERATOR)
 // =========================================================
 export async function generateMetadata(
   { params }: PageProps,
@@ -34,7 +33,6 @@ export async function generateMetadata(
     return { title: 'Video Not Found | PornCater' };
   }
 
-  // Pull minimal fields directly inside database space
   const video = await prisma.video.findUnique({
     where: { id: videoId },
     include: {
@@ -50,15 +48,19 @@ export async function generateMetadata(
   const tags = video.tags?.join(', ') || '';
   const seoKeywords = `${starNames}, ${tags}, ${video.title}, free porn, HD adult video, stream`;
   const seoDescription = `Watch ${video.title}${starNames ? ` featuring ${starNames}` : ''}. Stream exclusive HD adult cinema on PornCater.`;
+  const canonicalUrl = `https://porncater.com/watch/${video.id}/${resolvedParams.slug}`;
 
   return {
     title: `${video.title} - PornCater`,
     description: seoDescription,
     keywords: seoKeywords,
+    alternates: {
+      canonical: canonicalUrl, // 🔥 FIX: Hardcoded canonical URLs protect against parameter catalog splitting
+    },
     openGraph: {
       title: video.title,
       description: seoDescription,
-      url: `https://porncater.com/watch/${video.id}/${resolvedParams.slug}`,
+      url: canonicalUrl,
       siteName: 'PornCater',
       images: [
         {
@@ -88,7 +90,6 @@ export default async function WatchPage({ params }: PageProps) {
 
   if (isNaN(videoId)) notFound();
 
-  // 1. Core data fetch inside local database region thread
   const video = await prisma.video.findUnique({
     where: { id: videoId },
     include: {
@@ -98,7 +99,6 @@ export default async function WatchPage({ params }: PageProps) {
 
   if (!video) notFound();
 
-  // 2. Fetch related blocks and performer slots in parallel (Zero network waterfall)
   const starIds = video.pornstars.map(s => s.id);
   const tags = video.tags || [];
 
@@ -113,12 +113,12 @@ export default async function WatchPage({ params }: PageProps) {
       },
       take: 10,
       orderBy: { views: 'desc' },
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true, likes: true, slug: true } // 🚀 Added slug selection
+      select: { id: true, title: true, thumbnail: true, duration: true, views: true, likes: true, slug: true } 
     }),
     prisma.pornstar.findMany({
       take: 5,
       orderBy: { views: 'desc' },
-      select: { id: true, name: true, avatarUrl: true, views: true, slug: true } // 🚀 Added slug selection
+      select: { id: true, name: true, avatarUrl: true, views: true, slug: true } 
     })
   ]);
 
@@ -126,10 +126,49 @@ export default async function WatchPage({ params }: PageProps) {
     month: "long", day: "numeric", year: "numeric",
   });
 
+  // 🔥 SEO CONFIGURATION: Convert text duration (MM:SS or HH:MM:SS) into precise ISO 8601 durations
+  const durationParts = (video.duration || "0:00").split(':').map(Number);
+  let isoDuration = "PT0M0S";
+  if (durationParts.length === 2) {
+    isoDuration = `PT${durationParts[0]}M${durationParts[1]}S`;
+  } else if (durationParts.length === 3) {
+    isoDuration = `PT${durationParts[0]}H${durationParts[1]}M${durationParts[2]}S`;
+  }
+
+  // Generate structured schema data object
+  const jsonLdSchema = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    "name": video.title,
+    "description": `Stream ${video.title} in HD format on PornCater.`,
+    "thumbnailUrl": [video.thumbnail],
+    "uploadDate": new Date(video.createdAt).toISOString(),
+    "duration": isoDuration,
+    "contentUrl": video.videoUrl,
+    "embedUrl": `https://porncater.com/embed/${video.id}`,
+    "interactionStatistic": {
+      "@type": "InteractionCounter",
+      "interactionType": "https://schema.org/WatchAction",
+      "userInteractionCount": video.views || 0
+    },
+    "actor": video.pornstars.map(star => ({
+      "@type": "PerformanceRole",
+      "actor": {
+        "@type": "Person",
+        "name": star.name
+      }
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
+      
+      {/* 🔥 FIX: Highly targeted JSON-LD Schema block injects straight into Googlebot indexing stream */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
+      />
 
-      {/* Invisible View Retention Metric Tracker Island */}
       <ViewTracker videoId={video.id} />
 
       {/* Navbar: Elegant Frosted Glass */}
@@ -188,9 +227,14 @@ export default async function WatchPage({ params }: PageProps) {
                       <span className="text-[10px] uppercase tracking-widest text-zinc-600">Featuring:</span>
                       <div className="flex flex-wrap gap-2">
                         {video.pornstars.map((star) => (
-                          /* 🚀 SEO FIX: Directing link anchors to alphanumeric performer slugs instead of mechanical integers */
                           <Link key={star.id} href={`/pornstars/${star.slug}`} className="flex items-center gap-2 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 rounded-full pr-3 py-0.5 transition-colors">
-                            <img src={star.avatarUrl || "/thumbnails/default-avatar.png"} alt={star.name} className="w-6 h-6 rounded-full object-cover" />
+                            <img 
+                              src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
+                              alt={star.name} 
+                              className="w-6 h-6 rounded-full object-cover"
+                              loading="lazy"
+                              decoding="async"
+                            />
                             <span className="text-[10px] text-zinc-300 uppercase tracking-widest">{star.name}</span>
                           </Link>
                         ))}
@@ -223,7 +267,7 @@ export default async function WatchPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* Below the video player */}
+              {/* Below the video player ad layout */}
               <DirectBanner
                 banners={blackedSuperLeaderboards}
                 format="banner-970x70"
@@ -232,7 +276,7 @@ export default async function WatchPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* RIGHT: Up Next Interactive Sidebar Module */}
+          {/* RIGHT: Up Next Sidebar Module */}
           <div className="w-full lg:w-[32%]">
             <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
             <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
@@ -243,10 +287,15 @@ export default async function WatchPage({ params }: PageProps) {
             <div className="flex flex-col gap-5">
               {relatedVideos.length > 0 ? (
                 relatedVideos.slice(0, 8).map((v) => (
-                  /* 🚀 SEO FIX: Combines unique identity tags with alphanumeric title strings to prevent catalog overlapping collisions */
                   <Link key={v.id} href={`/watch/${v.id}/${v.slug}`} className="group flex gap-4 cursor-pointer">
                     <div className="relative flex-shrink-0 bg-zinc-900 rounded-sm overflow-hidden w-[160px] aspect-video">
-                      <img src={v.thumbnail} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out" alt={v.title} />
+                      <img 
+                        src={v.thumbnail} 
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out" 
+                        alt={v.title}
+                        loading="lazy" // 🔥 FIX: Prevents non-viewport assets from locking main parsing threads
+                        decoding="async"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <div className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[9px] tracking-widest rounded-sm text-zinc-300">{v.duration}</div>
                     </div>
@@ -274,9 +323,14 @@ export default async function WatchPage({ params }: PageProps) {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
             {topPornstars.map((star) => (
-              /* 🚀 SEO FIX: Directing relational maps back into verified string parameters */
               <Link key={star.id} href={`/pornstars/${star.slug}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
-                <img src={star.avatarUrl || "/thumbnails/default-avatar.png"} alt={star.name} className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0" />
+                <img 
+                  src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
+                  alt={star.name} 
+                  className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0" 
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute bottom-0 left-0 w-full p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
                   <h4 className="text-white font-serif italic text-xl tracking-wide mb-1">{star.name}</h4>
@@ -298,10 +352,15 @@ export default async function WatchPage({ params }: PageProps) {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
               {relatedVideos.slice(0, 10).map((vid) => (
-                /* 🚀 SEO FIX: Structured link parameters layout */
                 <Link key={vid.id} href={`/watch/${vid.id}/${vid.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                    <img src={vid.thumbnail} alt={vid.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+                    <img 
+                      src={vid.thumbnail} 
+                      alt={vid.title} 
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" 
+                      loading="lazy"
+                      decoding="async"
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{vid.duration}</div>
                     <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">HD</div>
