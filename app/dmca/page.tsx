@@ -120,12 +120,11 @@ export default function DMCAPage() {
 
       {/* Upgraded Footer with Legal Links */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-        
-        {/* NEW: Professional Legal Navigation */}
+
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
-          <Link href="/dmca" className="text-rose-700 hover:text-rose-500 transition duration-300">DMCA / Copyright</Link>
-          <Link href="/privacy" className="hover:text-white transition duration-300">Privacy Policy</Link>
-          <Link href="/terms" className="hover:text-white transition duration-300">Terms of Service</Link>
+          <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
+          <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
+          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
           <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
           <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
         </div>

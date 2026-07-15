@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import SearchBar from "@/src/components/ui/SearchBar";
 
 const prisma = new PrismaClient();
 
@@ -69,17 +70,35 @@ export default async function TrendingPage({
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-      
+
       {/* Navbar */}
-      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
-        <div className="max-w-[1400px] mx-auto px-6 py-4">
-          <Link
-            href="/"
-            className="text-3xl tracking-widest hover:opacity-80 transition duration-300"
-          >
-            <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-            <span className="font-light text-white">Cater</span>
-          </Link>
+      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
+        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-12">
+            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
+              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+              <span className="font-light text-white">Cater</span>
+            </Link>
+
+            {/* Links */}
+            <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
+              <Link href="/" className="hover:text-white transition duration-300">Home</Link>
+              <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
+              <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
+              <Link href="/live" className="text-rose-700 flex items-center gap-2 transition duration-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-700 animate-pulse"></span> Live
+              </Link>
+            </div>
+          </div>
+
+          <SearchBar />
+
+          {/* Auth */}
+          <div className="flex items-center gap-6 text-sm tracking-wide">
+            <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
+              Upload
+            </Link>
+          </div>
         </div>
       </nav>
 
@@ -141,7 +160,8 @@ export default async function TrendingPage({
               height="250"
               scrolling="no"
               frameBorder="0"
-              allowTransparency={true}
+              // This bypasses the TypeScript check while keeping the lowercase attribute
+            {...({ allowtransparency: "true" } as any)}
               marginHeight={0}
               marginWidth={0}
               name="spot_id_10013327"
@@ -156,7 +176,7 @@ export default async function TrendingPage({
         {/* ========================================================= */}
         {totalPages > 1 && (
           <div className="mt-10 pt-10 border-t border-white/5 flex items-center justify-center gap-2">
-            
+
             {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
@@ -188,11 +208,10 @@ export default async function TrendingPage({
                 <Link
                   key={pageNum}
                   href={`/trending?page=${pageNum}`}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
-                    currentPage === pageNum
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
                       ? "border-rose-800 bg-rose-900/20 text-white"
                       : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
-                  }`}
+                    }`}
                 >
                   {pageNum}
                 </Link>
@@ -214,14 +233,14 @@ export default async function TrendingPage({
             )}
           </div>
         )}
-      </div> 
+      </div>
       {/* ⬅️ CRITICAL FIX: The max-w container ends here, BEFORE the footer! */}
 
       {/* Upgraded Footer with Legal Links (Now spans full width) */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
-          <Link href="/privacy" className="hover:text-white transition duration-300">Privacy Policy</Link>
+          <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
           <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
           <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
           <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
