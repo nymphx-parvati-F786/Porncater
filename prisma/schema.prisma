@@ -1,15 +1,18 @@
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  // 🔥 ADVANCED SPEED: Enable Postgres extensions
+  previewFeatures = ["postgresqlExtensions"] 
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  // 🔥 ADVANCED SPEED: Load the Trigram extension for lightning-fast text search
+  extensions = [pg_trgm] 
 }
 
-// ADD THIS ENUM AT THE TOP (Below generator/datasource)
 enum VideoStatus {
   PUBLISHED
   DMCA_TAKEDOWN
@@ -17,30 +20,32 @@ enum VideoStatus {
 }
 
 model Video {
-  id          Int        @id @default(autoincrement())
-  title       String     @db.VarChar(500)
-  slug        String     @unique
+  id          Int         @id @default(autoincrement())
+  title       String      @db.VarChar(500)
+  slug        String      @unique
   videoUrl    String
   thumbnail   String
   duration    String
-  views       Int        @default(0)
-  likes       Int        @default(0)     // Enables the "Adore" button
+  views       Int         @default(0)
+  likes       Int         @default(0)      // Enables the "Adore" button
   category    String?                    // Primary category (e.g., "Hardcore")
   tags        String[]                   // Enables specific tags: ["Anal", "POV", "HD"]
   
   // Changed to Many-to-Many: Now a single video can feature 1, 2, or 10 Pornstars
   pornstars   Pornstar[]
 
-  // 🔥 ADD THESE TWO LINES FOR DMCA HANDLING
+  // DMCA HANDLING
   status      VideoStatus @default(PUBLISHED)
   dmcaNotes   String?     @db.Text 
   
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  // Add these lines right before the closing bracket!
+  // === INDEXES FOR MAXIMUM SPEED ===
   @@index([views(sort: Desc)])
   @@index([createdAt(sort: Desc)])
+  // 🔥 THE MAGIC BULLET: GIN Trigram index for instant case-insensitive search
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 model Pornstar {
@@ -61,7 +66,7 @@ model Pornstar {
   
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
-  // Add this!
+
   @@index([views(sort: Desc)])
 }
 
