@@ -1,0 +1,49 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-14_20-48-56-119Z.txt
+=========================================
+
+[Loader] Loaded 500 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/
+[generic] adriana-chechik-bedroom-romance-adriana-chechik: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] adriana-chechik-bedroom-romance-adriana-chechik: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 63506: Downloading 1 format(s): 720p
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.jpg
+[download] D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.mp4 has already been downloaded
+[download] 100% of  123.50MiB
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 14:01. Thumbnail mark set to: 00:04:54
+[Bunny Stream] Creating entry for: Adriana Chechik - Bedroom Romance - Adriana chechik
+[Bunny Stream] Uploading binary to GUID: b887e70b-395d-45ff-b5b3-090fe1f49a11
+[Bunny Storage] Uploading cover asset for: adriana-chechik-bedroom-romance-adriana-chechik
+[Database] Instantiating Prisma engine payload for: adriana-chechik-bedroom-romance-adriana-chechik
+[Success] Pipeline execution fully finished for: Adriana Chechik - Bedroom Romance - Adriana chechik
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/167375/from-one-hole-to-another-adriana-chechik-adriana-chechik/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/167375/from-one-hole-to-another-adriana-chechik-adriana-chechik/
+[generic] from-one-hole-to-another-adriana-chechik-adriana-chechik: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] from-one-hole-to-another-adriana-chechik-adriana-chechik: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 167375: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\from-one-hole-to-another-adriana-chechik-adriana-chechik.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmppvdlngio.cookies"
+[download] 100% of  313.32MiB in 00:02:05 at 2.50MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 28:32. Thumbnail mark set to: 00:09:59
+[Thumbnail Engine] Source image missing (SSL blocked). Extracting high-res frame from local video...
+[Thumbnail Engine] Successfully generated custom fallback thumbnail.
+[Bunny Stream] Creating entry for: From One Hole To Another - Adriana Chechik - Adriana chechik
+[Bunny Stream] Uploading binary to GUID: 6cb76510-1f9c-436c-a288-c53f51edd8f1

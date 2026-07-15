@@ -256,7 +256,8 @@ export default async function Home() {
             height="300"
             scrolling="no"
             frameBorder="0"
-            allowTransparency={true}
+            // This bypasses the TypeScript check while keeping the lowercase attribute
+            {...({ allowtransparency: "true" } as any)}
             marginHeight={0}
             marginWidth={0}
             name="spot_id_10002484"
@@ -269,7 +270,7 @@ export default async function Home() {
 
       {/* Upgraded Footer with Legal Links */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-        
+
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
           <Link href="/privacy" className="hover:text-white transition duration-300">Privacy Policy</Link>

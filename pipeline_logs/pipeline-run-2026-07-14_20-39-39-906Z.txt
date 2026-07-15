@@ -1,0 +1,56 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-14_20-39-39-906Z.txt
+=========================================
+
+[Loader] Loaded 500 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/
+[generic] adriana-chechik-bedroom-romance-adriana-chechik: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] adriana-chechik-bedroom-romance-adriana-chechik: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 63506: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmphhioozrr.cookies"
+[download] 100% of  123.50MiB in 00:00:21 at 5.73MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 14:01. Thumbnail mark set to: 00:04:54
+[Thumbnail Engine] Source image missing (SSL blocked). Extracting high-res frame from local video...
+[Thumbnail Engine] Successfully generated custom fallback thumbnail.
+[Bunny Stream] Creating entry for: Adriana Chechik - Bedroom Romance - Adriana chechik
+[Bunny Stream] Uploading binary to GUID: 643da35e-1852-4649-a6ad-099d3e08c5a1
+[Bunny Storage] Uploading cover asset for: adriana-chechik-bedroom-romance-adriana-chechik
+[Database] Instantiating Prisma engine payload for: adriana-chechik-bedroom-romance-adriana-chechik
+
+[ERROR] Attempt 1 failed: 
+Invalid `prisma.video.create()` invocation:
+
+
+Can't reach database server at `aws-1-ap-south-1.pooler.supabase.com:6543`
+
+Please make sure your database server is running at `aws-1-ap-south-1.pooler.supabase.com:6543`.
+[Cooling] Pausing for 4 seconds before trying again...
+
+[Extraction] Querying target media: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/ (Attempt 2/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/
+[generic] adriana-chechik-bedroom-romance-adriana-chechik: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] adriana-chechik-bedroom-romance-adriana-chechik: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 63506: Downloading 1 format(s): 720p
+Deleting existing file D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.jpg
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.jpg
+[download] D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\adriana-chechik-bedroom-romance-adriana-chechik.mp4 has already been downloaded
+[download] 100% of  123.50MiB
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 14:01. Thumbnail mark set to: 00:04:54
+[Bunny Stream] Creating entry for: Adriana Chechik - Bedroom Romance - Adriana chechik
+[Bunny Stream] Uploading binary to GUID: 178c6224-5473-4866-a756-87fa39c77c81
