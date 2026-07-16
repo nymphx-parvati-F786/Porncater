@@ -11,7 +11,8 @@ import LikeButton from "@/src/components/ui/watch/LikeButton";
 import ViewTracker from "@/src/components/ui/watch/ViewTracker";
 import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards } from "@/src/data/adConfig";
-import JuicyAd from "@/src/components/ui/ads/JuicyAdsBanner"; 
+import JuicyAd from "@/src/components/ui/ads/JuicyAdsBanner";
+import ReportButton from "@/src/components/ui/watch/ReportButton";
 
 const prisma = new PrismaClient();
 
@@ -114,7 +115,7 @@ export default async function WatchPage({ params }: PageProps) {
   if (video.status === "DMCA_TAKEDOWN") {
     return (
       <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-        
+
         {/* Navbar */}
         <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
           <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
@@ -147,7 +148,7 @@ export default async function WatchPage({ params }: PageProps) {
             <p className="text-zinc-400 max-w-xl mx-auto leading-relaxed mb-8 font-light text-xs">
               Access to this high-definition media module has been permanently disabled in response to a formal notification of alleged copyright infringement submitted under the terms of the Digital Millennium Copyright Act (DMCA).
             </p>
-            
+
             <div className="bg-black/50 border border-white/5 px-6 py-4 rounded-sm mb-8 w-full max-w-md text-left">
               <span className="text-[9px] uppercase tracking-widest text-zinc-600 block mb-1">Asset Information</span>
               <p className="text-zinc-300 text-xs font-mono truncate">{video.title}</p>
@@ -185,12 +186,12 @@ export default async function WatchPage({ params }: PageProps) {
       },
       take: 10,
       orderBy: { views: 'desc' },
-      select: { id: true, title: true, thumbnail: true, duration: true, views: true, likes: true, slug: true } 
+      select: { id: true, title: true, thumbnail: true, duration: true, views: true, likes: true, slug: true }
     }),
     prisma.pornstar.findMany({
       take: 5,
       orderBy: { views: 'desc' },
-      select: { id: true, name: true, avatarUrl: true, views: true, slug: true } 
+      select: { id: true, name: true, avatarUrl: true, views: true, slug: true }
     })
   ]);
 
@@ -296,9 +297,9 @@ export default async function WatchPage({ params }: PageProps) {
                       <div className="flex flex-wrap gap-2">
                         {video.pornstars.map((star) => (
                           <Link key={star.id} href={`/pornstars/${star.slug}`} className="flex items-center gap-2 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 rounded-full pr-3 py-0.5 transition-colors">
-                            <img 
-                              src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
-                              alt={star.name} 
+                            <img
+                              src={star.avatarUrl || "/thumbnails/default-avatar.png"}
+                              alt={star.name}
                               className="w-6 h-6 rounded-full object-cover"
                               loading="lazy"
                               decoding="async"
@@ -319,6 +320,8 @@ export default async function WatchPage({ params }: PageProps) {
                   <button className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest">
                     <Download size={16} strokeWidth={1.5} /> Save
                   </button>
+                  {/* 🔥 Inject the compliance report button here */}
+                  <ReportButton videoId={video.id} />
                 </div>
               </div>
 
@@ -356,11 +359,11 @@ export default async function WatchPage({ params }: PageProps) {
                 relatedVideos.slice(0, 8).map((v) => (
                   <Link key={v.id} href={`/watch/${v.id}/${v.slug}`} className="group flex gap-4 cursor-pointer">
                     <div className="relative flex-shrink-0 bg-zinc-900 rounded-sm overflow-hidden w-[160px] aspect-video">
-                      <img 
-                        src={v.thumbnail} 
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out" 
+                      <img
+                        src={v.thumbnail}
+                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out"
                         alt={v.title}
-                        loading="lazy" 
+                        loading="lazy"
                         decoding="async"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -391,10 +394,10 @@ export default async function WatchPage({ params }: PageProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
             {topPornstars.map((star) => (
               <Link key={star.id} href={`/pornstars/${star.slug}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
-                <img 
-                  src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
-                  alt={star.name} 
-                  className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0" 
+                <img
+                  src={star.avatarUrl || "/thumbnails/default-avatar.png"}
+                  alt={star.name}
+                  className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0"
                   loading="lazy"
                   decoding="async"
                 />
@@ -421,10 +424,10 @@ export default async function WatchPage({ params }: PageProps) {
               {relatedVideos.slice(0, 10).map((vid) => (
                 <Link key={vid.id} href={`/watch/${vid.id}/${vid.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                    <img 
-                      src={vid.thumbnail} 
-                      alt={vid.title} 
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" 
+                    <img
+                      src={vid.thumbnail}
+                      alt={vid.title}
+                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                       loading="lazy"
                       decoding="async"
                     />
@@ -446,27 +449,27 @@ export default async function WatchPage({ params }: PageProps) {
         )}
 
         {/* Upgraded Footer with Legal Links */}
-      <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-        
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
-          <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
-          <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
-          <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
-          <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
-        </div>
+        <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
 
-        <div className="text-xl tracking-widest mb-4">
-          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-          <span className="font-light text-zinc-600">Cater</span>
-        </div>
-        <p className="text-zinc-600 text-[10px] uppercase tracking-widest max-w-2xl mx-auto px-6 leading-relaxed mb-4">
-          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
-        </p>
-        <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} • Exclusive Adult Cinema • 18+ Only
-        </p>
-      </footer>
+          <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
+            <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
+            <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
+            <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
+            <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
+            <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
+          </div>
+
+          <div className="text-xl tracking-widest mb-4">
+            <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+            <span className="font-light text-zinc-600">Cater</span>
+          </div>
+          <p className="text-zinc-600 text-[10px] uppercase tracking-widest max-w-2xl mx-auto px-6 leading-relaxed mb-4">
+            All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
+          </p>
+          <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
+            © {new Date().getFullYear()} • Exclusive Adult Cinema • 18+ Only
+          </p>
+        </footer>
       </div>
     </div>
   );

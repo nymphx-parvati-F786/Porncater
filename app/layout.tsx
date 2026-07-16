@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'PornCater | Free High Quality Porn Videos',
   description: 'Watch the best high-quality porn videos on PornCater. Discover trending pornstars, exclusive categories, and daily updated HD content.',
+  // 🔥 THE RTA TAG: Tells crawlers and affiliate reviewers this is a verified 18+ site
+  other: {
+    rating: "RTA-5042-1996-1400-1577-RTA",
+  },
   openGraph: {
     title: 'PornCater',
     description: 'Watch the best high-quality adult videos on PornCater.',
@@ -36,9 +40,9 @@ export default function RootLayout({
     >
       <head>
         {/* JuicyAds Website Verification Meta Tag */}
-        <meta 
-          name="juicyads-verification" 
-          content="e3101afb907fa706467fa4a2213b3058" 
+        <meta
+          name="juicyads-verification"
+          content="e3101afb907fa706467fa4a2213b3058"
         />
       </head>
       <body className="min-h-full flex flex-col">{children}</body>

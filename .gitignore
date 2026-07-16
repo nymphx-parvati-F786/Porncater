@@ -50,3 +50,5 @@ next-env.d.ts
 /urls.txt
 
 /failed_urls.txt
+
+/pipeline_logs

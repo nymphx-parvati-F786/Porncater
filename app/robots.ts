@@ -5,10 +5,18 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // CRITICAL: Block bots from wasting your Vercel/Supabase bandwidth
-      disallow: ['/admin/', '/api/'], 
+      // 🔥 BLOCK CRAWLERS FROM INDEXING THIN CONTENT & ADMIN ROUTES
+      disallow: [
+        '/search?q=*', 
+        '/admin/', 
+        '/api/',
+        '/embed/', // Don't let Google index the headless iframes as standalone pages
+      ],
     },
-    // Points bots directly to the dynamic sitemap we just built
-    sitemap: 'https://porncater.com/sitemap.xml', 
+    // Submit both your standard sitemap AND your new hardcore video sitemap
+    sitemap: [
+      'https://porncater.com/sitemap.xml',
+      'https://porncater.com/sitemap-videos.xml'
+    ],
   };
 }
