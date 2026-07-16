@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { Metadata } from "next";
 import { Play, User, Flame, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // 🔥 ADDED THIS SEXY IMPORT
 import SearchBar from "@/src/components/ui/SearchBar";
 
 const prisma = new PrismaClient();
@@ -52,7 +53,6 @@ export default async function Home() {
   ];
 
   // 🔥 SEO UPGRADE: Sitelinks Search Box Schema
-  // This tells Google to render a search bar for your site directly on the Google results page!
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -75,8 +75,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 🔥 SEO FIX: The Visually Hidden H1 Tag. 
-          Maintains your elegant UI while satisfying Google's strict heading hierarchy requirements. */}
+      {/* 🔥 SEO FIX: The Visually Hidden H1 Tag. */}
       <h1 className="sr-only">Free HD Porn Videos & Premium Adult Cinema - PornCater</h1>
 
       {/* Navbar */}
@@ -135,12 +134,14 @@ export default async function Home() {
           {trendingVideos.map((video, index) => (
             <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                <img
+                {/* 🔥 UPGRADED TO NEXT/IMAGE */}
+                <Image
                   src={video.thumbnail}
                   alt={video.title}
-                  // 🔥 SEO FIX: High-priority fetching for the first few images to boost LCP (Largest Contentful Paint) score
-                  fetchPriority={index < 4 ? "high" : "auto"}
-                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+                  fill
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                  priority={index < 4}
+                  className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">
@@ -179,13 +180,14 @@ export default async function Home() {
             {latestVideos.map((video) => (
               <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                  <img
+                  {/* 🔥 UPGRADED TO NEXT/IMAGE */}
+                  <Image
                     src={video.thumbnail}
                     alt={video.title}
-                    // 🔥 SEO FIX: Lazy load images that are off-screen initially
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                    // next/image is lazy by default, no need for the manual attributes!
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="absolute top-2 left-2 border border-rose-800/50 bg-rose-900/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-rose-100">
@@ -223,12 +225,13 @@ export default async function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {topPornstars.map((star) => (
             <Link key={star.id} href={`/pornstars/${star.slug}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
-              <img
+              {/* 🔥 UPGRADED TO NEXT/IMAGE */}
+              <Image
                 src={star.avatarUrl || "/thumbnails/default-avatar.png"}
                 alt={star.name}
-                loading="lazy"
-                decoding="async"
-                className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0"
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                className="object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
               <div className="absolute bottom-0 left-0 w-full p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
@@ -253,21 +256,19 @@ export default async function Home() {
             height="300"
             scrolling="no"
             frameBorder="0"
-            // This bypasses the TypeScript check while keeping the lowercase attribute
             {...({ allowtransparency: "true" } as any)}
             marginHeight={0}
             marginWidth={0}
             name="spot_id_10002484"
             src="//a.adtng.com/get/10002484?ata=deviparvatilovemuslimcocks"
             title="Advertisement"
-            loading="lazy" // 🔥 SEO FIX: Prevents ad iFrames from blocking initial page load
+            loading="lazy" 
           />
         </div>
       </div>
 
       {/* Upgraded Footer with Legal Links */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>

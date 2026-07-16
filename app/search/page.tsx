@@ -1,6 +1,7 @@
 import { PrismaClient, Prisma } from "@prisma/client";
 import { Search as SearchIcon, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // 🔥 BRINGING IN THE HEAVY ARTILLERY
 import { redirect } from "next/navigation";
 import SearchBar from "../../src/components/ui/SearchBar";
 
@@ -26,7 +27,6 @@ export default async function SearchPage({
 
   // 3. Server-side fetch: Fast and SEO-friendly
   // Using case-insensitive search on the title
-  // 3. Server-side fetch: Fast and SEO-friendly
   const whereClause: Prisma.VideoWhereInput = {
     status: "PUBLISHED", // Now TS knows this must be your VideoStatus Enum
     title: {
@@ -116,10 +116,18 @@ export default async function SearchPage({
       <div className="max-w-[1400px] mx-auto px-6 py-12">
         {videos.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
-            {videos.map((video) => (
+            {videos.map((video, index) => ( // 🔥 INJECTED THE INDEX
               <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                  <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+                  {/* 🔥 UPGRADED TO NEXT/IMAGE */}
+                  <Image 
+                    src={video.thumbnail} 
+                    alt={video.title} 
+                    fill
+                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                    priority={index < 8} // Instantly loads the first 8 results
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" 
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
                     {video.duration}

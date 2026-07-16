@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // 🔥 WE NEED THIS
 import SearchBar from "@/src/components/ui/SearchBar";
 
 const prisma = new PrismaClient();
@@ -16,12 +17,15 @@ export default async function LatestPage({
 
     const [videos, totalCount] = await Promise.all([
         prisma.video.findMany({
+            where: { status: "PUBLISHED" }, // 🛡️ ADDED DMCA/PUBLISHED SHIELD HERE TOO!
             take: videosPerPage,
             skip: (currentPage - 1) * videosPerPage, // If page 2, skip first 20
             orderBy: { createdAt: "desc" },
             select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
         }),
-        prisma.video.count()
+        prisma.video.count({
+            where: { status: "PUBLISHED" }, // 🛡️ AND HERE
+        })
     ])
 
     const totalPages = Math.ceil(totalCount / videosPerPage);
@@ -37,7 +41,7 @@ export default async function LatestPage({
     return (
         <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
 
-            {/* Basic Navbar (You can replace this with your full global navbar) */}
+            {/* Basic Navbar */}
             <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
                 <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-12">
@@ -59,9 +63,6 @@ export default async function LatestPage({
 
                     {/* Auth */}
                     <div className="flex items-center gap-6 text-sm tracking-wide">
-                        {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
-              <User size={18} strokeWidth={1.5} /> Login
-            </button>*/}
                         <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
                             Upload
                         </Link>
@@ -69,7 +70,7 @@ export default async function LatestPage({
                 </div>
             </nav>
 
-            <div className="max-w-350 mx-auto px-6 py-12">
+            <div className="max-w-[1400px] mx-auto px-6 py-12">
                 <div className="flex items-center gap-3 mb-10 border-b border-white/5 pb-6">
                     <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
                     <h1 className="text-3xl md:text-4xl font-serif italic text-white tracking-wide">
@@ -83,13 +84,17 @@ export default async function LatestPage({
                 {/* The Video Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
                     {videos.length > 0 ? (
-                        videos.map((video) => (
+                        videos.map((video, index) => ( // 🔥 ADDED INDEX HERE FOR PRIORITY TRICK
                             <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                                    <img
+                                    {/* 🔥 UPGRADED TO NEXT/IMAGE */}
+                                    <Image
                                         src={video.thumbnail}
                                         alt={video.title}
-                                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+                                        fill
+                                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                                        priority={index < 8} // Instantly loads the first 8 videos
+                                        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                                     />
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">

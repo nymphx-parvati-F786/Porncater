@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { Metadata, ResolvingMetadata } from 'next';
 import { Share2, Download, Sparkles, Film, ShieldAlert } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // 🔥 WE NEED THIS BAD BOY
 import { notFound } from "next/navigation";
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
 import AdSpace from "@/src/components/ui/ads/AdSpace";
@@ -297,12 +298,13 @@ export default async function WatchPage({ params }: PageProps) {
                       <div className="flex flex-wrap gap-2">
                         {video.pornstars.map((star) => (
                           <Link key={star.id} href={`/pornstars/${star.slug}`} className="flex items-center gap-2 bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800 rounded-full pr-3 py-0.5 transition-colors">
-                            <img
+                            {/* 🔥 AVATARS: Fixed width/height optimization */}
+                            <Image
                               src={star.avatarUrl || "/thumbnails/default-avatar.png"}
                               alt={star.name}
-                              className="w-6 h-6 rounded-full object-cover"
-                              loading="lazy"
-                              decoding="async"
+                              width={24}
+                              height={24}
+                              className="rounded-full object-cover w-6 h-6"
                             />
                             <span className="text-[10px] text-zinc-300 uppercase tracking-widest">{star.name}</span>
                           </Link>
@@ -320,7 +322,6 @@ export default async function WatchPage({ params }: PageProps) {
                   <button className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest">
                     <Download size={16} strokeWidth={1.5} /> Save
                   </button>
-                  {/* 🔥 Inject the compliance report button here */}
                   <ReportButton videoId={video.id} />
                 </div>
               </div>
@@ -359,12 +360,13 @@ export default async function WatchPage({ params }: PageProps) {
                 relatedVideos.slice(0, 8).map((v) => (
                   <Link key={v.id} href={`/watch/${v.id}/${v.slug}`} className="group flex gap-4 cursor-pointer">
                     <div className="relative flex-shrink-0 bg-zinc-900 rounded-sm overflow-hidden w-[160px] aspect-video">
-                      <img
+                      {/* 🔥 UP NEXT VIDEOS: Fixed 160px width layout optimization */}
+                      <Image
                         src={v.thumbnail}
-                        className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out"
                         alt={v.title}
-                        loading="lazy"
-                        decoding="async"
+                        fill
+                        sizes="160px"
+                        className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-[1.04] transition-all duration-700 ease-out"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                       <div className="absolute bottom-1.5 right-1.5 bg-black/60 backdrop-blur-md px-1.5 py-0.5 text-[9px] tracking-widest rounded-sm text-zinc-300">{v.duration}</div>
@@ -394,12 +396,13 @@ export default async function WatchPage({ params }: PageProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
             {topPornstars.map((star) => (
               <Link key={star.id} href={`/pornstars/${star.slug}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
-                <img
+                {/* 🔥 FEATURED STARS: Responsive Grid Custom Sizes */}
+                <Image
                   src={star.avatarUrl || "/thumbnails/default-avatar.png"}
                   alt={star.name}
-                  className="absolute inset-0 w-full h-full object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0"
-                  loading="lazy"
-                  decoding="async"
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 20vw"
+                  className="object-cover transition duration-1000 group-hover:scale-105 opacity-80 group-hover:opacity-100 grayscale-[20%] group-hover:grayscale-0"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/20 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="absolute bottom-0 left-0 w-full p-5 translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
@@ -424,12 +427,13 @@ export default async function WatchPage({ params }: PageProps) {
               {relatedVideos.slice(0, 10).map((vid) => (
                 <Link key={vid.id} href={`/watch/${vid.id}/${vid.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                    <img
+                    {/* 🔥 MORE VIDEOS: Fully Lazy-loaded Next/Image component */}
+                    <Image
                       src={vid.thumbnail}
                       alt={vid.title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
-                      loading="lazy"
-                      decoding="async"
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">{vid.duration}</div>
@@ -450,7 +454,6 @@ export default async function WatchPage({ params }: PageProps) {
 
         {/* Upgraded Footer with Legal Links */}
         <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
             <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
             <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
