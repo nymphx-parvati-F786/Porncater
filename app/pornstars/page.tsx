@@ -60,9 +60,6 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
             <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
               <Link href="/" className="hover:text-white transition duration-300">Home</Link>
               <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
-              <Link href="/live" className="text-rose-700 flex items-center gap-2 transition duration-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-700 animate-pulse"></span> Live
-              </Link>
             </div>
           </div>
 

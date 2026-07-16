@@ -1,14 +1,41 @@
 import { PrismaClient } from "@prisma/client";
+import { Metadata } from "next"; // Added missing import
 import { Flame, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
 
+// Note: In Next.js dev mode, it is highly recommended to export a singleton PrismaClient 
+// from a separate file (e.g., lib/prisma.ts) to prevent "Too many connections" errors during HMR.
 const prisma = new PrismaClient();
 
 interface PageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+// Helper to safely extract a single string from potential array query params
+const getSingleQuery = (query: string | string[] | undefined, fallback: string) => {
+  if (Array.isArray(query)) return query[0] || fallback;
+  return query || fallback;
+};
+
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+
+  const page = getSingleQuery(resolvedSearchParams.page, "1");
+  const sort = getSingleQuery(resolvedSearchParams.sort, "latest");
+
+  // This tells Google: "This specific URL is the only one that matters for this page and sort."
+  const canonicalUrl = `https://porncater.com/category/${resolvedParams.slug}?sort=${sort}&page=${page}`;
+
+  return {
+    title: `Best ${resolvedParams.slug} Porn Videos - Page ${page} | PornCater`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+  };
 }
 
 export default async function CategoryPage({ params, searchParams }: PageProps) {
@@ -25,9 +52,12 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  // 2. Parse Sort and Page controls from the URL query
-  const currentSort = resolvedSearchParams.sort === "views" ? "views" : "latest";
-  const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
+  // 2. Parse Sort and Page controls safely from the URL query
+  const sortParam = getSingleQuery(resolvedSearchParams.sort, "latest");
+  const pageParam = getSingleQuery(resolvedSearchParams.page, "1");
+  
+  const currentSort = sortParam === "views" ? "views" : "latest";
+  const currentPage = Math.max(1, parseInt(pageParam) || 1);
   const videosPerPage = 20;
 
   // Set Prisma sorting condition mapping
@@ -84,9 +114,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               <Link href="/" className="hover:text-white transition duration-300">Home</Link>
               <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
               <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
-              <Link href="/live" className="text-rose-700 flex items-center gap-2 transition duration-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-rose-700 animate-pulse"></span> Live
-              </Link>
             </div>
           </div>
 
@@ -95,9 +122,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
           {/* Auth */}
           <div className="flex items-center gap-6 text-sm tracking-wide">
-            {/*<button className="flex items-center gap-2 hover:text-white text-zinc-400 transition duration-300 font-light">
-              <User size={18} strokeWidth={1.5} /> Login
-            </button>*/}
             <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
               Upload
             </Link>
@@ -126,7 +150,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             Showing {videos.length} of {totalVideos} Scenes
           </div>
 
-          {/* 🔥 PREMIUM TUBE-STYLE FILTER TOGGLES */}
+          {/* HIGH-CONTRAST FILTER TOGGLES */}
           <div className="flex gap-6 text-[11px] uppercase tracking-widest font-bold">
             <Link
               href={`/category/${rawSlug}?sort=latest`}
@@ -152,6 +176,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               {videos.map((video) => (
                 <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
@@ -173,7 +198,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               ))}
             </div>
 
-            {/* 🔥 HIGH-CONTRAST CHUNKY PAGINATION BLOCK */}
+            {/* HIGH-CONTRAST CHUNKY PAGINATION BLOCK */}
             {totalPages > 1 && (
               <div className="mt-24 pt-12 border-t border-zinc-900/60 flex items-center justify-center gap-1.5 select-none">
                 {currentPage > 1 ? (
@@ -236,7 +261,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
       {/* Upgraded Footer with Legal Links */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
