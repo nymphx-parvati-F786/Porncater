@@ -231,12 +231,54 @@ export default async function WatchPage({ params }: PageProps) {
       }
     }))
   };
+  // 1. Format the primary category properly for Google's UI
+  const rawCategory = video.tags && video.tags.length > 0 ? video.tags[0] : "Trending";
+  // Capitalize the first letter so it looks professional in search results (e.g., "milf" -> "Milf")
+  const primaryCategory = rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1);
+  const categorySlug = rawCategory.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
+  // 2. Build the Elite Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://porncater.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Categories",
+        "item": "https://porncater.com/category/" // Added trailing slash for canonical consistency
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": primaryCategory,
+        "item": `https://porncater.com/category/${categorySlug}`
+      },
+      {
+        "@type": "ListItem",
+        "position": 4,
+        "name": video.title,
+        // Using resolvedParams.slug guarantees the URL perfectly matches the current route
+        "item": `https://porncater.com/watch/${video.id}/${resolvedParams.slug}` 
+      }
+    ]
+  };
+
+  // 3. Merge Schemas (Graph format)
+  const combinedSchema = [jsonLdSchema, breadcrumbSchema];
 
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
+      {/* 🔥 THE MASTER SEO GRAPH (Video + Breadcrumbs combined) */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
       />
 
       <ViewTracker videoId={video.id} />

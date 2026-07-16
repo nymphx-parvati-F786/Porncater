@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import { Metadata } from "next";
 import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // 🔥 PERFORMANCE UPGRADE LOADED
 import { notFound } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
@@ -8,16 +10,50 @@ import SubscribeButton from "@/src/components/ui/SubscribeButton";
 const prisma = new PrismaClient();
 
 interface PageProps {
-  // 🚀 FIXED: Interface must expect slug, not id!
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+// =========================================================
+// 🚀 PORNSTAR SEO ENGINE: DYNAMIC METADATA
+// =========================================================
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const resolvedSearchParams = await searchParams;
+  const starSlug = resolvedParams.slug;
+  const page = resolvedSearchParams.page ? String(resolvedSearchParams.page) : "1";
+
+  const star = await prisma.pornstar.findUnique({
+    where: { slug: starSlug },
+    select: { name: true, bio: true }
+  });
+
+  if (!star) return { title: 'Pornstar Not Found | PornCater' };
+
+  const canonicalUrl = `https://porncater.com/pornstars/${starSlug}?page=${page}`;
+  
+  return {
+    title: `${star.name} Porn Videos & Profile - Page ${page} | PornCater`,
+    description: star.bio 
+      ? `${star.name} bio: ${star.bio.substring(0, 120)}... Stream exclusive HD videos.` 
+      : `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title: `${star.name} Porn Videos | PornCater`,
+      type: 'profile',
+    }
+  };
+}
+
+// =========================================================
+// 🎬 PRIMARY COMPONENT
+// =========================================================
 export default async function PornstarProfile({ params, searchParams }: PageProps) {
   const resolvedParams = await params;
   const resolvedSearchParams = await searchParams;
 
-  // 🚀 FIXED: Extract the slug directly from the main URL path parameter
   const starSlug = resolvedParams.slug;
   if (!starSlug) return notFound();
 
@@ -31,12 +67,13 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
 
   if (!star) return notFound();
 
-  // 2. Now that we have the valid star object, use star.id to pull their videos concurrently
+  // 2. Fetch videos with DMCA Shield + Pagination Constraints
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: {
+        status: "PUBLISHED", // 🛡️ Keep takedowns off the profile
         pornstars: {
-          some: { id: star.id } // Scans relational table mapping using the verified ID
+          some: { id: star.id }
         }
       },
       take: videosPerPage,
@@ -46,6 +83,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
     }),
     prisma.video.count({
       where: {
+        status: "PUBLISHED",
         pornstars: {
           some: { id: star.id }
         }
@@ -54,7 +92,9 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
   ]);
 
   const totalPages = Math.ceil(totalVideos / videosPerPage);
+  const canonicalUrl = `https://porncater.com/pornstars/${star.slug}?page=${currentPage}`;
 
+  // Elite tube pagination logic engine
   const generatePagination = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
@@ -62,8 +102,61 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
+  // =========================================================
+  // 🚀 THE 3-PART PORNSTAR SCHEMA GRAPH
+  // =========================================================
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Pornstars", "item": "https://porncater.com/pornstars/" },
+      { "@type": "ListItem", "position": 3, "name": star.name, "item": `https://porncater.com/pornstars/${star.slug}` }
+    ]
+  };
+
+  const personSchema = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": star.name,
+    "description": star.bio || `Adult film actress ${star.name} profile and video collection.`,
+    "image": star.avatarUrl,
+    "url": `https://porncater.com/pornstars/${star.slug}`,
+    "interactionStatistic": {
+      "@type": "InteractionCounter",
+      "interactionType": "https://schema.org/WatchAction",
+      "userInteractionCount": star.views || 0
+    }
+  };
+
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": `${star.name} Porn Videos - Page ${currentPage}`,
+    "url": canonicalUrl,
+    "numberOfItems": videos.length,
+    "itemListElement": videos.map((video, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "VideoObject",
+        "name": video.title,
+        "url": `https://porncater.com/watch/${video.id}/${video.slug}`,
+        "thumbnailUrl": video.thumbnail
+      }
+    }))
+  };
+
+  const combinedSchema = [breadcrumbSchema, personSchema, itemListSchema];
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-24">
+      {/* 🔥 THE MASTER SEO GRAPH */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
+      />
+      
       {/* Navbar */}
       <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
         <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
@@ -92,11 +185,16 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       {/* Profile Info Section */}
       <div className="max-w-[1400px] mx-auto px-6 relative mt-8 sm:mt-12">
         <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-10">
+          
+          {/* 🔥 SEO/PERFORMANCE: Next/Image for Avatar */}
           <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-sm overflow-hidden border-4 border-[#050505] bg-zinc-900 shadow-2xl flex-shrink-0">
-            <img
+            <Image
               src={star.avatarUrl || "/thumbnails/default-avatar.png"}
               alt={star.name}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(max-width: 640px) 160px, 208px"
+              priority
+              className="object-cover"
             />
           </div>
 
@@ -107,7 +205,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                   {star.name}
                 </h1>
                 <p className="text-rose-800 text-[11px] uppercase tracking-widest font-bold">
-                  {"Featured Performer"}
+                  Featured Performer
                 </p>
               </div>
 
@@ -169,13 +267,18 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
         {videos.length > 0 ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-              {videos.map((video) => (
+              {videos.map((video, index) => (
                 <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
+                  
+                  {/* 🔥 SEO/PERFORMANCE: Next/Image for Video Thumbnails */}
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_20px_rgba(0,0,0,0.4)]">
-                    <img
+                    <Image
                       src={video.thumbnail}
                       alt={video.title}
-                      className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      priority={index < 4}
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-rose-900/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 text-white">
@@ -185,7 +288,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                       {video.duration || "0:00"}
                     </div>
                     <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">
-                      4K
+                      HD
                     </div>
                   </div>
                   <div className="mt-4 px-1">
@@ -208,7 +311,6 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
             {totalPages > 1 && (
               <div className="mt-24 pt-12 border-t border-zinc-900/60 flex items-center justify-center gap-1.5 select-none">
                 {currentPage > 1 ? (
-                  /* 🚀 FIXED: Map links back to star.slug so pagination stays on the alphanumeric route path */
                   <Link
                     href={`/pornstars/${star.slug}?page=${currentPage - 1}`}
                     className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-900/40 text-zinc-300 hover:text-white transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
@@ -231,8 +333,8 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                       key={pageNum}
                       href={`/pornstars/${star.slug}?page=${pageNum}`}
                       className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${isCurrent
-                          ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
-                          : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                        ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
+                        : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
                         }`}
                     >
                       {pageNum}
@@ -262,7 +364,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
         )}
       </div>
 
-      {/* Upgraded Footer with Legal Links (Now spans full width) */}
+      {/* Upgraded Footer with Legal Links */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>

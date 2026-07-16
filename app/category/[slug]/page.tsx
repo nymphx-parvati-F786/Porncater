@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { Metadata } from "next"; // Added missing import
+import { Metadata } from "next";
 import { Flame, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image"; // 🔥 LOADED AND READY
 import { notFound } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
 
@@ -55,7 +56,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   // 2. Parse Sort and Page controls safely from the URL query
   const sortParam = getSingleQuery(resolvedSearchParams.sort, "latest");
   const pageParam = getSingleQuery(resolvedSearchParams.page, "1");
-  
+
   const currentSort = sortParam === "views" ? "views" : "latest";
   const currentPage = Math.max(1, parseInt(pageParam) || 1);
   const videosPerPage = 20;
@@ -69,6 +70,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: {
+        status: "PUBLISHED", // 🛡️ ADDED DMCA SHIELD SO TAKEDOWNS DON'T SHOW UP IN CATEGORIES!
         tags: {
           has: categoryName // Scans string array field for tag value match
         }
@@ -80,6 +82,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     }),
     prisma.video.count({
       where: {
+        status: "PUBLISHED", // 🛡️ AND HERE
         tags: {
           has: categoryName
         }
@@ -97,8 +100,71 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
+  // Build the Elite Category Breadcrumb Schema
+  // =========================================================
+  // 🚀 TUBE SEO ENGINE: BREADCRUMBS + ITEM LIST SCHEMA
+  // =========================================================
+  
+  // 1. Reconstruct the exact canonical URL for the current page state
+  const canonicalUrl = `https://porncater.com/category/${rawSlug}?sort=${currentSort}&page=${currentPage}`;
+
+  // 2. Build the Elite Category Breadcrumb Schema
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": "https://porncater.com/"
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Categories",
+        "item": "https://porncater.com/category/" // Added trailing slash for safety
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": categoryName,
+        "item": `https://porncater.com/category/${rawSlug}`
+      }
+    ]
+  };
+
+  // 3. SECRET WEAPON: ItemList Schema (Feeds the videos directly to Google)
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": `${categoryName} Porn Videos - Page ${currentPage}`,
+    "description": `Premium collection of ${categoryName.toLowerCase()} scenes on PornCater.`,
+    "url": canonicalUrl,
+    "numberOfItems": videos.length,
+    "itemListElement": videos.map((video, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "VideoObject",
+        "name": video.title,
+        "url": `https://porncater.com/watch/${video.id}/${video.slug}`,
+        "thumbnailUrl": video.thumbnail
+      }
+    }))
+  };
+
+  // 4. Merge into a single high-performance graph
+  const combinedSchema = [breadcrumbSchema, itemListSchema];
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
+
+      {/* 🔥 THE MASTER SEO GRAPH (Breadcrumbs + Video Carousel Items) */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
+      />
 
       {/* Navbar */}
       <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
@@ -173,11 +239,20 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         {videos.length > 0 ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
-              {videos.map((video) => (
+              {videos.map((video, index) => ( // 🔥 ADDED INDEX
                 <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100" />
+
+                    {/* 🔥 MASSIVE PERFORMANCE UPGRADE WITH NEXT/IMAGE */}
+                    <Image
+                      src={video.thumbnail}
+                      alt={video.title}
+                      fill
+                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                      priority={index < 8}
+                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+                    />
+
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
                       {video.duration}
