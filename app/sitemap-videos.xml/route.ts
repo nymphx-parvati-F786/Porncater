@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-const BASE_URL = 'https://porncater.com';
+// To this:
+const BASE_URL = 'https://www.porncater.com';
 
 // Helper to convert your "HH:MM:SS" database string into pure seconds for Google
 function convertToSeconds(timeStr: string): number {
