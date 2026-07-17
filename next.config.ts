@@ -2,10 +2,11 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   images: {
-    // 🔥 THE FIX: This stops Next.js from bottlenecking your server.
-    // It bypasses the Next.js Image Optimization API and pulls directly from BunnyCDN!
-    unoptimized: true, 
-
+    // 🔥 ZERO-LAG ARCHITECTURE: 
+    // We tell Next.js to calculate the exact screen sizes, but let BunnyCDN do all the heavy lifting!
+    loader: 'custom',
+    loaderFile: './src/bunnyLoader.ts',
+    
     remotePatterns: [
       {
         protocol: 'https',
@@ -15,14 +16,9 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'porncater.com', // Your own domain
       },
-      // If you ever set up a custom CNAME like cdn.porncater.com, add it here:
-      // {
-      //   protocol: 'https',
-      //   hostname: 'cdn.porncater.com',
-      // }
     ],
     
-    // Cache optimized images for 30 days (still good to have for caching headers)
+    // Cache optimized images for 30 days
     minimumCacheTTL: 2592000,
   },
 }

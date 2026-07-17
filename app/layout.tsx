@@ -39,6 +39,9 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* 🔥 INSTANT DNS HANDSHAKE */}
+        <link rel="preconnect" href="https://www.porncater-pz.b-cdn.net" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.porncater-pz.b-cdn.net" />
         {/* JuicyAds Website Verification Meta Tag */}
         <meta
           name="juicyads-verification"
