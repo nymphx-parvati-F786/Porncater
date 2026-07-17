@@ -38,7 +38,7 @@ export default function ExoNativeWidget() {
       */}
       <ins 
         className="eas6a97888e20" 
-        data-zoneid="5979772" 
+        data-zoneid="5979896" 
         data-keywords="keywords"
         style={{ display: "block", width: "100%" }}
       ></ins>
