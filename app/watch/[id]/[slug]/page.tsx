@@ -397,11 +397,11 @@ export default async function WatchPage({ params }: PageProps) {
 
           {/* RIGHT: Sidebar Module */}
           <div className="w-full lg:w-[32%]">
-            <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
-            <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
+            {/* <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" /> */}
+            {/* <AdSpace zoneId="5944198" format="banner-300x250" className="mb-8" />
             <div className="mb-8">
               <JuicyAd adZone="1122022" width="300" height="250" />
-            </div>
+            </div> */}
             <h3 className="text-xl font-serif italic text-white mb-6">Up Next</h3>
             <div className="flex flex-col gap-5">
               {relatedVideos.length > 0 ? (
