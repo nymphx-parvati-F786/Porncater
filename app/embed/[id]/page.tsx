@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
 
-const prisma = new PrismaClient();
 
 interface EmbedProps {
   params: Promise<{ id: string }>;

@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { Flame, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -6,9 +6,10 @@ import Image from "next/image"; // 🔥 LOADED AND READY
 import { notFound } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
 
+export const revalidate = 120; // Caches the page for 2 minutes
+
 // Note: In Next.js dev mode, it is highly recommended to export a singleton PrismaClient 
 // from a separate file (e.g., lib/prisma.ts) to prevent "Too many connections" errors during HMR.
-const prisma = new PrismaClient();
 
 interface PageProps {
   params: Promise<{ slug: string }>;

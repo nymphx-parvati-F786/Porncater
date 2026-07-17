@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Metadata, ResolvingMetadata } from 'next';
 import { Share2, Download, Sparkles, Film, ShieldAlert } from "lucide-react";
 import Link from "next/link";
@@ -15,7 +15,6 @@ import { blackedSuperLeaderboards } from "@/src/data/adConfig";
 import JuicyAd from "@/src/components/ui/ads/JuicyAdsBanner";
 import ReportButton from "@/src/components/ui/watch/ReportButton";
 
-const prisma = new PrismaClient();
 
 interface PageProps {
   params: Promise<{ id: string; slug: string }>;

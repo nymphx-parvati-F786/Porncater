@@ -1,11 +1,10 @@
-import { PrismaClient, Prisma } from "@prisma/client";
+import { prisma } from "@/lib/prisma";// ✅ FIXED: Removed curly braces to use your new Singleton! (Adjust path if needed: "@/lib/prisma")
+import { Prisma } from "@prisma/client"
 import { Search as SearchIcon, Clock, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; // 🔥 BRINGING IN THE HEAVY ARTILLERY
 import { redirect } from "next/navigation";
 import SearchBar from "../../src/components/ui/SearchBar";
-
-const prisma = new PrismaClient();
 
 export default async function SearchPage({
   searchParams,

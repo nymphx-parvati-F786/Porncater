@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; // 🔥 IMPORTED THE BEAST
 import SearchBar from "@/src/components/ui/SearchBar";
 
-const prisma = new PrismaClient();
 
 // In Next.js 15, searchParams is passed as a Promise
 export default async function TrendingPage({

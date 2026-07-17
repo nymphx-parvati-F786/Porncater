@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import SearchBar from "@/src/components/ui/SearchBar";
 import PornstarSearchFilter from "@/src/components/ui/PornstarSearchFilter";
 
-const prisma = new PrismaClient();
 
 interface DirectoryProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;

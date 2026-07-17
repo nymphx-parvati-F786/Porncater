@@ -1,11 +1,11 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { Play, User, Flame, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; // 🔥 ADDED THIS SEXY IMPORT
 import SearchBar from "@/src/components/ui/SearchBar";
 
-const prisma = new PrismaClient();
+
 
 export const revalidate = 60;
 

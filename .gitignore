@@ -52,3 +52,5 @@ next-env.d.ts
 /failed_urls.txt
 
 /pipeline_logs
+.vercel
+.env*

@@ -1,10 +1,8 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; // 🔥 WE NEED THIS
 import SearchBar from "@/src/components/ui/SearchBar";
-
-const prisma = new PrismaClient();
 
 export default async function LatestPage({
     searchParams,

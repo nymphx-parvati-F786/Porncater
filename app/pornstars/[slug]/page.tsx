@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
 
-const prisma = new PrismaClient();
 
 interface PageProps {
   params: Promise<{ slug: string }>;
