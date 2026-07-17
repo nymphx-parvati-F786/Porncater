@@ -2,10 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { Play, User, Flame, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; // 🔥 ADDED THIS SEXY IMPORT
+import Image from "next/image"; 
 import SearchBar from "@/src/components/ui/SearchBar";
-
-
 
 export const revalidate = 60;
 
@@ -17,7 +15,7 @@ export const metadata: Metadata = {
   description: "Watch the best free HD porn videos, featuring top pornstars and exclusive premium adult cinema. Updated daily with fresh, high-quality sex tube scenes.",
   keywords: "free porn, HD porn videos, sex tube, adult cinema, pornstars, XXX movies",
   alternates: {
-    canonical: "https://porncater.com/", // Forces Google to ignore parameter clones (e.g. ?utm_source=...)
+    canonical: "https://porncater.com/", 
   },
   openGraph: {
     title: "PornCater | Free HD Porn Videos",
@@ -87,7 +85,7 @@ export default async function Home() {
               <span className="font-light text-white">Cater</span>
             </Link>
 
-            {/* Links */}
+            {/* Links - Kept default prefetch so navigation is instant */}
             <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
               <Link href="/" className="hover:text-white transition duration-300">Home</Link>
               <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
@@ -113,6 +111,7 @@ export default async function Home() {
             <Link
               key={i}
               href={`/category/${cat.toLowerCase()}`}
+              prefetch={false} // 🔥 ADDED: Stops background 404s
               className="border border-zinc-800 bg-zinc-900/30 hover:border-rose-800/50 hover:bg-zinc-900 hover:text-white px-5 py-2 text-xs tracking-wider uppercase text-zinc-400 transition-all duration-300 rounded-sm"
             >
               {cat}
@@ -132,9 +131,13 @@ export default async function Home() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
           {trendingVideos.map((video, index) => (
-            <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
+            <Link 
+              key={video.id} 
+              href={`/watch/${video.id}/${video.slug}`} 
+              prefetch={false} // 🔥 ADDED: Saves DB queries and fixes 404s
+              className="group block cursor-pointer"
+            >
               <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                {/* 🔥 UPGRADED TO NEXT/IMAGE */}
                 <Image
                   src={video.thumbnail}
                   alt={video.title}
@@ -178,15 +181,18 @@ export default async function Home() {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-10">
             {latestVideos.map((video) => (
-              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
+              <Link 
+                key={video.id} 
+                href={`/watch/${video.id}/${video.slug}`} 
+                prefetch={false} // 🔥 ADDED: Saves DB queries and fixes 404s
+                className="group block cursor-pointer"
+              >
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                  {/* 🔥 UPGRADED TO NEXT/IMAGE */}
                   <Image
                     src={video.thumbnail}
                     alt={video.title}
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 20vw"
-                    // next/image is lazy by default, no need for the manual attributes!
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -224,8 +230,12 @@ export default async function Home() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-6">
           {topPornstars.map((star) => (
-            <Link key={star.id} href={`/pornstars/${star.slug}`} className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]">
-              {/* 🔥 UPGRADED TO NEXT/IMAGE */}
+            <Link 
+              key={star.id} 
+              href={`/pornstars/${star.slug}`} 
+              prefetch={false} // 🔥 ADDED: Saves DB queries and fixes 404s
+              className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[4/5]"
+            >
               <Image
                 src={star.avatarUrl || "/thumbnails/default-avatar.png"}
                 alt={star.name}

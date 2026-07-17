@@ -2,11 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; // 🔥 PERFORMANCE UPGRADE LOADED
+import Image from "next/image"; 
 import { notFound } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
-
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -59,9 +58,14 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
   const videosPerPage = 16;
 
-  // 1. Fetch the pornstar bio first using their unique text slug
-  const star = await prisma.pornstar.findUnique({
-    where: { slug: starSlug }
+  // 1. Fetch the pornstar bio first using a case-insensitive search
+  const star = await prisma.pornstar.findFirst({
+    where: {
+      slug: {
+        equals: decodeURIComponent(starSlug),
+        mode: "insensitive"
+      }
+    }
   });
 
   if (!star) return notFound();
@@ -270,7 +274,12 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
               {videos.map((video, index) => (
-                <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
+                <Link 
+                  key={video.id} 
+                  href={`/watch/${video.id}/${video.slug}`} 
+                  prefetch={false} // 🔥 ADDED: Protects DB on profile scroll
+                  className="group block cursor-pointer"
+                >
                   
                   {/* 🔥 SEO/PERFORMANCE: Next/Image for Video Thumbnails */}
                   <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_20px_rgba(0,0,0,0.4)]">

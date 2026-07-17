@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     // 🔥 ZERO-LAG ARCHITECTURE: 
     // We tell Next.js to calculate the exact screen sizes, but let BunnyCDN do all the heavy lifting!
     loader: 'custom',
-    loaderFile: './src/bunnyLoader.ts',
+    loaderFile: './src/utils/bunnyLoader.ts',
     
     remotePatterns: [
       {

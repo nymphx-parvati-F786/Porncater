@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; // 🔥 IMPORTED THE BEAST
+import Image from "next/image"; 
 import SearchBar from "@/src/components/ui/SearchBar";
 
 export const revalidate = 120; // Caches the page for 2 minutes
@@ -21,7 +21,6 @@ export default async function TrendingPage({
   const videosPerPage = 20;
 
   // 3. Fetch the specific slice of videos AND the total count at the exact same time
-  // 🔥 SEO & DMCA FIX: Added `where: { status: "PUBLISHED" }` so taken down videos disappear from Trending!
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: { status: "PUBLISHED" },
@@ -120,16 +119,16 @@ export default async function TrendingPage({
               <Link
                 key={video.id}
                 href={`/watch/${video.id}/${video.slug}`}
+                prefetch={false} // 🔥 ADDED: Protects your DB and fixes 404s!
                 className="group block cursor-pointer"
               >
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                  {/* 🔥 UPGRADED TO NEXT/IMAGE */}
                   <Image
                     src={video.thumbnail}
                     alt={video.title}
                     fill
                     sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                    priority={index < 8} // Instantly loads the first 8 videos (top rows)
+                    priority={index < 8} 
                     className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -174,7 +173,7 @@ export default async function TrendingPage({
         </div>
 
         {/* ========================================================= */}
-        {/* PAGINATION CONTROLS (The 1, 2, 3 Buttons)                 */}
+        {/* PAGINATION CONTROLS                                       */}
         {/* ========================================================= */}
         {totalPages > 1 && (
           <div className="mt-10 pt-10 border-t border-white/5 flex items-center justify-center gap-2">
@@ -183,6 +182,7 @@ export default async function TrendingPage({
             {currentPage > 1 ? (
               <Link
                 href={`/trending?page=${currentPage - 1}`}
+                // Left prefetch as default so the previous page loads instantly
                 className="w-10 h-10 flex items-center justify-center border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white transition-all rounded-sm mr-2"
               >
                 <ChevronLeft size={16} />
@@ -210,6 +210,7 @@ export default async function TrendingPage({
                 <Link
                   key={pageNum}
                   href={`/trending?page=${pageNum}`}
+                  // Left prefetch as default so navigating between pages feels like a native app
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
                       ? "border-rose-800 bg-rose-900/20 text-white"
                       : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
@@ -224,6 +225,7 @@ export default async function TrendingPage({
             {currentPage < totalPages ? (
               <Link
                 href={`/trending?page=${currentPage + 1}`}
+                // Left prefetch as default
                 className="w-10 h-10 flex items-center justify-center border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white transition-all rounded-sm ml-2"
               >
                 <ChevronRight size={16} />
@@ -236,9 +238,8 @@ export default async function TrendingPage({
           </div>
         )}
       </div>
-      {/* ⬅️ CRITICAL FIX: The max-w container ends here, BEFORE the footer! */}
 
-      {/* Upgraded Footer with Legal Links (Now spans full width) */}
+      {/* Upgraded Footer */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>

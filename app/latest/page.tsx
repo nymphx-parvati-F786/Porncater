@@ -85,7 +85,12 @@ export default async function LatestPage({
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
                     {videos.length > 0 ? (
                         videos.map((video, index) => ( // 🔥 ADDED INDEX HERE FOR PRIORITY TRICK
-                            <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} className="group block cursor-pointer">
+                            <Link 
+                                key={video.id} 
+                                href={`/watch/${video.id}/${video.slug}`} 
+                                prefetch={false} // 🔥 ADDED: Protects DB from rapid scrolling!
+                                className="group block cursor-pointer"
+                            >
                                 <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
                                     {/* 🔥 UPGRADED TO NEXT/IMAGE */}
                                     <Image
