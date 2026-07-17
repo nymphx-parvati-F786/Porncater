@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image"; // 🔥 WE NEED THIS
 import SearchBar from "@/src/components/ui/SearchBar";
 
+export const revalidate = 120; // Caches the page for 2 minutes
+
 export default async function LatestPage({
     searchParams,
 }: {

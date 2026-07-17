@@ -157,13 +157,15 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       />
       
       {/* Navbar */}
-      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50">
+      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
         <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-12">
-            <Link href="/" className="text-3xl tracking-widest hover:opacity-80 transition duration-300">
+            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
               <span className="font-serif italic text-rose-800 pr-1">Porn</span>
               <span className="font-light text-white">Cater</span>
             </Link>
+
+            {/* Links */}
             <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
               <Link href="/" className="hover:text-white transition duration-300">Home</Link>
               <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
@@ -173,6 +175,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
 
           <SearchBar />
 
+          {/* Auth */}
           <div className="flex items-center gap-6 text-sm tracking-wide">
             <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
               Upload
