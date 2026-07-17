@@ -1,69 +1,59 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Script from "next/script";
 
 interface AdSpaceProps {
-  zoneId: string; // Enter your ExoClick Zone ID here: "5944198"
+  zoneId: string;
   format: "banner-300x250" | "banner-728x90" | "banner-900x250";
   className?: string;
 }
 
 export default function AdSpace({ zoneId, format, className = "" }: AdSpaceProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const isDev = process.env.NODE_ENV === "development";
+  const hasFired = useRef(false);
+
+  // Reserve exact pixel dimensions for Google Core Web Vitals
+  let width = 300;
+  let height = 250;
+  if (format === "banner-728x90") { width = 728; height = 90; }
+  if (format === "banner-900x250") { width = 900; height = 250; }
 
   useEffect(() => {
-    // 1. Guard clause for local testing environment
-    if (process.env.NODE_ENV === "development") return;
-    if (!containerRef.current) return;
-
-    // 2. Wipe clean to prevent duplicating ads during Next.js hydration or hot reloads
-    containerRef.current.innerHTML = "";
-
-    // 3. Inject the core processing engine script (<script async src="..."></script>)
-    // Checking if the script is already present globally so we don't load it multiple times
-    if (!document.querySelector('script[src="https://a.magsrv.com/ad-provider.js"]')) {
-      const coreScript = document.createElement("script");
-      coreScript.async = true;
-      coreScript.type = "application/javascript";
-      coreScript.src = "https://a.magsrv.com/ad-provider.js";
-      document.head.appendChild(coreScript);
-    }
-
-    // 4. Build the unique targeting element (<ins class="eas6a97888e2" data-zoneid="..."></ins>)
-    const insTag = document.createElement("ins");
-    insTag.className = "eas6a97888e2";
-    insTag.setAttribute("data-zoneid", zoneId);
-    containerRef.current.appendChild(insTag);
-
-    // 5. Initialize the specific ad space trigger array 
-    const triggerScript = document.createElement("script");
-    triggerScript.innerHTML = `
-      (window.AdProvider = window.AdProvider || []).push({"serve": {}});
-    `;
-    containerRef.current.appendChild(triggerScript);
-
-  }, [zoneId]);
-
-  // 2. Map the technical design widths for the viewport frame
-  let dimensions = "w-[300px] h-[250px]";
-  if (format === "banner-728x90") dimensions = "w-[728px] h-[90px]";
-  if (format === "banner-900x250") dimensions = "w-full max-w-[900px] h-[250px]"; // Scales down gracefully on smaller screens
+    if (isDev || hasFired.current) return;
+    
+    // Safely trigger the ExoClick render sequence once the component mounts
+    hasFired.current = true;
+    const adProvider = (window as any).AdProvider = (window as any).AdProvider || [];
+    adProvider.push({"serve": {}});
+  }, [isDev]);
 
   return (
-    <div className={`flex flex-col items-center justify-center my-6 ${className}`}>
-      <span className="text-[9px] uppercase tracking-widest text-zinc-600 mb-2 font-mono">
+    <div className={`flex flex-col items-center justify-center my-8 ${className}`}>
+      <span className="text-[8px] uppercase tracking-widest text-zinc-700 mb-1.5 font-mono">
         Advertisement
       </span>
       
+      {/* 🛡️ CLS BUSTER: Min-width and min-height prevent layout shift */}
       <div 
-        ref={containerRef} 
-        className={`${dimensions} bg-zinc-950 border border-zinc-900 rounded-sm overflow-hidden flex items-center justify-center`}
+        className="bg-zinc-950 border border-zinc-900/50 rounded-sm overflow-hidden flex items-center justify-center relative"
+        style={{ minWidth: width, minHeight: height, maxWidth: '100%' }}
       >
-        {/* Placeholder displays ONLY when working locally on localhost */}
-        {process.env.NODE_ENV === "development" && (
-          <div className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider text-center">
-            ExoClick Zone: {zoneId} <br />
-            <span className="text-[9px] text-zinc-600">({format})</span>
+        {!isDev ? (
+          <>
+            {/* The global script is loaded lazily and safely via Next.js */}
+            <Script src="https://a.magsrv.com/ad-provider.js" strategy="lazyOnload" />
+            
+            {/* The actual ad container targeted by ExoClick */}
+            <ins 
+              className="eas6a97888e2" 
+              data-zoneid={zoneId}
+              style={{ display: 'block', width: '100%', height: '100%' }}
+            />
+          </>
+        ) : (
+          <div className="text-[10px] text-zinc-600 font-mono uppercase tracking-wider text-center">
+            [ ExoClick Zone: {zoneId} ]
           </div>
         )}
       </div>
