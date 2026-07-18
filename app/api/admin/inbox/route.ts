@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Duplicate protection
     if (messageId) {
-      const existing = await prisma.inboxMessage.findUnique({ where: { messageId } });
+      const existing = await prisma.inboxMessage.findFirst({ where: { messageId } });
       if (existing) {
         return NextResponse.json({ success: true, duplicate: true, id: existing.id });
       }
