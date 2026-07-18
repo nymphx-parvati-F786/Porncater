@@ -321,7 +321,7 @@ export default function InboxClientLayout() {
 
       {/* 4. THE COMPOSE OVERLAY (GOD TIER) */}
       {isComposing && (
-        <div className="absolute bottom-0 right-12 w-[600px] h-[550px] bg-gray-900 border border-gray-700 rounded-t-xl shadow-2xl flex flex-col overflow-hidden z-50">
+        <div className="absolute bottom-0 right-12 w-150 h-137.5 bg-gray-900 border border-gray-700 rounded-t-xl shadow-2xl flex flex-col overflow-hidden z-50">
           <div className="bg-gray-800 p-3 flex justify-between items-center border-b border-gray-700">
             <h3 className="font-semibold text-white">New Message</h3>
             <button onClick={() => setIsComposing(false)} className="text-gray-400 hover:text-white transition-colors">
