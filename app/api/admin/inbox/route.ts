@@ -10,12 +10,12 @@ const extractAddresses = (
   addressField: any
 ): Array<{ name: string | null; email: string }> => {
   if (!addressField) return [];
-  
+
   // Handle both single objects and arrays safely
-  const values = Array.isArray(addressField) 
-    ? addressField.flatMap((f: any) => f.value || []) 
+  const values = Array.isArray(addressField)
+    ? addressField.flatMap((f: any) => f.value || [])
     : addressField.value || [];
-    
+
   return values.map((v: any) => ({
     name: v.name || null,
     email: v.address || "unknown",
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         sizeBytes: Buffer.byteLength(Buffer.from(rawEmail)),
         headers: Object.fromEntries(parsed.headers.entries()) as any,
         hasAttachments: Boolean(parsed.attachments && parsed.attachments.length > 0),
-        
+
         // Relational Data: Recipients
         // Relational Data: Recipients
         recipients: {
@@ -96,13 +96,29 @@ export async function POST(request: NextRequest) {
 }
 
 // ==========================================
-// GET: FETCH EMAILS FOR THE UI
+// GET: FETCH EMAILS FOR THE UI (WITH FOLDERS)
 // ==========================================
 export async function GET(request: NextRequest) {
   try {
-    // In a real app, check admin session/auth here!
+    const { searchParams } = new URL(request.url);
+    const folder = searchParams.get("folder") || "inbox";
+    const adminEmail = "admin@porncater.com"; // MUST match the email you use in Resend!
+
+    let whereClause: any = {};
+
+    if (folder === "trash") {
+      whereClause = { isTrashed: true };
+    } else if (folder === "starred") {
+      whereClause = { isTrashed: false, isStarred: true };
+    } else if (folder === "sent") {
+      whereClause = { isTrashed: false, fromEmail: adminEmail };
+    } else {
+      // Inbox: Not trashed, and not sent by you
+      whereClause = { isTrashed: false, fromEmail: { not: adminEmail } };
+    }
+
     const messages = await prisma.inboxMessage.findMany({
-      where: { isTrashed: false },
+      where: whereClause,
       orderBy: { receivedAt: "desc" },
       select: {
         id: true,
@@ -111,6 +127,7 @@ export async function GET(request: NextRequest) {
         fromEmail: true,
         textBody: true,
         isRead: true,
+        isStarred: true, // Need this for the UI!
         receivedAt: true,
         hasAttachments: true,
       },
