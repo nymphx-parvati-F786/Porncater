@@ -109,10 +109,22 @@ export default function InboxClientLayout() {
 
   const handleReply = () => {
     if (!selectedEmail) return;
+
     setComposeTo(selectedEmail.fromEmail);
-    setComposeSubject(`Re: ${selectedEmail.subject}`);
-    setComposeBody(`\n\n\n--- On ${new Date(selectedEmail.receivedAt).toLocaleString()}, ${selectedEmail.fromName || selectedEmail.fromEmail} wrote:\n> ${selectedEmail.textBody?.split('\n').join('\n> ') || ''}`);
-    setIsComposing(true);
+    setComposeSubject(
+      selectedEmail.subject.startsWith("Re:")
+        ? selectedEmail.subject
+        : `Re: ${selectedEmail.subject}`
+    );
+
+    // Safely parse the original text without crashing if it's purely HTML!
+    const originalText = selectedEmail.textBody
+      ? selectedEmail.textBody.split('\n').map(line => `> ${line}`).join('\n')
+      : "> (HTML email content)";
+
+    setComposeBody(`\n\n\n--- On ${new Date(selectedEmail.receivedAt).toLocaleString()}, ${selectedEmail.fromName || selectedEmail.fromEmail} wrote:\n${originalText}`);
+
+    setIsComposing(true); // Pops open the God-Tier compose window
   };
 
   // Toggle Star Status instantly
@@ -307,7 +319,51 @@ export default function InboxClientLayout() {
         )}
       </div>
 
-      {/* 4. THE COMPOSE OVERLAY (Omitted for brevity, leave yours exactly as it is!) */}
+      {/* 4. THE COMPOSE OVERLAY (GOD TIER) */}
+      {isComposing && (
+        <div className="absolute bottom-0 right-12 w-[600px] h-[550px] bg-gray-900 border border-gray-700 rounded-t-xl shadow-2xl flex flex-col overflow-hidden z-50">
+          <div className="bg-gray-800 p-3 flex justify-between items-center border-b border-gray-700">
+            <h3 className="font-semibold text-white">New Message</h3>
+            <button onClick={() => setIsComposing(false)} className="text-gray-400 hover:text-white transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 p-4 flex flex-col gap-3">
+            <input 
+              type="email" 
+              placeholder="To" 
+              value={composeTo}
+              onChange={(e) => setComposeTo(e.target.value)}
+              className="w-full bg-transparent border-b border-gray-700 pb-2 text-white outline-none focus:border-red-500 transition-colors"
+            />
+            <input 
+              type="text" 
+              placeholder="Subject" 
+              value={composeSubject}
+              onChange={(e) => setComposeSubject(e.target.value)}
+              className="w-full bg-transparent border-b border-gray-700 pb-2 text-white outline-none focus:border-red-500 transition-colors"
+            />
+            <textarea 
+              placeholder="Write your sexy message..."
+              value={composeBody}
+              onChange={(e) => setComposeBody(e.target.value)}
+              className="flex-1 w-full bg-transparent text-gray-200 outline-none resize-none pt-2"
+            />
+          </div>
+          <div className="p-4 border-t border-gray-800 bg-gray-900 flex justify-between items-center">
+            <button 
+              onClick={handleSendEmail}
+              disabled={isSending || !composeTo || !composeBody}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
+            >
+              {isSending ? "Sending..." : "Send"}
+            </button>
+            <button onClick={() => setIsComposing(false)} className="text-gray-500 hover:text-gray-300">
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
