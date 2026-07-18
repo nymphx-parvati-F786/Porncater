@@ -32,29 +32,44 @@ export default function InboxClientLayout() {
 
   // Helper to make ugly plain HTML emails look modern and sexy
   const getFormattedHtml = (rawHtml: string) => {
-    return `
+    const injection = `
+      <!-- Bypasses hotlink protection so external studio banners load -->
+      <meta name="referrer" content="no-referrer">
       <style>
-        /* Modern baseline for emails that don't have their own styling */
-        body {
+        /* Aggressively force modern fonts on old <table> layouts */
+        html, body, table, td, th, p, div, span, a {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-          font-size: 15px;
-          line-height: 1.6;
-          color: #111827; /* Dark gray for crisp readability */
-          padding: 24px;
-          margin: 0;
         }
-        /* Make sure studio banners and images never overflow the screen */
-        img {
-          max-width: 100% !important;
-          height: auto !important;
-          border-radius: 8px; /* Slight sexy curve on images */
+        body { 
+          padding: 24px; 
+          margin: 0; 
+          background: #ffffff;
+          color: #111827;
         }
-        /* Style links to look clickable */
-        a { color: #2563eb; text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        /* Bulletproof image rendering */
+        img { 
+          max-width: 100% !important; 
+          height: auto !important; 
+          border-radius: 8px;
+        }
       </style>
-      ${rawHtml}
     `;
+
+    let html = rawHtml;
+    
+    // 1. Force Modern HTML5 mode so it stops using Times New Roman
+    if (!html.toLowerCase().includes('<!doctype')) {
+      html = '<!DOCTYPE html>\n' + html;
+    }
+
+    // 2. Inject our styles intelligently
+    if (html.toLowerCase().includes('<head>')) {
+      return html.replace(/<head>/i, '<head>\n' + injection);
+    } else if (html.toLowerCase().includes('<body')) {
+      return html.replace(/(<body[^>]*>)/i, '$1\n' + injection);
+    } else {
+      return injection + html;
+    }
   };
 
   return (
@@ -194,7 +209,7 @@ export default function InboxClientLayout() {
                 </div>
               ) : fullEmailData.htmlBody ? (
                 <iframe
-                  srcDoc={fullEmailData.htmlBody}
+                  srcDoc={getFormattedHtml(fullEmailData.htmlBody)}
                   title="Email Content"
                   className="w-full h-full min-h-[800px] bg-white rounded-md shadow-inner"
                   sandbox="allow-same-origin allow-popups"
