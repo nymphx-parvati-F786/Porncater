@@ -10,7 +10,8 @@ interface AdSpaceProps {
 }
 
 export default function AdSpace({ zoneId, format, className = "" }: AdSpaceProps) {
-  const isDev = process.env.NODE_ENV === "development";
+  // const isDev = process.env.NODE_ENV === "development";
+  const isDev = false;
   const hasFired = useRef(false);
 
   // Reserve exact pixel dimensions for Google Core Web Vitals

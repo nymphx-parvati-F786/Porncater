@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";           // ← Use your existing prisma instance
+import { RecipientType } from "@prisma/client";  // ← Import the enum
 
 export async function POST(
   req: Request,
@@ -10,6 +9,7 @@ export async function POST(
   try {
     const resolvedParams = await params;
     const videoId = parseInt(resolvedParams.id);
+
     if (isNaN(videoId)) {
       return NextResponse.json({ error: "Invalid video ID" }, { status: 400 });
     }
@@ -21,17 +21,30 @@ export async function POST(
       return NextResponse.json({ error: "Reason is required" }, { status: 400 });
     }
 
-    // 🔥 Routes the report directly into your existing InboxMessage table
+    // Create report inside InboxMessage (properly structured)
     await prisma.inboxMessage.create({
       data: {
-        to: "compliance@porncater.com",
-        from: email || "anonymous@porncater.com",
+        fromEmail: email || "anonymous@porncater.com",
+        fromName: "Video Report",
         subject: `URGENT REPORT: Video #${videoId} - ${reason}`,
-        body: `Video ID: ${videoId}\nReason: ${reason}\n\nDescription: ${description || "No description provided."}`,
+        textBody: `Video ID: ${videoId}\nReason: ${reason}\n\nDescription: ${description || "No description provided."}`,
+        
+        // Create recipient properly using relation
+        recipients: {
+          create: {
+            type: RecipientType.TO,
+            email: "compliance@porncater.com",
+            name: "Compliance Team",
+          },
+        },
       },
     });
 
-    return NextResponse.json({ success: true, message: "Report submitted successfully." });
+    return NextResponse.json({ 
+      success: true, 
+      message: "Report submitted successfully." 
+    });
+
   } catch (error) {
     console.error("[Report API Error]:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -39,6 +39,11 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
+        {/* 🔥 EXOCLICK CLIENT HINTS: Boosts ad relevance and CPM/CPT payouts */}
+        <meta 
+          httpEquiv="Delegate-CH" 
+          content="sec-ch-ua https://s.magsrv.com; sec-ch-ua-mobile https://s.magsrv.com; sec-ch-ua-arch https://s.magsrv.com; sec-ch-ua-model https://s.magsrv.com; sec-ch-ua-platform https://s.magsrv.com; sec-ch-ua-platform-version https://s.magsrv.com; sec-ch-ua-bitness https://s.magsrv.com; sec-ch-ua-full-version-list https://s.magsrv.com; sec-ch-ua-full-version https://s.magsrv.com;" 
+        />
         {/* 🔥 INSTANT DNS HANDSHAKE */}
         <link rel="preconnect" href="https://www.porncater-pz.b-cdn.net" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.porncater-pz.b-cdn.net" />

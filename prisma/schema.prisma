@@ -19,6 +19,12 @@ enum VideoStatus {
   PRIVATE
 }
 
+enum RecipientType {
+  TO
+  CC
+  BCC
+}
+
 model Video {
   id          Int         @id @default(autoincrement())
   title       String      @db.VarChar(500)
@@ -71,16 +77,88 @@ model Pornstar {
 }
 
 model InboxMessage {
-  id        Int      @id @default(autoincrement())
-  to        String
-  from      String
-  subject   String
-  body      String   @db.Text
-  isHtml    Boolean  @default(false)
-  isRead    Boolean  @default(false)
-  isTrashed Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id               Int       @id @default(autoincrement())
 
-  @@index([to])
-  @@index([createdAt(sort: Desc)])
+  // ===== IDENTIFIERS =====
+  messageId        String?   @unique
+  threadId         String?
+
+  // ===== SUBJECT =====
+  subject          String    @default("(No Subject)")
+
+  // ===== SENDER =====
+  fromName         String?
+  fromEmail        String
+
+  // ===== REPLY =====
+  replyTo          String?
+
+  // ===== CONTENT =====
+  textBody         String?   @db.Text
+  htmlBody         String?   @db.Text
+
+  // ===== METADATA =====
+  sentAt           DateTime?
+  receivedAt       DateTime  @default(now())
+
+  sizeBytes        Int?
+
+  headers          Json?
+
+  hasAttachments   Boolean   @default(false)
+
+  // ===== STATUS =====
+  isRead           Boolean   @default(false)
+  isStarred        Boolean   @default(false)
+  isTrashed        Boolean   @default(false)
+
+  // ===== RELATIONS =====
+  recipients       InboxRecipient[]
+  attachments      InboxAttachment[]
+
+  @@index([receivedAt(sort: Desc)])
+  @@index([fromEmail])
+  @@index([subject])
+  @@index([isRead])
+  @@index([isTrashed])
+}
+
+model InboxRecipient {
+
+  id Int @id @default(autoincrement())
+
+  type RecipientType
+
+  name String?
+
+  email String
+
+  messageId Int
+
+  message InboxMessage @relation(fields:[messageId], references:[id], onDelete: Cascade)
+
+  @@index([email])
+
+}
+
+model InboxAttachment {
+
+  id Int @id @default(autoincrement())
+
+  filename String
+
+  mimeType String
+
+  sizeBytes Int
+
+  storagePath String?
+
+  contentId String?
+
+  isInline Boolean @default(false)
+
+  messageId Int
+
+  message InboxMessage @relation(fields:[messageId], references:[id], onDelete: Cascade)
+
 }
