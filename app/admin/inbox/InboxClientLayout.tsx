@@ -36,7 +36,7 @@ export default function InboxClientLayout() {
     setLoading(true);
     setSelectedEmail(null);
     setFullEmailData(null);
-    
+
     fetch(`/api/admin/inbox?folder=${currentFolder}`)
       .then((res) => res.json())
       .then((data) => {
@@ -68,8 +68,45 @@ export default function InboxClientLayout() {
     `;
   };
 
-  const handleSendEmail = async () => { /* Same as before, wire this up when Resend is ready */ };
-  
+  const handleSendEmail = async () => {
+    if (!composeTo || !composeSubject || !composeBody) return;
+    setIsSending(true);
+
+    try {
+      const res = await fetch("/api/admin/inbox/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: composeTo,
+          subject: composeSubject,
+          textBody: composeBody,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setIsComposing(false);
+        setComposeTo("");
+        setComposeSubject("");
+        setComposeBody("");
+
+        // If you are currently in the "Sent" folder, make it pop up instantly!
+        if (currentFolder === "sent" && data.message) {
+          setEmails([data.message, ...emails]);
+        }
+      } else {
+        const errData = await res.json();
+        console.error("Failed to send email:", errData);
+        alert("Failed to send: " + (errData.error || "Unknown error"));
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Network error while sending email.");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   const handleReply = () => {
     if (!selectedEmail) return;
     setComposeTo(selectedEmail.fromEmail);
@@ -82,7 +119,7 @@ export default function InboxClientLayout() {
   const toggleStar = async (e: React.MouseEvent, email: Email) => {
     e.stopPropagation();
     const newStatus = !email.isStarred;
-    
+
     // Optimistic UI update
     setEmails(emails.map(em => em.id === email.id ? { ...em, isStarred: newStatus } : em));
     if (selectedEmail?.id === email.id) setSelectedEmail({ ...selectedEmail, isStarred: newStatus });
@@ -119,7 +156,7 @@ export default function InboxClientLayout() {
       <div className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col shrink-0">
         <div className="p-6">
           <h2 className="text-xl font-bold text-white tracking-tight mb-6">Mailbox</h2>
-          <button 
+          <button
             onClick={() => { setComposeTo(""); setComposeSubject(""); setComposeBody(""); setIsComposing(true); }}
             className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2"
           >
@@ -143,14 +180,14 @@ export default function InboxClientLayout() {
       </div>
 
       {/* 2. EMAIL LIST */}
-      <div className="w-[400px] bg-gray-950 border-r border-gray-800 flex flex-col shrink-0 overflow-hidden">
+      <div className="w-100 bg-gray-950 border-r border-gray-800 flex flex-col shrink-0 overflow-hidden">
         <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/50">
           <h3 className="font-semibold text-gray-100 capitalize">{currentFolder}</h3>
         </div>
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="p-8 text-center text-gray-500 flex flex-col items-center gap-3">
-               <Mail className="w-6 h-6 animate-pulse" /> Loading...
+              <Mail className="w-6 h-6 animate-pulse" /> Loading...
             </div>
           ) : emails.length === 0 ? (
             <div className="p-8 text-center text-gray-600">Nothing here baby!</div>
@@ -226,12 +263,12 @@ export default function InboxClientLayout() {
                   {selectedEmail.hasAttachments && <Paperclip className="w-4 h-4 mr-2" />}
                   <Clock className="w-4 h-4" />
                   <span className="mr-4">{new Date(selectedEmail.receivedAt).toLocaleString()}</span>
-                  
+
                   {/* Reply Button */}
                   <button onClick={handleReply} className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors" title="Reply">
                     <Reply className="w-5 h-5" />
                   </button>
-                  
+
                   {/* Smart Trash/Restore Button */}
                   <button
                     onClick={(e) => toggleTrash(e, selectedEmail)}
@@ -249,17 +286,16 @@ export default function InboxClientLayout() {
                 <div className="text-gray-500 animate-pulse flex items-center gap-2">
                   <Mail className="w-5 h-5 opacity-50" /> Loading sexy content...
                 </div>
-              ) : fullEmailData.htmlBody ? (
+              ) : (
                 <iframe
-                  srcDoc={getFormattedHtml(fullEmailData.htmlBody)}
+                  srcDoc={getFormattedHtml(
+                    fullEmailData.htmlBody ||
+                    `<div style="white-space: pre-wrap;">${fullEmailData.textBody || "No content provided."}</div>`
+                  )}
                   title="Email Content"
-                  className="w-full h-full min-h-[800px] bg-white rounded-md shadow-inner"
+                  className="w-full h-full min-h-200 bg-white rounded-md shadow-inner"
                   sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                 />
-              ) : (
-                <div className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-4xl">
-                  {fullEmailData.textBody || "No content provided."}
-                </div>
               )}
             </div>
           </div>
@@ -272,7 +308,7 @@ export default function InboxClientLayout() {
       </div>
 
       {/* 4. THE COMPOSE OVERLAY (Omitted for brevity, leave yours exactly as it is!) */}
-      
+
     </div>
   );
 }
