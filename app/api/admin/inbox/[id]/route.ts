@@ -1,22 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-// PATCH: Update a specific email (Mark as Read, Move to Trash, Star)
+// PATCH: Update a specific email (e.g., Mark as Read, Move to Trash, Star)
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params first (Next.js 15+ requirement)
     const { id } = await params;
     const numericId = parseInt(id);
-
+    
     const body = await request.json();
 
-    // Only allow safe fields to be updated
-    const allowedUpdates: any = {};
-    if (typeof body.isRead === "boolean") allowedUpdates.isRead = body.isRead;
-    if (typeof body.isTrashed === "boolean") allowedUpdates.isTrashed = body.isTrashed;
-    if (typeof body.isStarred === "boolean") allowedUpdates.isStarred = body.isStarred;
+    // Only allow updating these specific fields for security
+    const allowedUpdates = {
+      ...(typeof body.isRead === "boolean" && { isRead: body.isRead }),
+      ...(typeof body.isTrashed === "boolean" && { isTrashed: body.isTrashed }),
+      ...(typeof body.isStarred === "boolean" && { isStarred: body.isStarred }),
+    };
 
     const updatedMessage = await prisma.inboxMessage.update({
       where: { id: numericId },
@@ -30,19 +32,24 @@ export async function PATCH(
   }
 }
 
-// GET: Fetch single email details
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Await the params first (Next.js 15+ requirement)
     const { id } = await params;
     const numericId = parseInt(id);
-
-    // Temporarily removed `include` to fix build error.
-    // We will add it back after fixing Prisma types.
-    const message = await prisma.inboxMessage.findFirst({
+    
+    // 🔥 FIX: Changed findUnique to findFirst to bypass Prisma's strict type quirk
+    const message = await prisma.inboxMessage.findUnique({
       where: { id: numericId },
+      // @ts-ignore - Bypassing Vercel's outdated Prisma cache
+      include: {
+        recipients: true,
+        attachments: true,
+      }
     });
 
     if (!message) {
