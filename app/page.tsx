@@ -4,6 +4,7 @@ import { Play, User, Flame, Clock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; 
 import SearchBar from "@/src/components/ui/SearchBar";
+import ExoNativeWidget from "@/src/components/ui/ads/ExoNativeWidget";
 
 export const revalidate = 60;
 
@@ -162,6 +163,10 @@ export default async function Home() {
             </Link>
           ))}
         </div>
+        {/* 2. EXOCLICK CAMOUFLAGE ADS */}
+          <div className="col-span-full w-full">
+            <ExoNativeWidget />
+          </div>
       </div>
 
       {/* Latest Uploads (Below The Fold) */}
