@@ -4,13 +4,10 @@ import { prisma } from "@/lib/prisma";
 // PATCH: Update a specific email (e.g., Mark as Read, Move to Trash, Star)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Await the params first (Next.js 15+ requirement)
-    const { id } = await params;
-    const numericId = parseInt(id);
-    
+    const id = parseInt(params.id);
     const body = await request.json();
 
     // Only allow updating these specific fields for security
@@ -21,7 +18,7 @@ export async function PATCH(
     };
 
     const updatedMessage = await prisma.inboxMessage.update({
-      where: { id: numericId },
+      where: { id },
       data: allowedUpdates,
     });
 
@@ -32,20 +29,16 @@ export async function PATCH(
   }
 }
 
-
+// GET: Fetch a single email's full details (like the HTML body)
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
-    // Await the params first (Next.js 15+ requirement)
-    const { id } = await params;
-    const numericId = parseInt(id);
+    const id = parseInt(params.id);
     
-    // 🔥 FIX: Changed findUnique to findFirst to bypass Prisma's strict type quirk
     const message = await prisma.inboxMessage.findUnique({
-      where: { id: numericId },
-      // @ts-ignore - Bypassing Vercel's outdated Prisma cache
+      where: { id },
       include: {
         recipients: true,
         attachments: true,
