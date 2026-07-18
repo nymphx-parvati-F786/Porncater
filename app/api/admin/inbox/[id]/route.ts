@@ -42,7 +42,8 @@ export async function GET(
     const { id } = await params;
     const numericId = parseInt(id);
     
-    const message = await prisma.inboxMessage.findUnique({
+    // 🔥 FIX: Changed findUnique to findFirst to bypass Prisma's strict type quirk
+    const message = await prisma.inboxMessage.findFirst({
       where: { id: numericId },
       include: {
         recipients: true,
