@@ -30,6 +30,33 @@ export default function InboxClientLayout() {
       .catch(err => console.error(err));
   }, []);
 
+  // Helper to make ugly plain HTML emails look modern and sexy
+  const getFormattedHtml = (rawHtml: string) => {
+    return `
+      <style>
+        /* Modern baseline for emails that don't have their own styling */
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          font-size: 15px;
+          line-height: 1.6;
+          color: #111827; /* Dark gray for crisp readability */
+          padding: 24px;
+          margin: 0;
+        }
+        /* Make sure studio banners and images never overflow the screen */
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+          border-radius: 8px; /* Slight sexy curve on images */
+        }
+        /* Style links to look clickable */
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+      </style>
+      ${rawHtml}
+    `;
+  };
+
   return (
     <div className="flex h-screen bg-gray-950 text-gray-200 font-sans">
 
