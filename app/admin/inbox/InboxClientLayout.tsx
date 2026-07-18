@@ -18,6 +18,7 @@ export default function InboxClientLayout() {
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fullEmailData, setFullEmailData] = useState<any>(null);
 
   useEffect(() => {
     fetch("/api/admin/inbox")
@@ -67,8 +68,18 @@ export default function InboxClientLayout() {
                 key={email.id}
                 onClick={async () => {
                   setSelectedEmail(email);
+                  setFullEmailData(null); // Clear previous email while loading
 
-                  // If it's unread, tell the database we've read it!
+                  // 1. Fetch the full HTML body and attachments
+                  try {
+                    const res = await fetch(`/api/admin/inbox/${email.id}`);
+                    const data = await res.json();
+                    setFullEmailData(data);
+                  } catch (err) {
+                    console.error("Failed to load full email", err);
+                  }
+
+                  // 2. Mark as read in the background
                   if (!email.isRead) {
                     try {
                       await fetch(`/api/admin/inbox/${email.id}`, {
@@ -76,11 +87,7 @@ export default function InboxClientLayout() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ isRead: true })
                       });
-
-                      // Update the UI instantly so it removes the bold formatting
-                      setEmails(emails.map(e =>
-                        e.id === email.id ? { ...e, isRead: true } : e
-                      ));
+                      setEmails(emails.map(e => e.id === email.id ? { ...e, isRead: true } : e));
                     } catch (err) {
                       console.error("Failed to mark as read", err);
                     }
@@ -112,8 +119,9 @@ export default function InboxClientLayout() {
       {/* 3. READING PANE */}
       <div className="flex-1 bg-gray-950 flex flex-col overflow-hidden">
         {selectedEmail ? (
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-8 border-b border-gray-800">
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="p-8 border-b border-gray-800 shrink-0">
               <h1 className="text-2xl font-bold text-white mb-6">{selectedEmail.subject}</h1>
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
@@ -127,16 +135,48 @@ export default function InboxClientLayout() {
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   {selectedEmail.hasAttachments && <Paperclip className="w-4 h-4" />}
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
                     {new Date(selectedEmail.receivedAt).toLocaleString()}
                   </span>
+                  {/* Trash Button */}
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation(); // Prevents triggering other clicks
+                      await fetch(`/api/admin/inbox/${selectedEmail.id}`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ isTrashed: true })
+                      });
+                      setEmails(emails.filter(e => e.id !== selectedEmail.id));
+                      setSelectedEmail(null);
+                    }}
+                    className="p-2 text-gray-500 hover:text-red-500 hover:bg-gray-800 rounded-md transition-colors"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
                 </div>
               </div>
             </div>
-            <div className="p-8 text-gray-300 whitespace-pre-wrap leading-relaxed">
-              {/* In a production app, you'd fetch the HTML body via a separate endpoint and render it safely in an iframe */}
-              {selectedEmail.textBody}
+
+            {/* Email Content Body */}
+            <div className="flex-1 overflow-y-auto p-8">
+              {!fullEmailData ? (
+                <div className="text-gray-500 animate-pulse flex items-center gap-2">
+                  <Mail className="w-5 h-5 opacity-50" /> Loading sexy content...
+                </div>
+              ) : fullEmailData.htmlBody ? (
+                <iframe
+                  srcDoc={fullEmailData.htmlBody}
+                  title="Email Content"
+                  className="w-full h-full min-h-[800px] bg-white rounded-md shadow-inner"
+                  sandbox="allow-same-origin allow-popups"
+                />
+              ) : (
+                <div className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-4xl">
+                  {fullEmailData.textBody || "No content provided."}
+                </div>
+              )}
             </div>
           </div>
         ) : (
