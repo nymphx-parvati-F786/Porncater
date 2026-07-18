@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 export default function ExoNativeWidget() {
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
-
+    // 🔥 By the time this runs, the <ins> tag is 100% guaranteed to be in the DOM.
     if (typeof window !== "undefined") {
-      // 1. Initialize the ExoClick queue
       const win = window as any;
       win.AdProvider = win.AdProvider || [];
+      
+      // Tell ExoClick to look for the tag and fill it!
       win.AdProvider.push({ "serve": {} });
 
-      // 2. Bruteforce inject the script (Bypasses Next.js strict script limits)
+      // Bruteforce inject the script only once
       if (!document.getElementById("exoclick-provider-script")) {
         const script = document.createElement("script");
         script.id = "exoclick-provider-script";
@@ -25,31 +23,23 @@ export default function ExoNativeWidget() {
     }
   }, []);
 
-  if (!mounted) return null;
-
   return (
-    // 🔥 Added `min-h-[220px]` and a faint background. 
-    // This physically prevents the space from vanishing even if ExoClick is loading or blocked.
     <div className="w-full flex items-center justify-center min-h-[220px] bg-zinc-900/10 rounded-sm mt-4 overflow-hidden relative">
       
       {/* 
-        🔥 Added `style={{ display: "block", width: "100%" }}` to force the <ins> tag 
-        to stretch across the full 6 columns of your grid.
+        The exact ExoClick container you gave me.
+        Rendered immediately so the script finds it on the first scan.
       */}
       <ins 
         className="eas6a97888e20" 
-        data-zoneid="5979896" 
-        data-keywords="keywords"
+        data-zoneid="5980442"
         style={{ display: "block", width: "100%" }}
       ></ins>
 
-      {/* 
-        This is a fallback message that shows UP if an AdBlocker nukes the script. 
-        It sits behind the ad, so if the ad loads, it covers this text up! 
-      */}
+      {/* Fallback Text so you know it's trying to load */}
       <div className="absolute inset-0 flex items-center justify-center -z-10 opacity-50 pointer-events-none">
         <span className="text-[10px] text-zinc-600 uppercase tracking-widest font-mono">
-          Advertisement (Turn off AdBlocker to view)
+          Loading Ads... (Turn off AdBlocker)
         </span>
       </div>
 

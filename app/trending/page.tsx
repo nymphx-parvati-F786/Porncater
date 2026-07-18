@@ -1,26 +1,43 @@
 import { prisma } from "@/lib/prisma";
-import { Flame, ChevronLeft, ChevronRight } from "lucide-react";
+import { Metadata } from "next";
+import {
+  Flame, ChevronLeft, ChevronRight, Play, User, Clock, Sparkles,
+  MonitorPlay, Star, ThumbsUp, Filter, TrendingUp, Menu, Search, Video
+} from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; 
+import Image from "next/image";
 import SearchBar from "@/src/components/ui/SearchBar";
+import DirectBanner from "@/src/components/ui/ads/DirectBanner";
+import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 
 export const revalidate = 120; // Caches the page for 2 minutes
 
+export const metadata: Metadata = {
+  title: "Trending Porn Videos | PornCater",
+  description: "Watch the hottest trending porn videos on PornCater. Discover the most viewed and top-rated sex tube scenes updated right now.",
+  alternates: { canonical: "https://porncater.com/trending" },
+};
 
-// In Next.js 15, searchParams is passed as a Promise
+const formatDuration = (seconds: number | string | null | undefined) => {
+  if (!seconds) return "10:24";
+  const num = Number(seconds);
+  if (isNaN(num)) return String(seconds);
+  const m = Math.floor(num / 60);
+  const s = num % 60;
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+};
+
 export default async function TrendingPage({
   searchParams,
 }: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  // 1. Await the searchParams and figure out what page we are on
   const resolvedParams = await searchParams;
   const currentPage = Math.max(1, parseInt(resolvedParams.page as string) || 1);
 
-  // 2. Set exactly how many videos you want per page
-  const videosPerPage = 20;
+  // 🔥 24 Videos fills a 6-column grid perfectly (4 rows)
+  const videosPerPage = 24;
 
-  // 3. Fetch the specific slice of videos AND the total count at the exact same time
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: { status: "PUBLISHED" },
@@ -41,10 +58,8 @@ export default async function TrendingPage({
     }),
   ]);
 
-  // 4. Calculate total pages
   const totalPages = Math.ceil(totalVideos / videosPerPage);
 
-  // Helper function to build page numbers array (e.g., [1, 2, 3, "...", 10])
   const generatePagination = () => {
     if (totalPages <= 5)
       return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -69,126 +84,161 @@ export default async function TrendingPage({
     ];
   };
 
-  return (
-    <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
+  const megaCategories = [
+    "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
+    "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
+    "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
+  ];
 
-      {/* Navbar */}
-      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-12">
+  return (
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
+      
+      {/* =========================================
+          🔥 SEXY FROSTED GLASS MEGA-HEADER
+          ========================================= */}
+      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/90 flex flex-col transition-all">
+        <div className="max-w-[1600px] w-full mx-auto px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 lg:gap-8">
+            <button className="lg:hidden text-zinc-400 hover:text-white transition">
+              <Menu size={28} />
+            </button>
             <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
               <span className="font-serif italic text-rose-800 pr-1">Porn</span>
               <span className="font-light text-white">Cater</span>
             </Link>
-
-            {/* Links */}
-            <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
-              <Link href="/" className="hover:text-white transition duration-300">Home</Link>
-              <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
-              <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
-            </div>
           </div>
-
-          <SearchBar />
-
-          {/* Auth */}
-          <div className="flex items-center gap-6 text-sm tracking-wide">
-            <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
-              Upload
+          <div className="flex-1 max-w-2xl hidden md:block">
+            <SearchBar />
+          </div>
+          <div className="flex items-center gap-3 lg:gap-5">
+            <button className="md:hidden text-zinc-400 hover:text-white transition">
+              <Search size={24} />
+            </button>
+            <Link href="/admin/upload" className="hidden sm:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors border border-white/10 backdrop-blur-sm">
+              <Video size={16} /> Upload
+            </Link>
+            <Link href="/login" className="bg-rose-700 hover:bg-rose-600 text-white px-5 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(190,18,60,0.4)]">
+              Sign In
             </Link>
           </div>
         </div>
-      </nav>
 
-      {/* MAIN CONTENT WRAPPER */}
-      <div className="max-w-[1400px] mx-auto px-6 py-12">
-        <div className="flex items-center gap-3 mb-10 border-b border-white/5 pb-6">
-          <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
-          <h1 className="text-3xl md:text-4xl font-serif italic text-white tracking-wide">
-            Trending Videos
-          </h1>
-          <span className="ml-auto text-zinc-500 text-xs tracking-widest uppercase">
+        <div className="border-t border-white/5 hidden lg:block">
+          <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
+            <Link href="/" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+              <MonitorPlay size={18} /> Home
+            </Link>
+            {/* Active Link Highlighted */}
+            <Link href="/trending" className="flex items-center gap-2 text-rose-500 border-b-2 border-rose-600 py-3 text-sm font-bold uppercase tracking-wide drop-shadow-md">
+              <TrendingUp size={18} /> Trending
+            </Link>
+            <Link href="/latest" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+              <Clock size={18} /> New Videos
+            </Link>
+            <Link href="/top-rated" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+              <Star size={18} /> Top Rated
+            </Link>
+            <Link href="/pornstars" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+              <Sparkles size={18} /> Pornstars
+            </Link>
+          </div>
+        </div>
+
+        <div className="border-t border-white/5 bg-black/20">
+          <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+            <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
+              <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
+            </div>
+            {megaCategories.map((cat, i) => (
+              <Link
+                key={i}
+                href={`/category/${cat.toLowerCase()}`}
+                prefetch={false}
+                className="whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0 backdrop-blur-md"
+              >
+                {cat}
+              </Link>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* =========================================
+          💰 TOP WIDE AD BANNER
+          ========================================= */}
+      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
+        <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
+      </div>
+
+      {/* =========================================
+          🔥 TRENDING VIDEOS GRID
+          ========================================= */}
+      <section className="max-w-[1600px] mx-auto px-4 py-6">
+        <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
+          <div className="flex items-center gap-3">
+            <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
+            <h1 className="text-2xl md:text-3xl font-serif italic text-white tracking-wide">
+              Trending Right Now
+            </h1>
+          </div>
+          <span className="text-zinc-500 text-xs tracking-widest uppercase font-bold">
             Page {currentPage} of {totalPages}
           </span>
         </div>
 
-        {/* The Video Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {videos.length > 0 ? (
-            videos.map((video, index) => (
-              <Link
-                key={video.id}
-                href={`/watch/${video.id}/${video.slug}`}
-                prefetch={false} // 🔥 ADDED: Protects your DB and fixes 404s!
-                className="group block cursor-pointer"
-              >
-                <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm">
-                  <Image
-                    src={video.thumbnail}
-                    alt={video.title}
-                    fill
-                    sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                    priority={index < 8} 
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+            videos.map((video) => (
+              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
+                <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
+                  <Image 
+                    src={video.thumbnail} 
+                    alt={video.title} 
+                    fill 
+                    sizes="(max-width: 640px) 50vw, 20vw" 
+                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" 
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
-                    {video.duration}
+                  <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+                    HD
+                  </div>
+                  <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
+                    {formatDuration(video.duration)}
                   </div>
                 </div>
-                <div className="mt-3 px-1">
-                  <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">
+                <div className="mt-2 flex flex-col flex-grow">
+                  <h3 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75">
                     {video.title}
-                  </h4>
-                  <p className="text-zinc-500 text-[10px] uppercase tracking-widest mt-2 font-medium">
-                    {Number(video.views || 0).toLocaleString()} views
-                  </p>
+                  </h3>
+                  <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
+                    <span>{Number(video.views || 0).toLocaleString()} views</span>
+                    <span className="flex items-center gap-1 text-emerald-500"><ThumbsUp size={12} /> 98%</span>
+                  </div>
                 </div>
               </Link>
             ))
           ) : (
-            <p className="text-zinc-600 col-span-full text-center py-20 font-light tracking-wide">
-              No videos found.
-            </p>
+            <div className="col-span-full py-20 text-center">
+              <p className="text-zinc-500 font-light tracking-wide text-lg">No videos found.</p>
+            </div>
           )}
-        </div>
-
-        {/* === WIDE BANNER AD === */}
-        <div className="max-w-[1400px] mx-auto px-6 py-6 flex justify-center mt-8">
-          <div className="border border-zinc-800/50 bg-black/40 rounded-sm p-4">
-            <iframe
-              style={{ backgroundColor: "white" }}
-              width="900"
-              height="250"
-              scrolling="no"
-              frameBorder="0"
-              {...({ allowtransparency: "true" } as any)}
-              marginHeight={0}
-              marginWidth={0}
-              name="spot_id_10013327"
-              src="//a.adtng.com/get/10013327?ata=deviparvatilovemuslimcocks"
-              title="Advertisement"
-            />
-          </div>
         </div>
 
         {/* ========================================================= */}
         {/* PAGINATION CONTROLS                                       */}
         {/* ========================================================= */}
         {totalPages > 1 && (
-          <div className="mt-10 pt-10 border-t border-white/5 flex items-center justify-center gap-2">
-
+          <div className="mt-12 pt-8 flex items-center justify-center gap-2">
+            
             {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
                 href={`/trending?page=${currentPage - 1}`}
-                // Left prefetch as default so the previous page loads instantly
-                className="w-10 h-10 flex items-center justify-center border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white transition-all rounded-sm mr-2"
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
               >
                 <ChevronLeft size={16} />
               </Link>
             ) : (
-              <div className="w-10 h-10 flex items-center justify-center border border-zinc-900 text-zinc-800 rounded-sm mr-2 cursor-not-allowed">
+              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm mr-2 cursor-not-allowed">
                 <ChevronLeft size={16} />
               </div>
             )}
@@ -197,10 +247,7 @@ export default async function TrendingPage({
             {generatePagination().map((pageNum, index) => {
               if (pageNum === "...") {
                 return (
-                  <span
-                    key={`ellipsis-${index}`}
-                    className="px-2 text-zinc-600"
-                  >
+                  <span key={`ellipsis-${index}`} className="px-2 text-zinc-600">
                     ...
                   </span>
                 );
@@ -210,11 +257,11 @@ export default async function TrendingPage({
                 <Link
                   key={pageNum}
                   href={`/trending?page=${pageNum}`}
-                  // Left prefetch as default so navigating between pages feels like a native app
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                      ? "border-rose-800 bg-rose-900/20 text-white"
-                      : "border-transparent text-zinc-500 hover:border-zinc-800 hover:text-zinc-300"
-                    }`}
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
+                    currentPage === pageNum
+                      ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                      : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                  }`}
                 >
                   {pageNum}
                 </Link>
@@ -225,39 +272,49 @@ export default async function TrendingPage({
             {currentPage < totalPages ? (
               <Link
                 href={`/trending?page=${currentPage + 1}`}
-                // Left prefetch as default
-                className="w-10 h-10 flex items-center justify-center border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white transition-all rounded-sm ml-2"
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
               >
                 <ChevronRight size={16} />
               </Link>
             ) : (
-              <div className="w-10 h-10 flex items-center justify-center border border-zinc-900 text-zinc-800 rounded-sm ml-2 cursor-not-allowed">
+              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm ml-2 cursor-not-allowed">
                 <ChevronRight size={16} />
               </div>
             )}
           </div>
         )}
+      </section>
+
+      {/* =========================================
+          💰 BOTTOM SQUARE AD
+          ========================================= */}
+      <div className="max-w-[1600px] mx-auto px-4 py-8 flex justify-center">
+        <div className="flex justify-center items-center w-full">
+          <iframe style={{ backgroundColor: "transparent" }} width="315" height="300" scrolling="no" frameBorder="0" {...({ allowtransparency: "true" } as any)} name="spot_id_10002484" src="//a.adtng.com/get/10002484?ata=deviparvatilovemuslimcocks" title="Advertisement" loading="lazy" />
+        </div>
       </div>
 
-      {/* Upgraded Footer */}
-      <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
-          <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
-          <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
-          <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
-          <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
+      {/* =========================================
+          FOOTER
+          ========================================= */}
+      <footer className="border-t border-zinc-900 pt-16 pb-12 text-center bg-[#050505]">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 mb-10 text-[11px] uppercase tracking-widest text-zinc-500 font-bold px-4">
+          <Link href="/dmca" className="hover:text-zinc-300 transition">DMCA / Copyright</Link>
+          <Link href="/privacy-policy" className="hover:text-zinc-300 transition">Privacy Policy</Link>
+          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition">Terms of Service</Link>
+          <Link href="/2257" className="hover:text-zinc-300 transition">18 U.S.C. 2257</Link>
+          <Link href="/contact" className="hover:text-zinc-300 transition">Contact Us</Link>
         </div>
 
         <div className="text-xl tracking-widest mb-4">
           <span className="font-serif italic text-rose-800 pr-1">Porn</span>
           <span className="font-light text-zinc-600">Cater</span>
         </div>
-        <p className="text-zinc-600 text-[10px] uppercase tracking-widest max-w-2xl mx-auto px-6 leading-relaxed mb-4">
-          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
+        <p className="text-zinc-600 text-[10px] uppercase font-semibold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-6">
+          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography. By entering this site you swear that you are of legal age in your area to view adult material and that you wish to view such material.
         </p>
-        <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} • Exclusive Adult Cinema • 18+ Only
+        <p className="text-zinc-700 text-[10px] font-bold uppercase tracking-widest">
+          © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
         </p>
       </footer>
     </div>
