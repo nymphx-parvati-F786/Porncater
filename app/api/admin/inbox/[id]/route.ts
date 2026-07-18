@@ -32,7 +32,7 @@ export async function PATCH(
   }
 }
 
-// GET: Fetch a single email's full details (like the HTML body)
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
