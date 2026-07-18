@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Mail, Star, Send, Trash2, Paperclip, Clock } from "lucide-react";
+import { Mail, Star, Send, Trash2, Paperclip, Clock, Reply, X } from "lucide-react";
 
 type Email = {
   id: number;
@@ -20,6 +20,13 @@ export default function InboxClientLayout() {
   const [loading, setLoading] = useState(true);
   const [fullEmailData, setFullEmailData] = useState<any>(null);
 
+  // --- COMPOSE STATE ---
+  const [isComposing, setIsComposing] = useState(false);
+  const [composeTo, setComposeTo] = useState("");
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBody, setComposeBody] = useState("");
+  const [isSending, setIsSending] = useState(false);
+
   useEffect(() => {
     fetch("/api/admin/inbox")
       .then((res) => res.json())
@@ -32,53 +39,77 @@ export default function InboxClientLayout() {
 
   // Helper to make ugly plain HTML emails look modern and sexy
   const getFormattedHtml = (rawHtml: string) => {
-    const injection = `
-      <!-- Bypasses hotlink protection so external studio banners load -->
-      <meta name="referrer" content="no-referrer">
+    return `
       <style>
-        /* Aggressively force modern fonts on old <table> layouts */
-        html, body, table, td, th, p, div, span, a {
+        body {
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
-        body { 
-          padding: 24px; 
-          margin: 0; 
-          background: #ffffff;
+          font-size: 15px;
+          line-height: 1.6;
           color: #111827;
+          padding: 24px;
+          margin: 0;
         }
-        /* Bulletproof image rendering */
-        img { 
-          max-width: 100% !important; 
-          height: auto !important; 
-          border-radius: 8px;
-        }
+        img { max-width: 100% !important; height: auto !important; border-radius: 8px; }
+        a { color: #2563eb; text-decoration: none; }
+        a:hover { text-decoration: underline; }
       </style>
+      ${rawHtml}
     `;
+  };
 
-    let html = rawHtml;
-    
-    // 1. Force Modern HTML5 mode so it stops using Times New Roman
-    if (!html.toLowerCase().includes('<!doctype')) {
-      html = '<!DOCTYPE html>\n' + html;
-    }
+  const handleSendEmail = async () => {
+    if (!composeTo || !composeSubject || !composeBody) return;
+    setIsSending(true);
 
-    // 2. Inject our styles intelligently
-    if (html.toLowerCase().includes('<head>')) {
-      return html.replace(/<head>/i, '<head>\n' + injection);
-    } else if (html.toLowerCase().includes('<body')) {
-      return html.replace(/(<body[^>]*>)/i, '$1\n' + injection);
-    } else {
-      return injection + html;
+    try {
+      const res = await fetch("/api/admin/inbox/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: composeTo,
+          subject: composeSubject,
+          textBody: composeBody,
+        }),
+      });
+
+      if (res.ok) {
+        setIsComposing(false);
+        setComposeTo("");
+        setComposeSubject("");
+        setComposeBody("");
+      } else {
+        console.error("Failed to send email");
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSending(false);
     }
   };
 
+  const handleReply = () => {
+    if (!selectedEmail) return;
+    setComposeTo(selectedEmail.fromEmail);
+    setComposeSubject(`Re: ${selectedEmail.subject}`);
+    setComposeBody(`\n\n\n--- On ${new Date(selectedEmail.receivedAt).toLocaleString()}, ${selectedEmail.fromName || selectedEmail.fromEmail} wrote:\n> ${selectedEmail.textBody?.split('\n').join('\n> ') || ''}`);
+    setIsComposing(true);
+  };
+
   return (
-    <div className="flex h-screen bg-gray-950 text-gray-200 font-sans">
+    <div className="flex h-screen bg-gray-950 text-gray-200 font-sans relative">
 
       {/* 1. SIDEBAR */}
       <div className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
         <div className="p-6">
-          <h2 className="text-xl font-bold text-white tracking-tight">Mailbox</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight mb-6">Mailbox</h2>
+          <button 
+            onClick={() => {
+              setComposeTo(""); setComposeSubject(""); setComposeBody(""); setIsComposing(true);
+            }}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg shadow-lg shadow-red-900/20 transition-all flex items-center justify-center gap-2"
+          >
+            <Send className="w-4 h-4" /> Compose
+          </button>
         </div>
         <nav className="flex-1 px-4 space-y-2">
           <button className="flex items-center w-full px-4 py-2 text-sm font-medium bg-red-600/10 text-red-500 rounded-md">
@@ -110,18 +141,13 @@ export default function InboxClientLayout() {
                 key={email.id}
                 onClick={async () => {
                   setSelectedEmail(email);
-                  setFullEmailData(null); // Clear previous email while loading
-
-                  // 1. Fetch the full HTML body and attachments
+                  setFullEmailData(null);
                   try {
                     const res = await fetch(`/api/admin/inbox/${email.id}`);
                     const data = await res.json();
                     setFullEmailData(data);
-                  } catch (err) {
-                    console.error("Failed to load full email", err);
-                  }
+                  } catch (err) { console.error(err); }
 
-                  // 2. Mark as read in the background
                   if (!email.isRead) {
                     try {
                       await fetch(`/api/admin/inbox/${email.id}`, {
@@ -130,13 +156,10 @@ export default function InboxClientLayout() {
                         body: JSON.stringify({ isRead: true })
                       });
                       setEmails(emails.map(e => e.id === email.id ? { ...e, isRead: true } : e));
-                    } catch (err) {
-                      console.error("Failed to mark as read", err);
-                    }
+                    } catch (err) { console.error(err); }
                   }
                 }}
-                className={`p-4 border-b border-gray-800/50 cursor-pointer transition-colors ${selectedEmail?.id === email.id ? "bg-gray-800" : "hover:bg-gray-900"
-                  } ${!email.isRead ? "bg-gray-900/50" : ""}`}
+                className={`p-4 border-b border-gray-800/50 cursor-pointer transition-colors ${selectedEmail?.id === email.id ? "bg-gray-800" : "hover:bg-gray-900"} ${!email.isRead ? "bg-gray-900/50" : ""}`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className={`text-sm truncate pr-2 ${!email.isRead ? "font-bold text-white" : "text-gray-300"}`}>
@@ -146,12 +169,8 @@ export default function InboxClientLayout() {
                     {new Date(email.receivedAt).toLocaleDateString()}
                   </span>
                 </div>
-                <div className="text-sm font-medium text-gray-200 truncate mb-1">
-                  {email.subject}
-                </div>
-                <div className="text-xs text-gray-500 line-clamp-2">
-                  {email.textBody || "No text content"}
-                </div>
+                <div className="text-sm font-medium text-gray-200 truncate mb-1">{email.subject}</div>
+                <div className="text-xs text-gray-500 line-clamp-2">{email.textBody || "No text content"}</div>
               </div>
             ))
           )}
@@ -162,7 +181,6 @@ export default function InboxClientLayout() {
       <div className="flex-1 bg-gray-950 flex flex-col overflow-hidden">
         {selectedEmail ? (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Header */}
             <div className="p-8 border-b border-gray-800 shrink-0">
               <h1 className="text-2xl font-bold text-white mb-6">{selectedEmail.subject}</h1>
               <div className="flex justify-between items-center">
@@ -181,10 +199,13 @@ export default function InboxClientLayout() {
                     <Clock className="w-4 h-4" />
                     {new Date(selectedEmail.receivedAt).toLocaleString()}
                   </span>
-                  {/* Trash Button */}
+                  {/* NEW: Reply Button */}
+                  <button onClick={handleReply} className="p-2 text-gray-500 hover:text-white hover:bg-gray-800 rounded-md transition-colors">
+                    <Reply className="w-5 h-5" />
+                  </button>
                   <button
                     onClick={async (e) => {
-                      e.stopPropagation(); // Prevents triggering other clicks
+                      e.stopPropagation();
                       await fetch(`/api/admin/inbox/${selectedEmail.id}`, {
                         method: 'PATCH',
                         headers: { 'Content-Type': 'application/json' },
@@ -201,7 +222,6 @@ export default function InboxClientLayout() {
               </div>
             </div>
 
-            {/* Email Content Body */}
             <div className="flex-1 overflow-y-auto p-8">
               {!fullEmailData ? (
                 <div className="text-gray-500 animate-pulse flex items-center gap-2">
@@ -211,8 +231,8 @@ export default function InboxClientLayout() {
                 <iframe
                   srcDoc={getFormattedHtml(fullEmailData.htmlBody)}
                   title="Email Content"
-                  className="w-full h-full min-h-[800px] bg-white rounded-md shadow-inner"
-                  sandbox="allow-same-origin allow-popups"
+                  className="w-full h-full min-h-200 bg-white rounded-md shadow-inner"
+                  sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
                 />
               ) : (
                 <div className="text-gray-300 whitespace-pre-wrap leading-relaxed max-w-4xl">
@@ -228,6 +248,52 @@ export default function InboxClientLayout() {
           </div>
         )}
       </div>
+
+      {/* 4. THE COMPOSE OVERLAY (GOD TIER) */}
+      {isComposing && (
+        <div className="absolute bottom-0 right-12 w-150 h-137.5 bg-gray-900 border border-gray-700 rounded-t-xl shadow-2xl flex flex-col overflow-hidden z-50">
+          <div className="bg-gray-800 p-3 flex justify-between items-center border-b border-gray-700">
+            <h3 className="font-semibold text-white">New Message</h3>
+            <button onClick={() => setIsComposing(false)} className="text-gray-400 hover:text-white transition-colors">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="flex-1 p-4 flex flex-col gap-3">
+            <input 
+              type="email" 
+              placeholder="To" 
+              value={composeTo}
+              onChange={(e) => setComposeTo(e.target.value)}
+              className="w-full bg-transparent border-b border-gray-700 pb-2 text-white outline-none focus:border-red-500 transition-colors"
+            />
+            <input 
+              type="text" 
+              placeholder="Subject" 
+              value={composeSubject}
+              onChange={(e) => setComposeSubject(e.target.value)}
+              className="w-full bg-transparent border-b border-gray-700 pb-2 text-white outline-none focus:border-red-500 transition-colors"
+            />
+            <textarea 
+              placeholder="Write your message..."
+              value={composeBody}
+              onChange={(e) => setComposeBody(e.target.value)}
+              className="flex-1 w-full bg-transparent text-gray-200 outline-none resize-none pt-2"
+            />
+          </div>
+          <div className="p-4 border-t border-gray-800 bg-gray-900 flex justify-between items-center">
+            <button 
+              onClick={handleSendEmail}
+              disabled={isSending || !composeTo || !composeBody}
+              className="bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-2 rounded-md font-medium transition-colors flex items-center gap-2"
+            >
+              {isSending ? "Sending..." : "Send"}
+            </button>
+            <button onClick={() => setIsComposing(false)} className="text-gray-500 hover:text-gray-300">
+              <Trash2 className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
