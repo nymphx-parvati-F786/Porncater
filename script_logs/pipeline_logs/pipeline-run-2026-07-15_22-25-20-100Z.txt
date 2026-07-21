@@ -1,0 +1,9 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-15_22-25-20-100Z.txt
+=========================================
+
+[Loader] Loaded 500 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/63506/adriana-chechik-bedroom-romance-adriana-chechik/ (Attempt 1/2)

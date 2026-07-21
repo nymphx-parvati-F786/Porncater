@@ -1,0 +1,50 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-16_02-38-48-090Z.txt
+=========================================
+
+[Loader] Loaded 391 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 90467: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-who-is-the-boss-blake-blossom.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmp8qbo_kgp.cookies"
+[download] 100% of  166.77MiB in 00:00:37 at 4.47MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 23:31. Thumbnail mark set to: 00:08:14
+[Thumbnail Engine] Source image missing (SSL blocked). Extracting high-res frame from local video...
+[Thumbnail Engine] Successfully generated custom fallback thumbnail.
+[Bunny Stream] Creating entry for: Blake Blossom - Who Is The Boss - Blake blossom
+[Bunny Stream] Uploading binary to GUID: aa83a3fa-be01-4ae1-b0c4-ef7813ed21d5
+[Bunny Storage] Uploading cover asset for: blake-blossom-who-is-the-boss-blake-blossom
+[Database] Instantiating Prisma engine payload for: blake-blossom-who-is-the-boss-blake-blossom
+[Success] Pipeline execution fully finished for: Blake Blossom - Who Is The Boss - Blake blossom
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/143668/blake-blossom-pounded-in-the-kitchen-blake-blossom/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/143668/blake-blossom-pounded-in-the-kitchen-blake-blossom/
+[generic] blake-blossom-pounded-in-the-kitchen-blake-blossom: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] blake-blossom-pounded-in-the-kitchen-blake-blossom: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 143668: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-pounded-in-the-kitchen-blake-blossom.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpz0jyeb_q.cookies"
+[download] 100% of  235.75MiB in 00:00:48 at 4.82MiB/s
+[Duration] Inspecting local .mp4 file to calculate exact length...
+[Duration] Successfully calculated: 29:34. Thumbnail mark set to: 00:10:21
+[Thumbnail Engine] Source image missing (SSL blocked). Extracting high-res frame from local video...
+[Thumbnail Engine] Successfully generated custom fallback thumbnail.
+[Bunny Stream] Creating entry for: Blake Blossom- Pounded In The Kitchen - Blake blossom

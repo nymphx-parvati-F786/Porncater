@@ -1,0 +1,14 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-21_11-55-48-145Z.txt
+=========================================
+
+[Loader] Loaded 1741 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/ (Attempt 1/2)
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/ --dump-json --no-warnings --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+ERROR: [generic] audrey-bitoni-naughty-america-sex-tape-vr: Unable to download webpage: (<HTTPSConnection(host='www.xtits.com', port=443) at 0x20201506f80>, 'Connection to www.xtits.com timed out. (connect timeout=20.0)') (caused by TransportError("(<HTTPSConnection(host='www.xtits.com', port=443) at 0x20201506f80>, 'Connection to www.xtits.com timed out. (connect timeout=20.0)')"))
+[Cooling] Pausing for 4 seconds before trying again...
+

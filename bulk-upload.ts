@@ -23,7 +23,7 @@ const __dirname = path.dirname(__filename);
 // ------------------------------------------------------------------
 // NATIVE PIPELINE AUTO-LOGGER (Now with Spam Filter)
 // ------------------------------------------------------------------
-const LOG_DIR = path.join(__dirname, 'pipeline_logs');
+const LOG_DIR = path.join(__dirname, 'script_logs/pipeline_logs');
 if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR);
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_');
@@ -67,6 +67,7 @@ console.log(`=========================================\n`);
 const prisma = new PrismaClient();
 
 const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID as string;
+const STREAM_GENERAL_FULL_SCENES_COLLECTION_ID = process.env.STREAM_GENERAL_FULL_SCENES_COLLECTION_ID as string;
 const BUNNY_API_KEY = process.env.BUNNY_API_KEY as string;
 const BUNNY_CDN = process.env.BUNNY_CDN as string;
 const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
@@ -86,7 +87,10 @@ async function uploadToBunnyStream(title: string, filePath: string) {
   const createRes = await fetch(`https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`, {
     method: 'POST',
     headers: { AccessKey: BUNNY_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title })
+    body: JSON.stringify({ 
+      title,
+      collectionId: STREAM_GENERAL_FULL_SCENES_COLLECTION_ID // 🔥 Attached video to specific collection
+    })
   });
   if (!createRes.ok) throw new Error('Failed to create Bunny Stream entry');
 
@@ -110,7 +114,7 @@ async function uploadToBunnyStorage(slug: string, filePath: string) {
   const thumbnailPath = `thumbnails/${slug}-${Date.now()}.webp`;
 
   const fileStream = fs.createReadStream(filePath);
-  const uploadRes = await fetch(`https://sg.storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`, {
+  const uploadRes = await fetch(`https://storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`, {
     method: 'PUT',
     headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': 'image/webp' },
     body: fileStream,

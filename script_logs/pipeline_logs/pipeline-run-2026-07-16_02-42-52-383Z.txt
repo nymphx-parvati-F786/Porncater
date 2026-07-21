@@ -1,0 +1,66 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-16_02-42-52-383Z.txt
+=========================================
+
+[Loader] Loaded 391 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 90467: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-who-is-the-boss-blake-blossom.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmptvyy8sej.cookies"
+Exception: [AbstractOptionHandler.cc:69] errorCode=28 We encountered a problem while processing the option '--max-connection-per-server'.
+  -> [OptionHandlerImpl.cc:184] errorCode=1 max-connection-per-server must be between 1 and 16.
+Usage:
+ -x, --max-connection-per-server=NUM The maximum number of connections to one
+                              server for each download.
+
+                              Possible Values: 1-16
+                              Default: 1
+                              Tags: #basic, #http, #ftp
+
+
+
+
+ERROR: aria2c exited with code 28
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-who-is-the-boss-blake-blossom.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 20 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+WARNING: Unable to download video thumbnail 0: EOF occurred in violation of protocol (_ssl.c:1007)
+Exception: [AbstractOptionHandler.cc:69] errorCode=28 We encountered a problem while processing the option '--max-connection-per-server'.
+  -> [OptionHandlerImpl.cc:184] errorCode=1 max-connection-per-server must be between 1 and 16.
+Usage:
+ -x, --max-connection-per-server=NUM The maximum number of connections to one
+                              server for each download.
+
+                              Possible Values: 1-16
+                              Default: 1
+                              Tags: #basic, #http, #ftp
+
+
+
+ERROR: aria2c exited with code 28
+[generic] Extracting URL: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Downloading webpage
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Extracting information
+[info] 90467: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-who-is-the-boss-blake-blossom.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmptvyy8sej.cookies"
+
+[Cooling] Pausing for 4 seconds before trying again...
+
+[Extraction] Querying target media: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/ (Attempt 2/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Downloading webpage

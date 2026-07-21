@@ -48,9 +48,11 @@ next-env.d.ts
 /local_videos_to_upload
 
 /urls.txt
+/urls(old).txt
 
 /failed_urls.txt
+/target_urls.txt
 
-/pipeline_logs
+/script_logs
 .vercel
 .env*

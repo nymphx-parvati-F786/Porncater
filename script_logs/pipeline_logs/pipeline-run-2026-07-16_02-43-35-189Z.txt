@@ -1,0 +1,20 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-16_02-43-35-189Z.txt
+=========================================
+
+[Loader] Loaded 391 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/90467/blake-blossom-who-is-the-boss-blake-blossom/
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] blake-blossom-who-is-the-boss-blake-blossom: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 90467: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-who-is-the-boss-blake-blossom.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\blake-blossom-who-is-the-boss-blake-blossom.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmplqowq1bv.cookies"

@@ -1,0 +1,58 @@
+=========================================
+🚀 STARTING HARVESTER PIPELINE
+📁 Auto-logging all output to: D:\MyServletApp\porncater.com\porncater\pipeline_logs\pipeline-run-2026-07-21_11-57-06-971Z.txt
+=========================================
+
+[Loader] Loaded 1741 target records from urls.txt storage resource.
+
+=========================================
+[Extraction] Querying target media: https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/ (Attempt 1/2)
+[Download] Starting engine. Waiting for aria2c to finish...
+[generic] Extracting URL: https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/
+[generic] audrey-bitoni-naughty-america-sex-tape-vr: Downloading webpage
+WARNING: [generic] Falling back on generic information extractor
+[generic] audrey-bitoni-naughty-america-sex-tape-vr: Extracting information
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+[info] 35155: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\audrey-bitoni-naughty-america-sex-tape-vr.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\audrey-bitoni-naughty-america-sex-tape-vr.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpqqgpix7w.cookies"
+
+07/21 17:27:22 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.xtits.com/get_file/4/dffe6deaad381c4380a7877523fbd695/35000/35155/35155_720p.mp4/
+Exception: [AbstractCommand.cc:312] errorCode=1 Network problem has occurred. cause:A socket operation was attempted to an unreachable host.
+
+
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+
+ERROR: aria2c exited with code 1
+
+
+[ERROR] Attempt 1 failed: Command failed with exit code 1: D:\MyServletApp\porncater.com\porncater\node_modules\yt-dlp-exec\bin\yt-dlp.exe https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/ --output D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\audrey-bitoni-naughty-america-sex-tape-vr.mp4 --format bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best --write-thumbnail --downloader aria2c --downloader-args aria2c:-x 16 -s 16 -k 1M --add-header User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+WARNING: [generic] Falling back on generic information extractor
+WARNING: [generic] Untested major version (10.4.11) in player engine - download may fail.
+
+
+ERROR: aria2c exited with code 1
+[generic] Extracting URL: https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/
+[generic] audrey-bitoni-naughty-america-sex-tape-vr: Downloading webpage
+[generic] audrey-bitoni-naughty-america-sex-tape-vr: Extracting information
+[info] 35155: Downloading 1 format(s): 720p
+[info] Downloading video thumbnail 0 ...
+[info] Writing video thumbnail 0 to: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\audrey-bitoni-naughty-america-sex-tape-vr.jpg
+[download] Destination: D:\MyServletApp\porncater.com\porncater\local_videos_to_upload\audrey-bitoni-naughty-america-sex-tape-vr.mp4
+[download] Writing temporary cookies file to "C:\Users\HINDUS~1\AppData\Local\Temp\tmpqqgpix7w.cookies"
+
+07/21 17:27:22 [[1;31mERROR[0m] CUID#7 - Download aborted. URI=https://www.xtits.com/get_file/4/dffe6deaad381c4380a7877523fbd695/35000/35155/35155_720p.mp4/
+Exception: [AbstractCommand.cc:312] errorCode=1 Network problem has occurred. cause:A socket operation was attempted to an unreachable host.
+
+                                                                               [#6b82fc 0B/0B CN:0 DL:0B]
+aria2 will resume download if the transfer is restarted.
+If there are any errors, then see the log file. See '-l' option in help/man page for details.
+
+[Cooling] Pausing for 4 seconds before trying again...
+
+[Extraction] Querying target media: https://www.xtits.com/videos/35155/audrey-bitoni-naughty-america-sex-tape-vr/ (Attempt 2/2)
+[Download] Starting engine. Waiting for aria2c to finish...

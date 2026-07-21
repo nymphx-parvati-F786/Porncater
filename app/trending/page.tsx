@@ -166,14 +166,14 @@ export default async function TrendingPage({
       {/* =========================================
           💰 TOP WIDE AD BANNER
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
+      <div className="max-w-400 mx-auto px-4 pt-4 pb-2">
         <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
       </div>
 
       {/* =========================================
           🔥 TRENDING VIDEOS GRID
           ========================================= */}
-      <section className="max-w-[1600px] mx-auto px-4 py-6">
+      <section className="max-w-400 mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
           <div className="flex items-center gap-3">
             <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
@@ -196,7 +196,7 @@ export default async function TrendingPage({
                     alt={video.title} 
                     fill 
                     sizes="(max-width: 640px) 50vw, 20vw" 
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" 
+                    className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]" 
                   />
                   <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
                     HD
@@ -205,7 +205,7 @@ export default async function TrendingPage({
                     {formatDuration(video.duration)}
                   </div>
                 </div>
-                <div className="mt-2 flex flex-col flex-grow">
+                <div className="mt-2 flex flex-col grow">
                   <h3 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75">
                     {video.title}
                   </h3>
@@ -288,7 +288,7 @@ export default async function TrendingPage({
       {/* =========================================
           💰 BOTTOM SQUARE AD
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 py-8 flex justify-center">
+      <div className="max-w-400 mx-auto px-4 py-8 flex justify-center">
         <div className="flex justify-center items-center w-full">
           <iframe style={{ backgroundColor: "transparent" }} width="315" height="300" scrolling="no" frameBorder="0" {...({ allowtransparency: "true" } as any)} name="spot_id_10002484" src="//a.adtng.com/get/10002484?ata=deviparvatilovemuslimcocks" title="Advertisement" loading="lazy" />
         </div>
