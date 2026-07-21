@@ -380,7 +380,7 @@ export default async function LatestPage({
       {/* =========================================
           FOOTER
           ========================================= */}
-      <footer className="border-t border-zinc-900 pt-16 pb-12 text-center bg-[#050505] w-full mt-auto">
+      <footer className="border-t border-zinc-900 pt-16 pb-12 text-center bg-[#050505]">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 mb-10 text-[11px] uppercase tracking-widest text-zinc-500 font-bold px-4">
           <Link href="/dmca" className="hover:text-zinc-300 transition">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-zinc-300 transition">Privacy Policy</Link>
@@ -389,12 +389,12 @@ export default async function LatestPage({
           <Link href="/contact" className="hover:text-zinc-300 transition">Contact Us</Link>
         </div>
 
-        <div className="text-2xl font-black tracking-tighter mb-4 flex items-center justify-center gap-1">
-          <span className="text-rose-800 drop-shadow-sm">Porn</span>
-          <span className="text-zinc-600">Cater</span>
+        <div className="text-xl tracking-widest mb-4">
+          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+          <span className="font-light text-zinc-600">Cater</span>
         </div>
         <p className="text-zinc-600 text-[10px] uppercase font-semibold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-6">
-          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
+          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography. By entering this site you swear that you are of legal age in your area to view adult material and that you wish to view such material.
         </p>
         <p className="text-zinc-700 text-[10px] font-bold uppercase tracking-widest">
           © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
