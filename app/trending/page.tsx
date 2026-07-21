@@ -128,7 +128,6 @@ export default async function TrendingPage({
             <Link href="/" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
               <MonitorPlay size={18} /> Home
             </Link>
-            {/* Active Link Highlighted */}
             <Link href="/trending" className="flex items-center gap-2 text-rose-500 border-b-2 border-rose-600 py-3 text-sm font-bold uppercase tracking-wide drop-shadow-md">
               <TrendingUp size={18} /> Trending
             </Link>

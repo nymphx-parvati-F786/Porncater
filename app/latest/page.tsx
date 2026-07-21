@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import {
-  Clock, ChevronLeft, ChevronRight, ThumbsUp, 
-  SlidersHorizontal, Flame, Sparkles, MonitorPlay, 
+  Clock, ChevronLeft, ChevronRight, ThumbsUp,
+  SlidersHorizontal, Flame, Sparkles, MonitorPlay,
   Star, Filter, TrendingUp, Menu, Search, Video, PlayCircle
 } from "lucide-react";
 import Link from "next/link";
@@ -51,7 +51,7 @@ export default async function LatestPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
 }) {
   const resolvedParams = await searchParams;
-  
+
   // 🔥 EXTRACT SORT PARAMETER & DEFINE PRISMA ORDER
   const currentSort = resolvedParams.sort === "most-viewed" ? "most-viewed" : "newest";
   const prismaOrderBy = currentSort === "most-viewed" ? { views: "desc" as const } : { createdAt: "desc" as const };
@@ -83,7 +83,7 @@ export default async function LatestPage({
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
-      
+
       {/* =========================================
           🔥 SEXY FROSTED GLASS MEGA-HEADER
           ========================================= */}
@@ -123,7 +123,7 @@ export default async function LatestPage({
               <TrendingUp size={18} /> Trending
             </Link>
             <Link href="/latest" className="flex items-center gap-2 text-rose-500 border-b-2 border-rose-600 py-3 text-sm font-bold uppercase tracking-wide drop-shadow-md">
-              <Clock size={18} /> Directory
+              <Clock size={18} /> New Videos
             </Link>
             <Link href="/top-rated" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
               <Star size={18} /> Top Rated
@@ -165,12 +165,12 @@ export default async function LatestPage({
           ========================================= */}
       <div className="max-w-[1600px] mx-auto px-4 pt-6 pb-2">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-800/80 pb-4">
-          
+
           <div className="flex items-center gap-3">
             <Clock className="text-rose-700" size={28} strokeWidth={2} />
             <div>
               <h1 className="text-2xl md:text-3xl font-serif italic text-white tracking-wide flex items-center gap-2">
-                {currentSort === "most-viewed" ? "Most Viewed Videos" : "Fresh Uploads"} 
+                {currentSort === "most-viewed" ? "Most Viewed Videos" : "Fresh Uploads"}
                 {currentSort === "newest" && <span className="bg-rose-700 text-white font-sans text-[10px] px-2 py-0.5 rounded-sm tracking-widest not-italic hidden sm:block">NEW</span>}
               </h1>
               <p className="text-zinc-500 text-[10px] tracking-widest uppercase mt-1 font-bold">
@@ -185,24 +185,22 @@ export default async function LatestPage({
               <SlidersHorizontal size={14} className="text-zinc-400" /> Sort
             </div>
 
-            <Link 
-              href="/latest?sort=newest" 
-              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                currentSort === "newest" 
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50" 
+            <Link
+              href="/latest?sort=newest"
+              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "newest"
+                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
                   : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
+                }`}
             >
               Newest
             </Link>
 
-            <Link 
-              href="/latest?sort=most-viewed" 
-              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                currentSort === "most-viewed" 
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50" 
+            <Link
+              href="/latest?sort=most-viewed"
+              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "most-viewed"
+                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
                   : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
+                }`}
             >
               Most Viewed
             </Link>
@@ -215,7 +213,7 @@ export default async function LatestPage({
           ========================================= */}
       <section className="max-w-[1600px] mx-auto px-4 py-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-          
+
           {/* 1. Real Videos */}
           {videos.length > 0 ? (
             videos.map((video, index) => (
@@ -235,12 +233,8 @@ export default async function LatestPage({
                   <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
                     {formatDuration(video.duration)}
                   </div>
-                  {/* Subtle Hover Play Icon Overlay */}
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <PlayCircle className="text-white/80 w-10 h-10" strokeWidth={1.5} />
-                  </div>
                 </div>
-                
+
                 <div className="mt-2 flex flex-col flex-grow">
                   <h3 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75">
                     {video.title}
@@ -283,6 +277,66 @@ export default async function LatestPage({
           ))}
 
         </div>
+        {/* ========================================================= */}
+        {/* PAGINATION CONTROLS                                       */}
+        {/* ========================================================= */}
+        {totalPages > 1 && (
+          <div className="mt-12 pt-8 flex items-center justify-center gap-2">
+            
+            {/* Previous Page Button */}
+            {currentPage > 1 ? (
+              <Link
+                href={`/trending?page=${currentPage - 1}`}
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
+              >
+                <ChevronLeft size={16} />
+              </Link>
+            ) : (
+              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm mr-2 cursor-not-allowed">
+                <ChevronLeft size={16} />
+              </div>
+            )}
+
+            {/* The Page Numbers */}
+            {generatePagination().map((pageNum, index) => {
+              if (pageNum === "...") {
+                return (
+                  <span key={`ellipsis-${index}`} className="px-2 text-zinc-600">
+                    ...
+                  </span>
+                );
+              }
+
+              return (
+                <Link
+                  key={pageNum}
+                  href={`/trending?page=${pageNum}`}
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
+                    currentPage === pageNum
+                      ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                      : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                  }`}
+                >
+                  {pageNum}
+                </Link>
+              );
+            })}
+
+            {/* Next Page Button */}
+            {currentPage < totalPages ? (
+              <Link
+                href={`/trending?page=${currentPage + 1}`}
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
+              >
+                <ChevronRight size={16} />
+              </Link>
+            ) : (
+              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm ml-2 cursor-not-allowed">
+                <ChevronRight size={16} />
+              </div>
+            )}
+          </div>
+        )}
       </section>
 
       {/* =========================================
@@ -292,61 +346,7 @@ export default async function LatestPage({
         <DirectBanner banners={blackedLeaderboards} format="banner-728x90" />
       </div>
 
-      {/* =========================================
-          🔢 PREMIUM PAGINATION (WITH SORT MEMORY!)
-          ========================================= */}
-      {totalPages > 1 && (
-        <div className="max-w-[1600px] mx-auto px-4 pb-16 flex items-center justify-center gap-2">
-          
-          {/* Previous Page */}
-          {currentPage > 1 ? (
-            <Link
-              href={`/latest?page=${currentPage - 1}&sort=${currentSort}`}
-              className="w-10 h-10 flex items-center justify-center border border-zinc-800 bg-[#111] text-zinc-400 hover:border-rose-800 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2 shadow-sm"
-            >
-              <ChevronLeft size={18} />
-            </Link>
-          ) : (
-            <div className="w-10 h-10 flex items-center justify-center border border-zinc-900 bg-[#0a0a0a] text-zinc-800 rounded-sm mr-2 cursor-not-allowed">
-              <ChevronLeft size={18} />
-            </div>
-          )}
-
-          {/* Page Numbers */}
-          {generatePagination().map((pageNum, index) => {
-            if (pageNum === "...") {
-              return <span key={`ellipsis-${index}`} className="px-2 text-zinc-600 font-bold tracking-widest">...</span>;
-            }
-            return (
-              <Link
-                key={pageNum}
-                href={`/latest?page=${pageNum}&sort=${currentSort}`}
-                className={`w-10 h-10 flex items-center justify-center text-xs font-bold transition-all rounded-sm border ${
-                  currentPage === pageNum
-                    ? "border-rose-700 bg-rose-700 text-white shadow-[0_0_15px_rgba(190,18,60,0.4)]"
-                    : "border-zinc-800 bg-[#111] text-zinc-400 hover:border-zinc-600 hover:text-white"
-                }`}
-              >
-                {pageNum}
-              </Link>
-            );
-          })}
-
-          {/* Next Page */}
-          {currentPage < totalPages ? (
-            <Link
-              href={`/latest?page=${currentPage + 1}&sort=${currentSort}`}
-              className="w-10 h-10 flex items-center justify-center border border-zinc-800 bg-[#111] text-zinc-400 hover:border-rose-800 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2 shadow-sm"
-            >
-              <ChevronRight size={18} />
-            </Link>
-          ) : (
-            <div className="w-10 h-10 flex items-center justify-center border border-zinc-900 bg-[#0a0a0a] text-zinc-800 rounded-sm ml-2 cursor-not-allowed">
-              <ChevronRight size={18} />
-            </div>
-          )}
-        </div>
-      )}
+      
 
       {/* =========================================
           FOOTER
