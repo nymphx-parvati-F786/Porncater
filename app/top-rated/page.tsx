@@ -56,6 +56,7 @@ export default async function TopRatedPage({
     const timeFilter = (resolvedParams.time as string) || "all-time";
     const currentPage = Math.max(1, parseInt(resolvedParams.page as string) || 1);
     const videosPerPage = 36;
+    const skipAmount = (currentPage - 1) * videosPerPage;
 
     // Build dynamic date filters for Prisma
     let dateFilter = {};
@@ -73,18 +74,52 @@ export default async function TopRatedPage({
         ...dateFilter,
     };
 
-    const [videos, totalCount] = await Promise.all([
-        prisma.video.findMany({
-            where: whereClause,
-            take: videosPerPage,
-            skip: (currentPage - 1) * videosPerPage,
-            orderBy: { views: "desc" }, // Sort by highest engagement
-            select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
-        }),
-        prisma.video.count({ where: whereClause })
-    ]);
+    // =========================================================================
+    // 🚀 HIGH-PERFORMANCE DATA FETCHING ARCHITECTURE (DEFERRED JOIN)
+    // =========================================================================
 
-    const totalPages = Math.ceil(totalCount / videosPerPage);
+    // Step A: Fast Index-Only scan to get JUST the IDs
+    // 🔥 Fixed: Sorting by `likes: "desc"` instead of `views: "desc"` for Top Rated!
+    const videoIds = await prisma.video.findMany({
+        where: whereClause,
+        select: { id: true },
+        orderBy: { likes: "desc" },
+        skip: skipAmount,
+        take: videosPerPage,
+    });
+
+    const ids = videoIds.map((v) => v.id);
+
+    // Step B: Fetch full data only for those specific IDs
+    let videos: any[] = [];
+    if (ids.length > 0) {
+        const unorderedVideos = await prisma.video.findMany({
+            where: { id: { in: ids } },
+            select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
+        });
+        // Map them back into the exact sorted order retrieved from Step A
+        videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
+    }
+
+    // Step C: Smart Counting Strategy based on Time Filter
+    let estimatedTotal = 0;
+    if (timeFilter === "all-time") {
+        // Fast estimate for the entire database
+        const tableStats = await prisma.$queryRaw<{ estimate: number }[]>`
+            SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';
+        `;
+        estimatedTotal = Number(tableStats[0]?.estimate || 0);
+    } else {
+        // Real count for smaller, filtered timeframes (Week/Month)
+        estimatedTotal = await prisma.video.count({ where: whereClause });
+    }
+
+    // Step D: SEO Hard Cap - Never let bots crawl past page 200
+    const hardPageLimit = 200; 
+    const calculatedPages = Math.ceil(estimatedTotal / videosPerPage);
+    const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
+
+    // =========================================================================
 
     const generatePagination = () => {
         if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -92,6 +127,9 @@ export default async function TopRatedPage({
         if (currentPage >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
         return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
     };
+
+    // 🔥 Fixed: Helper function to keep the time filter intact across pages
+    const buildPageUrl = (page: number | string) => `/top-rated?page=${page}&time=${timeFilter}`;
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
@@ -184,7 +222,7 @@ export default async function TopRatedPage({
                                 </span>
                             </h1>
                             <p className="text-zinc-500 text-[10px] tracking-widest uppercase mt-1 font-bold">
-                                Page {currentPage} of {totalPages || 1} • {totalCount.toLocaleString()} Rated Scenes
+                                Page {currentPage} of {totalPages} • {estimatedTotal.toLocaleString()} Rated Scenes
                             </p>
                         </div>
                     </div>
@@ -242,7 +280,7 @@ export default async function TopRatedPage({
                                         fill
                                         sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                                         priority={index < 6}
-                                        className="object-cover"
+                                        className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]"
                                     />
                                     <div className="absolute top-1.5 left-1.5 bg-rose-700/90 text-white text-[9px] font-black uppercase px-1.5 py-0.5 rounded-sm flex items-center gap-0.5">
                                         <Star size={10} className="fill-white" /> #{((currentPage - 1) * videosPerPage) + index + 1}
@@ -304,7 +342,7 @@ export default async function TopRatedPage({
                         {/* Previous Page Button */}
                         {currentPage > 1 ? (
                             <Link
-                                href={`/trending?page=${currentPage - 1}`}
+                                href={buildPageUrl(currentPage - 1)}
                                 className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
                             >
                                 <ChevronLeft size={16} />
@@ -328,7 +366,7 @@ export default async function TopRatedPage({
                             return (
                                 <Link
                                     key={pageNum}
-                                    href={`/trending?page=${pageNum}`}
+                                    href={buildPageUrl(pageNum)}
                                     className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
                                         ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
                                         : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
@@ -342,7 +380,7 @@ export default async function TopRatedPage({
                         {/* Next Page Button */}
                         {currentPage < totalPages ? (
                             <Link
-                                href={`/trending?page=${currentPage + 1}`}
+                                href={buildPageUrl(currentPage + 1)}
                                 className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
                             >
                                 <ChevronRight size={16} />

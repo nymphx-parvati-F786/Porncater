@@ -29,7 +29,7 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-// 🔥 MOCK NATIVE ADS: Camouflaged perfectly for the grid
+// 🔥 MOCK NATIVE ADS
 const nativeAds = [
   { id: "ad1", title: "Play this Adult Game - No Download Required!", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-game-1.jpg", url: "https://your-affiliate-link.com" },
   { id: "ad2", title: "Meet Horny MILFs in your Exact Area Tonight", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-dating-1.jpg", url: "https://your-affiliate-link.com" },
@@ -52,27 +52,54 @@ export default async function LatestPage({
 }) {
   const resolvedParams = await searchParams;
 
-  // 🔥 EXTRACT SORT PARAMETER & DEFINE PRISMA ORDER
+  // 1. EXTRACT SORT PARAMETER & DEFINE PRISMA ORDER
   const currentSort = resolvedParams.sort === "most-viewed" ? "most-viewed" : "newest";
   const prismaOrderBy = currentSort === "most-viewed" ? { views: "desc" as const } : { createdAt: "desc" as const };
 
   const videosPerPage = 36;
   const currentPage = Math.max(1, parseInt(resolvedParams.page as string) || 1);
+  const skipAmount = (currentPage - 1) * videosPerPage;
 
-  const [videos, totalCount] = await Promise.all([
-    prisma.video.findMany({
-      where: { status: "PUBLISHED" },
-      take: videosPerPage,
-      skip: (currentPage - 1) * videosPerPage,
-      orderBy: prismaOrderBy, // 🚀 DYNAMIC SORT INJECTED HERE!
+  // =========================================================================
+  // 🚀 HIGH-PERFORMANCE DATA FETCHING ARCHITECTURE (DEFERRED JOIN)
+  // =========================================================================
+  
+  // Step A: Fast Index-Only scan to get JUST the IDs
+  const videoIds = await prisma.video.findMany({
+    where: { status: "PUBLISHED" },
+    select: { id: true },
+    orderBy: prismaOrderBy,
+    skip: skipAmount,
+    take: videosPerPage,
+  });
+
+  const ids = videoIds.map((v) => v.id);
+
+  // Step B: Fetch full data only for those specific IDs
+  let videos: any[] = [];
+  if (ids.length > 0) {
+    const unorderedVideos = await prisma.video.findMany({
+      where: { id: { in: ids } },
       select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
-    }),
-    prisma.video.count({
-      where: { status: "PUBLISHED" },
-    })
-  ]);
+    });
+    // Map them back into the exact sorted order retrieved from Step A
+    videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
+  }
 
-  const totalPages = Math.ceil(totalCount / videosPerPage);
+  // Step C: Blazing fast estimated count bypasses the Postgres full-table scan lock
+  const tableStats = await prisma.$queryRaw<{ estimate: number }[]>`
+    SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';
+  `;
+  
+  // Parse estimate safely (raw queries can return BigInts)
+  const estimatedTotal = Number(tableStats[0]?.estimate || 0);
+  
+  // Step D: SEO Hard Cap - Never let bots crawl past page 200 (prevents spider traps)
+  const hardPageLimit = 200; 
+  const calculatedPages = Math.ceil(estimatedTotal / videosPerPage);
+  const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
+
+  // =========================================================================
 
   const generatePagination = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -80,6 +107,9 @@ export default async function LatestPage({
     if (currentPage >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
+
+  // Helper function to keep the sort param intact across pages
+  const buildPageUrl = (page: number | string) => `/latest?page=${page}&sort=${currentSort}`;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
@@ -174,7 +204,7 @@ export default async function LatestPage({
                 {currentSort === "newest" && <span className="bg-rose-700 text-white font-sans text-[10px] px-2 py-0.5 rounded-sm tracking-widest not-italic hidden sm:block">NEW</span>}
               </h1>
               <p className="text-zinc-500 text-[10px] tracking-widest uppercase mt-1 font-bold">
-                Page {currentPage} of {totalPages} • {totalCount.toLocaleString()} Videos
+                Page {currentPage} of {totalPages} • {estimatedTotal.toLocaleString()}+ Videos
               </p>
             </div>
           </div>
@@ -277,6 +307,7 @@ export default async function LatestPage({
           ))}
 
         </div>
+        
         {/* ========================================================= */}
         {/* PAGINATION CONTROLS                                       */}
         {/* ========================================================= */}
@@ -286,7 +317,7 @@ export default async function LatestPage({
             {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
-                href={`/trending?page=${currentPage - 1}`}
+                href={buildPageUrl(currentPage - 1)}
                 className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
               >
                 <ChevronLeft size={16} />
@@ -310,7 +341,7 @@ export default async function LatestPage({
               return (
                 <Link
                   key={pageNum}
-                  href={`/trending?page=${pageNum}`}
+                  href={buildPageUrl(pageNum)}
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
                     currentPage === pageNum
                       ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
@@ -325,7 +356,7 @@ export default async function LatestPage({
             {/* Next Page Button */}
             {currentPage < totalPages ? (
               <Link
-                href={`/trending?page=${currentPage + 1}`}
+                href={buildPageUrl(currentPage + 1)}
                 className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
               >
                 <ChevronRight size={16} />
@@ -345,8 +376,6 @@ export default async function LatestPage({
       <div className="max-w-[1600px] mx-auto px-4 py-8">
         <DirectBanner banners={blackedLeaderboards} format="banner-728x90" />
       </div>
-
-      
 
       {/* =========================================
           FOOTER

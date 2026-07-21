@@ -33,17 +33,33 @@ export default async function TrendingPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
-  const currentPage = Math.max(1, parseInt(resolvedParams.page as string) || 1);
-
+  
   // 🔥 24 Videos fills a 6-column grid perfectly (4 rows)
   const videosPerPage = 24;
+  const currentPage = Math.max(1, parseInt(resolvedParams.page as string) || 1);
+  const skipAmount = (currentPage - 1) * videosPerPage;
 
-  const [videos, totalVideos] = await Promise.all([
-    prisma.video.findMany({
-      where: { status: "PUBLISHED" },
-      take: videosPerPage,
-      skip: (currentPage - 1) * videosPerPage,
-      orderBy: { views: "desc" },
+  // =========================================================================
+  // 🚀 HIGH-PERFORMANCE DATA FETCHING ARCHITECTURE (DEFERRED JOIN)
+  // =========================================================================
+  
+  // Step A: Fast Index-Only scan. 
+  // Postgres leverages your @@index([views(sort: Desc)]) perfectly here.
+  const videoIds = await prisma.video.findMany({
+    where: { status: "PUBLISHED" },
+    select: { id: true },
+    orderBy: { views: "desc" },
+    skip: skipAmount,
+    take: videosPerPage,
+  });
+
+  const ids = videoIds.map((v) => v.id);
+
+  // Step B: Fetch full data only for those specific IDs
+  let videos: any[] = [];
+  if (ids.length > 0) {
+    const unorderedVideos = await prisma.video.findMany({
+      where: { id: { in: ids } },
       select: {
         id: true,
         slug: true,
@@ -52,36 +68,30 @@ export default async function TrendingPage({
         duration: true,
         views: true,
       },
-    }),
-    prisma.video.count({
-      where: { status: "PUBLISHED" },
-    }),
-  ]);
+    });
+    // Map them back into the exact sorted order retrieved from Step A
+    videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
+  }
 
-  const totalPages = Math.ceil(totalVideos / videosPerPage);
+  // Step C: Blazing fast estimated count bypasses the Postgres full-table scan lock
+  const tableStats = await prisma.$queryRaw<{ estimate: number }[]>`
+    SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';
+  `;
+  
+  const estimatedTotal = Number(tableStats[0]?.estimate || 0);
+
+  // Step D: SEO Hard Cap - Never let bots crawl past page 200
+  const hardPageLimit = 200; 
+  const calculatedPages = Math.ceil(estimatedTotal / videosPerPage);
+  const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
+
+  // =========================================================================
 
   const generatePagination = () => {
-    if (totalPages <= 5)
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
-    if (currentPage >= totalPages - 2)
-      return [
-        1,
-        "...",
-        totalPages - 3,
-        totalPages - 2,
-        totalPages - 1,
-        totalPages,
-      ];
-    return [
-      1,
-      "...",
-      currentPage - 1,
-      currentPage,
-      currentPage + 1,
-      "...",
-      totalPages,
-    ];
+    if (currentPage >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
   const megaCategories = [
@@ -165,14 +175,14 @@ export default async function TrendingPage({
       {/* =========================================
           💰 TOP WIDE AD BANNER
           ========================================= */}
-      <div className="max-w-400 mx-auto px-4 pt-4 pb-2">
+      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
         <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
       </div>
 
       {/* =========================================
           🔥 TRENDING VIDEOS GRID
           ========================================= */}
-      <section className="max-w-400 mx-auto px-4 py-6">
+      <section className="max-w-[1600px] mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
           <div className="flex items-center gap-3">
             <Flame className="text-rose-800" size={28} strokeWidth={1.5} />
@@ -187,14 +197,15 @@ export default async function TrendingPage({
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {videos.length > 0 ? (
-            videos.map((video) => (
+            videos.map((video, index) => (
               <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
                   <Image 
                     src={video.thumbnail} 
                     alt={video.title} 
                     fill 
-                    sizes="(max-width: 640px) 50vw, 20vw" 
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw" 
+                    priority={index < 6}
                     className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]" 
                   />
                   <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
@@ -287,7 +298,7 @@ export default async function TrendingPage({
       {/* =========================================
           💰 BOTTOM SQUARE AD
           ========================================= */}
-      <div className="max-w-400 mx-auto px-4 py-8 flex justify-center">
+      <div className="max-w-[1600px] mx-auto px-4 py-8 flex justify-center">
         <div className="flex justify-center items-center w-full">
           <iframe style={{ backgroundColor: "transparent" }} width="315" height="300" scrolling="no" frameBorder="0" {...({ allowtransparency: "true" } as any)} name="spot_id_10002484" src="//a.adtng.com/get/10002484?ata=deviparvatilovemuslimcocks" title="Advertisement" loading="lazy" />
         </div>
