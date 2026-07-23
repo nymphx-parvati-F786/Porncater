@@ -1,29 +1,41 @@
 import { prisma } from "@/lib/prisma";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, PlayCircle } from "lucide-react";
 import Link from "next/link";
-import SearchBar from "@/src/components/ui/SearchBar";
-import PornstarSearchFilter from "@/src/components/ui/PornstarSearchFilter";
+import SmartHeader from "@/src/components/ui/SmartHeader";
 
 export const revalidate = 120; // Caches the page for 2 minutes
-
 
 interface DirectoryProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
+const megaCategories = [
+  "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
+  "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
+  "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
+];
+
+// Classic Tube A-Z Index
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
 export default async function PornstarsDirectory({ searchParams }: DirectoryProps) {
   const resolvedSearchParams = await searchParams;
   
+  // We keep the searchQuery logic in the backend just in case, but removed the UI for it
   const searchQuery = (resolvedSearchParams.search as string) || "";
+  const letterQuery = (resolvedSearchParams.letter as string) || "";
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
-  const performersPerPage = 20;
+  
+  // Dense wall of models
+  const performersPerPage = 36; 
 
-  // 1. Build dynamic Prisma database query conditions based on URL search query parameter
-  const queryCondition = searchQuery
-    ? { name: { contains: searchQuery, mode: "insensitive" as const } }
-    : {};
+  let queryCondition: any = {};
+  if (searchQuery) {
+    queryCondition.name = { contains: searchQuery, mode: "insensitive" };
+  } else if (letterQuery) {
+    queryCondition.name = { startsWith: letterQuery, mode: "insensitive" };
+  }
 
-  // 2. Concurrently pull total counts and limited page rows from database
   const [pornstars, totalPerformers] = await Promise.all([
     prisma.pornstar.findMany({
       where: queryCondition,
@@ -49,84 +61,90 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-24">
-      {/* Navbar */}
-      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-12">
-            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-              <span className="font-light text-white">Cater</span>
-            </Link>
-
-            {/* Links */}
-            <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
-              <Link href="/" className="hover:text-white transition duration-300">Home</Link>
-              <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
-              <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
-            </div>
-          </div>
-
-          <SearchBar />
-
-          {/* Auth */}
-          <div className="flex items-center gap-6 text-sm tracking-wide">
-            <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
-              Upload
-            </Link>
-          </div>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-200 font-sans selection:bg-rose-600 selection:text-white flex flex-col">
       
-      {/* Directory Header */}
-      <div className="relative border-b border-white/5 bg-black py-16">
-        <div className="max-w-[1400px] mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-serif font-light tracking-wide text-white mb-4">
-            Top <span className="italic text-rose-800">Pornstars</span>
-          </h1>
-          <p className="text-zinc-500 text-[11px] uppercase tracking-widest font-medium max-w-2xl">
-            Browse our exclusive collection of the most viewed and highest-rated pornstars in the industry.
-          </p>
+      <SmartHeader categories={megaCategories} />
 
-          <PornstarSearchFilter initialQuery={searchQuery} />
+      {/* =========================================
+          🎬 RAW TUBE HEADER & A-Z INDEX
+          ========================================= */}
+      <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 pt-6 pb-4">
+        
+        {/* Minimal Title Row */}
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+          <h1 className="text-lg md:text-xl font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Star className="text-rose-600" size={18} fill="currentColor" />
+            Pornstars
+          </h1>
+          <span className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+            {totalPerformers.toLocaleString()} Models
+          </span>
+        </div>
+
+        {/* Brutalist A-Z Tube Filtering Bar */}
+        <div className="flex flex-wrap gap-[1px] bg-zinc-800 border border-zinc-800 p-[1px] mb-4">
+          <Link 
+            href="/pornstars" 
+            className={`flex-1 min-w-[30px] py-1.5 text-center text-[10px] sm:text-xs font-bold uppercase transition-none ${!letterQuery && !searchQuery ? 'bg-rose-700 text-white' : 'bg-zinc-950 text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
+          >
+            All
+          </Link>
+          {alphabet.map((letter) => (
+            <Link 
+              key={letter} 
+              href={`/pornstars?letter=${letter}`}
+              className={`flex-1 min-w-[24px] py-1.5 text-center text-[10px] sm:text-xs font-bold transition-none ${letterQuery === letter ? 'bg-rose-700 text-white' : 'bg-[#050505] text-zinc-500 hover:bg-zinc-800 hover:text-white'}`}
+            >
+              {letter}
+            </Link>
+          ))}
         </div>
       </div>
 
-      {/* Pornstars Grid */}
-      <div className="max-w-[1400px] mx-auto px-6 pt-12">
+      {/* =========================================
+          🔥 DENSE TUBE GRID
+          ========================================= */}
+      <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 flex-grow">
         {pornstars.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5 sm:gap-2.5">
               {pornstars.map((star, index) => {
-                // Calculate position relative to total page positioning
                 const globalRank = (currentPage - 1) * performersPerPage + (index + 1);
                 
                 return (
-                  /* 🚀 KEY CHANGE: We drop star.id and map explicitly to the unique string URL slug field! */
                   <Link 
-                    key={star.id} 
+                    key={star.slug} 
                     href={`/pornstars/${star.slug}`} 
-                    className="group relative overflow-hidden rounded-sm cursor-pointer bg-zinc-900 aspect-[2/3]"
+                    className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
                   >
-                    <img 
-                      src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
-                      alt={star.name} 
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-[1.5s] ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100" 
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#020202] via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md border border-white/10 text-white text-[10px] font-bold px-2.5 py-1 rounded-sm shadow-xl z-10 font-mono">
-                      #{globalRank}
+                    {/* Raw Image Container */}
+                    <div className="relative w-full aspect-[3/4] bg-black overflow-hidden">
+                      <img 
+                        src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
+                        alt={star.name} 
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover object-[50%_20%] group-hover:opacity-80 transition-none" 
+                      />
+                      
+                      {/* Sharp Rank Badge (Top Left) */}
+                      <div className="absolute top-0 left-0 bg-rose-700 text-white text-[10px] font-bold px-1.5 py-0.5">
+                        #{globalRank}
+                      </div>
+
+                      {/* Sharp Video Count Badge (Top Right) */}
+                      <div className="absolute top-0 right-0 bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.5 flex items-center gap-1">
+                        <PlayCircle size={10} className="fill-black text-amber-500" />
+                        {star._count?.videos || 0}
+                      </div>
                     </div>
 
-                    <div className="absolute bottom-0 left-0 w-full p-5 translate-y-3 group-hover:translate-y-0 transition-transform duration-500 ease-out">
-                      <h4 className="text-white font-serif italic text-2xl tracking-wide mb-2 drop-shadow-md">{star.name}</h4>
-                      <div className="flex items-center justify-between text-[9px] uppercase tracking-widest text-zinc-300 opacity-0 group-hover:opacity-100 transition-opacity duration-700 delay-100">
-                        <span className="flex items-center gap-1.5">
-                          <Star size={10} className="text-rose-600" fill="currentColor"/> 
-                          {star._count?.videos || 0} Videos
-                        </span>
-                        <span>{star.views ? Number(star.views).toLocaleString() : '0'} Views</span>
+                    {/* Data Plate - Tight & Minimal */}
+                    <div className="p-2 flex flex-col bg-[#111]">
+                      <h4 className="text-zinc-300 font-bold text-xs truncate group-hover:text-rose-500 transition-none">
+                        {star.name}
+                      </h4>
+                      <div className="text-zinc-600 text-[9px] uppercase tracking-widest font-bold mt-0.5">
+                        {star.views ? Number(star.views).toLocaleString() : '0'} Views
                       </div>
                     </div>
                   </Link>
@@ -134,83 +152,93 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
               })}
             </div>
 
-            {/* Premium Tube Pagination Block */}
+            {/* Pagination Block (Square & Brutalist) */}
             {totalPages > 1 && (
-              <div className="mt-24 pt-12 border-t border-zinc-900/60 flex items-center justify-center gap-1.5 select-none">
+              <div className="mt-8 mb-8 flex items-center justify-center gap-1 select-none">
                 {currentPage > 1 ? (
                   <Link
-                    href={`/pornstars?search=${searchQuery}&page=${currentPage - 1}`}
-                    className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-900/40 text-zinc-300 hover:text-white transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
+                    href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${currentPage - 1}`}
+                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
                   >
-                    <ChevronLeft size={16} className="mr-1" /> Prev
+                    <ChevronLeft size={14} /> Prev
                   </Link>
                 ) : (
-                  <div className="h-11 px-4 flex items-center justify-center bg-zinc-950 text-zinc-700 font-mono text-xs uppercase tracking-wider rounded-sm cursor-not-allowed opacity-50 shadow-sm">
-                    <ChevronLeft size={16} className="mr-1" /> Prev
+                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
+                    <ChevronLeft size={14} /> Prev
                   </div>
                 )}
 
-                {generatePagination().map((pageNum, index) => {
-                  if (pageNum === "...") {
-                    return <span key={`ellipsis-${index}`} className="w-11 h-11 flex items-end justify-center pb-2 text-zinc-600 font-bold tracking-widest text-sm">...</span>;
-                  }
-                  const isCurrent = currentPage === pageNum;
-                  return (
-                    <Link
-                      key={pageNum}
-                      href={`/pornstars?search=${searchQuery}&page=${pageNum}`}
-                      className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${
-                        isCurrent
-                          ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
-                          : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-                      }`}
-                    >
-                      {pageNum}
-                    </Link>
-                  );
-                })}
+                <div className="hidden sm:flex gap-1">
+                  {generatePagination().map((pageNum, index) => {
+                    if (pageNum === "...") {
+                      return <span key={`ellipsis-${index}`} className="w-8 h-8 flex items-end justify-center pb-1 text-zinc-600 font-bold tracking-widest text-sm">...</span>;
+                    }
+                    const isCurrent = currentPage === pageNum;
+                    return (
+                      <Link
+                        key={pageNum}
+                        href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${pageNum}`}
+                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
+                          isCurrent
+                            ? "bg-rose-700 text-white border border-rose-700"
+                            : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+                        }`}
+                      >
+                        {pageNum}
+                      </Link>
+                    );
+                  })}
+                </div>
 
                 {currentPage < totalPages ? (
                   <Link
-                    href={`/pornstars?search=${searchQuery}&page=${currentPage + 1}`}
-                    className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-800 text-zinc-300 hover:text-white font-bold transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
+                    href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${currentPage + 1}`}
+                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
                   >
-                    Next <ChevronRight size={16} className="ml-1" />
+                    Next <ChevronRight size={14} />
                   </Link>
                 ) : (
-                  <div className="h-11 px-4 flex items-center justify-center bg-zinc-950 text-zinc-700 font-mono text-xs uppercase tracking-wider rounded-sm cursor-not-allowed opacity-50 shadow-sm">
-                    Next <ChevronRight size={16} className="ml-1" />
+                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
+                    Next <ChevronRight size={14} />
                   </div>
                 )}
               </div>
             )}
           </>
         ) : (
-          <div className="text-zinc-500 text-center py-20 font-light tracking-widest uppercase">
-            No pornstars found matching "{searchQuery}".
+          <div className="bg-[#111] border border-zinc-900 py-20 text-center mt-4">
+            <Star className="mx-auto text-zinc-800 mb-3" size={40} />
+            <div className="text-zinc-500 font-bold tracking-widest uppercase text-xs">
+              No pornstars found matching "{letterQuery}".
+            </div>
+            <Link href="/pornstars" className="inline-block mt-4 text-rose-600 hover:text-rose-500 text-[10px] font-bold uppercase tracking-widest">
+              Clear Filter
+            </Link>
           </div>
         )}
       </div>
 
-      {/* Upgraded Footer with Legal Links (Now spans full width) */}
-      <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
-          <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
-          <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
-          <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
-          <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
+      {/* =========================================
+          FOOTER
+          ========================================= */}
+      <footer className="border-t border-zinc-900 pt-12 pb-8 text-center bg-[#050505] mt-auto">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-8 text-[10px] uppercase tracking-widest text-zinc-600 font-bold px-4">
+          <Link href="/dmca" className="hover:text-zinc-300 transition-colors">DMCA / Copyright</Link>
+          <Link href="/privacy-policy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="text-rose-800 hover:text-rose-600 transition-colors">Terms of Service</Link>
+          <Link href="/2257" className="hover:text-zinc-300 transition-colors">18 U.S.C. 2257</Link>
+          <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact Us</Link>
         </div>
 
-        <div className="text-xl tracking-widest mb-4">
+        <div className="text-lg tracking-widest mb-3">
           <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-          <span className="font-light text-zinc-600">Cater</span>
+          <span className="font-light text-zinc-700">Cater</span>
         </div>
-        <p className="text-zinc-600 text-[10px] uppercase tracking-widest max-w-2xl mx-auto px-6 leading-relaxed mb-4">
+        <p className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-4">
           All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
         </p>
-        <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} • Exclusive Adult Cinema • 18+ Only
+        <p className="text-zinc-800 text-[9px] font-bold uppercase tracking-widest">
+          © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
         </p>
       </footer>
     </div>

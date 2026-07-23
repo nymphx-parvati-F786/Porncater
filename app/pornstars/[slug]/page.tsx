@@ -1,16 +1,22 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
-import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight } from "lucide-react";
+import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image"; 
 import { notFound } from "next/navigation";
-import SearchBar from "@/src/components/ui/SearchBar";
+import SmartHeader from "@/src/components/ui/SmartHeader";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
+
+const megaCategories = [
+  "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
+  "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
+  "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
+];
 
 // =========================================================
 // 🚀 PORNSTAR SEO ENGINE: DYNAMIC METADATA
@@ -56,9 +62,9 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
   if (!starSlug) return notFound();
 
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
-  const videosPerPage = 16;
+  const videosPerPage = 24; // 🔥 Increased density for tube feel
 
-  // 1. Fetch the pornstar bio first using a case-insensitive search
+  // 1. Fetch the pornstar bio
   const star = await prisma.pornstar.findFirst({
     where: {
       slug: {
@@ -70,11 +76,11 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
 
   if (!star) return notFound();
 
-  // 2. Fetch videos with DMCA Shield + Pagination Constraints
+  // 2. Fetch videos with DMCA Shield + Pagination
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: {
-        status: "PUBLISHED", // 🛡️ Keep takedowns off the profile
+        status: "PUBLISHED", 
         pornstars: {
           some: { id: star.id }
         }
@@ -97,7 +103,6 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
   const totalPages = Math.ceil(totalVideos / videosPerPage);
   const canonicalUrl = `https://porncater.com/pornstars/${star.slug}?page=${currentPage}`;
 
-  // Elite tube pagination logic engine
   const generatePagination = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
     if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
@@ -105,9 +110,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
-  // =========================================================
-  // 🚀 THE 3-PART PORNSTAR SCHEMA GRAPH
-  // =========================================================
+  // SEO SCHEMAS
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -117,7 +120,6 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       { "@type": "ListItem", "position": 3, "name": star.name, "item": `https://porncater.com/pornstars/${star.slug}` }
     ]
   };
-
   const personSchema = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -131,7 +133,6 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       "userInteractionCount": star.views || 0
     }
   };
-
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -150,250 +151,233 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
     }))
   };
 
-  const combinedSchema = [breadcrumbSchema, personSchema, itemListSchema];
-
   return (
-    <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-24">
-      {/* 🔥 THE MASTER SEO GRAPH */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(combinedSchema) }}
-      />
+    <div className="min-h-screen bg-[#0a0a0a] text-zinc-200 font-sans selection:bg-rose-600 selection:text-white flex flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, personSchema, itemListSchema]) }} />
       
-      {/* Navbar */}
-      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-12">
-            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-              <span className="font-light text-white">Cater</span>
-            </Link>
+      {/* 🔥 THE UNIFIED SMART HEADER */}
+      <SmartHeader categories={megaCategories} />
 
-            {/* Links */}
-            <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
-              <Link href="/" className="hover:text-white transition duration-300">Home</Link>
-              <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
-              <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
-            </div>
-          </div>
-
-          <SearchBar />
-
-          {/* Auth */}
-          <div className="flex items-center gap-6 text-sm tracking-wide">
-            <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
-              Upload
-            </Link>
-          </div>
-        </div>
-      </nav>
-
-      {/* Profile Info Section */}
-      <div className="max-w-[1400px] mx-auto px-6 relative mt-8 sm:mt-12">
-        <div className="flex flex-col md:flex-row items-start md:items-end gap-6 md:gap-10">
+      {/* =========================================
+          🔥 RAW TUBE PROFILE HEADER
+          ========================================= */}
+      <div className="bg-[#111] border-b border-zinc-900 pt-6 pb-6 shadow-md">
+        <div className="max-w-[1600px] mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-4 md:gap-6 items-start">
           
-          {/* 🔥 SEO/PERFORMANCE: Next/Image for Avatar */}
-          <div className="relative w-40 h-40 sm:w-52 sm:h-52 rounded-sm overflow-hidden border-4 border-[#050505] bg-zinc-900 shadow-2xl flex-shrink-0">
-            <Image
+          {/* Portrait Avatar (Matching Directory Style) */}
+          <div className="relative w-28 h-36 sm:w-36 sm:h-48 shrink-0 bg-black border border-zinc-800 overflow-hidden">
+            <img
               src={star.avatarUrl || "/thumbnails/default-avatar.png"}
               alt={star.name}
-              fill
-              sizes="(max-width: 640px) 160px, 208px"
-              priority
-              className="object-cover"
+              className="absolute inset-0 w-full h-full object-cover object-[50%_20%]"
             />
           </div>
 
-          <div className="flex-1 pb-2 w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Profile Data Plate */}
+          <div className="flex-1 w-full flex flex-col">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-zinc-800 pb-3">
               <div>
-                <h1 className="text-4xl sm:text-5xl font-serif font-light text-white tracking-wide mb-1">
+                <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-widest text-white mb-1">
                   {star.name}
                 </h1>
-                <p className="text-rose-800 text-[11px] uppercase tracking-widest font-bold">
-                  Featured Performer
+                <p className="text-rose-600 text-[9px] uppercase tracking-widest font-black">
+                  Verified Model
                 </p>
               </div>
 
-              <div className="flex gap-3">
+              {/* Action Buttons (Brutalist) */}
+              <div className="flex gap-1.5">
                 <SubscribeButton />
-                <button className="px-4 py-3 rounded-sm bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 text-white transition-all">
-                  <Share2 size={16} strokeWidth={1.5} />
+                <button className="px-3 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-none text-[10px] font-bold uppercase tracking-widest">
+                  <Share2 size={14} className="mr-1.5" /> Share
                 </button>
               </div>
             </div>
 
-            {/* Stats Bar */}
-            <div className="flex flex-wrap items-center gap-8 mt-8 py-4 border-y border-white/5">
+            {/* Brutalist Stats Row */}
+            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3 mb-4 text-[10px] uppercase font-bold tracking-widest text-zinc-500">
               <div className="flex flex-col">
-                <span className="text-xl font-light text-white">{totalVideos}</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500">Porn Videos</span>
+                <span className="text-white text-sm font-black">{totalVideos}</span>
+                Videos
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-light text-white">
-                  {star.views ? Number(star.views).toLocaleString() : "0"}
-                </span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500">Total Views</span>
+              <div className="flex flex-col border-l border-zinc-800 pl-6">
+                <span className="text-white text-sm font-black">{star.views ? Number(star.views).toLocaleString() : "0"}</span>
+                Total Views
               </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-light text-white">{star.subscribers || "0"}</span>
-                <span className="text-[9px] uppercase tracking-widest text-zinc-500">Subscribers</span>
+              <div className="flex flex-col border-l border-zinc-800 pl-6">
+                <span className="text-white text-sm font-black">{star.subscribers || "0"}</span>
+                Subscribers
               </div>
             </div>
 
-            {/* Bio & Categories */}
-            <div className="mt-6">
-              <p className="text-sm text-zinc-400 font-light leading-relaxed max-w-3xl">
-                {star.bio || "Performer bio coming soon."}
+            {/* Bio & Tags */}
+            {star.bio && (
+              <p className="text-xs text-zinc-400 font-medium leading-relaxed max-w-4xl mb-3 line-clamp-3">
+                {star.bio}
               </p>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {star.tags?.map((tag: string, i: number) => (
-                  <span key={i} className="border border-zinc-800 bg-zinc-900/30 px-3 py-1 text-[9px] tracking-widest uppercase text-zinc-500 rounded-sm">
+            )}
+            
+            {star.tags && star.tags.length > 0 && (
+              <div className="flex flex-wrap gap-1 mt-auto">
+                {star.tags.map((tag: string, i: number) => (
+                  <Link key={i} href={`/category/${tag.toLowerCase()}`} className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:text-white px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500 transition-none">
                     {tag}
-                  </span>
+                  </Link>
                 ))}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Videos Grid */}
-      <div className="max-w-[1400px] mx-auto px-6 mt-20">
-        <div className="flex items-center gap-3 mb-10 border-b border-white/5 pb-4">
-          <Film className="text-rose-800" size={24} strokeWidth={1.5} />
-          <h3 className="text-2xl font-serif italic text-white tracking-wide">
-            Porn Videos featuring {star.name}
-          </h3>
-          <span className="ml-auto text-zinc-500 text-xs tracking-widest uppercase font-mono">
-            Page {currentPage} / {totalPages || 1}
+      {/* =========================================
+          🔥 DENSE VIDEO GRID
+          ========================================= */}
+      <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 mt-6 flex-grow">
+        
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-4">
+          <h2 className="text-lg md:text-xl font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Film className="text-rose-600" size={18} />
+            Videos
+          </h2>
+          <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+            Page {currentPage} of {totalPages || 1}
           </span>
         </div>
 
         {videos.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-              {videos.map((video, index) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 sm:gap-2.5">
+              {videos.map((video) => (
                 <Link 
                   key={video.id} 
                   href={`/watch/${video.id}/${video.slug}`} 
-                  prefetch={false} // 🔥 ADDED: Protects DB on profile scroll
-                  className="group block cursor-pointer"
+                  prefetch={false} 
+                  className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
                 >
-                  
-                  {/* 🔥 SEO/PERFORMANCE: Next/Image for Video Thumbnails */}
-                  <div className="relative overflow-hidden bg-zinc-900 aspect-video rounded-sm shadow-[0_0_20px_rgba(0,0,0,0.4)]">
+                  {/* Raw Image Container */}
+                  <div className="relative w-full aspect-video bg-black overflow-hidden">
                     <Image
                       src={video.thumbnail}
                       alt={video.title}
                       fill
-                      sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                      priority={index < 4}
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] opacity-80 group-hover:opacity-100"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
+                      className="object-cover group-hover:opacity-80 transition-none"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-rose-900/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 scale-75 group-hover:scale-100 text-white">
-                      <Play size={20} className="ml-1" fill="currentColor" />
-                    </div>
-                    <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 text-[10px] tracking-widest rounded-sm text-zinc-300">
-                      {video.duration || "0:00"}
-                    </div>
-                    <div className="absolute top-2 left-2 border border-white/20 bg-black/40 backdrop-blur-sm text-[9px] uppercase tracking-widest px-2 py-1 text-white">
+                    
+                    {/* Sharp HD Badge */}
+                    <div className="absolute top-0 left-0 bg-rose-700 text-white text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
                       HD
                     </div>
+
+                    {/* Sharp Duration Badge */}
+                    <div className="absolute bottom-0 right-0 bg-black/90 text-white text-[9px] font-bold px-1.5 py-0.5 tracking-wider border-t border-l border-zinc-800">
+                      {video.duration || "0:00"}
+                    </div>
                   </div>
-                  <div className="mt-4 px-1">
-                    <h4 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-300">
+
+                  {/* Data Plate - Tight & Minimal */}
+                  <div className="p-2 flex flex-col flex-grow">
+                    <h3 className="font-bold text-zinc-300 text-xs line-clamp-2 leading-tight group-hover:text-rose-500 transition-none">
                       {video.title}
-                    </h4>
-                    <div className="flex items-center gap-3 mt-2 text-zinc-500 text-[10px] uppercase tracking-widest">
+                    </h3>
+                    <div className="flex items-center justify-between mt-auto pt-2 text-zinc-600 text-[9px] uppercase tracking-widest font-bold">
                       <span className="flex items-center gap-1">
-                        <Eye size={12} /> {video.views ? Number(video.views).toLocaleString() : "0"}
+                        <Eye size={10} /> {video.views ? Number(video.views).toLocaleString() : "0"}
                       </span>
-                      <span className="w-1 h-1 bg-zinc-700 rounded-full"></span>
-                      <span>100% Rating</span>
+                      <span className="flex items-center gap-1 text-emerald-600">
+                        <ThumbsUp size={10} /> 100%
+                      </span>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
 
-            {/* Tube-Style Pagination UI Block */}
+            {/* Pagination Block (Square & Brutalist) */}
             {totalPages > 1 && (
-              <div className="mt-24 pt-12 border-t border-zinc-900/60 flex items-center justify-center gap-1.5 select-none">
+              <div className="mt-8 mb-8 flex items-center justify-center gap-1 select-none">
                 {currentPage > 1 ? (
                   <Link
                     href={`/pornstars/${star.slug}?page=${currentPage - 1}`}
-                    className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-900/40 text-zinc-300 hover:text-white transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
+                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
                   >
-                    <ChevronLeft size={16} className="mr-1" /> Prev
+                    <ChevronLeft size={14} /> Prev
                   </Link>
                 ) : (
-                  <div className="h-11 px-4 flex items-center justify-center bg-zinc-950 text-zinc-700 font-mono text-xs uppercase tracking-wider rounded-sm cursor-not-allowed opacity-50 shadow-sm">
-                    <ChevronLeft size={16} className="mr-1" /> Prev
+                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
+                    <ChevronLeft size={14} /> Prev
                   </div>
                 )}
 
-                {generatePagination().map((pageNum, index) => {
-                  if (pageNum === "...") {
-                    return <span key={`ellipsis-${index}`} className="w-11 h-11 flex items-end justify-center pb-2 text-zinc-600 font-bold tracking-widest text-sm">...</span>;
-                  }
-                  const isCurrent = currentPage === pageNum;
-                  return (
-                    <Link
-                      key={pageNum}
-                      href={`/pornstars/${star.slug}?page=${pageNum}`}
-                      className={`w-11 h-11 flex items-center justify-center text-xs font-mono font-bold transition-all duration-150 rounded-sm shadow-md active:scale-95 ${isCurrent
-                        ? "bg-rose-800 text-white font-black scale-105 ring-1 ring-rose-600/30 shadow-[0_0_15px_rgba(159,18,57,0.3)] z-10"
-                        : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                <div className="hidden sm:flex gap-1">
+                  {generatePagination().map((pageNum, index) => {
+                    if (pageNum === "...") {
+                      return <span key={`ellipsis-${index}`} className="w-8 h-8 flex items-end justify-center pb-1 text-zinc-600 font-bold tracking-widest text-sm">...</span>;
+                    }
+                    const isCurrent = currentPage === pageNum;
+                    return (
+                      <Link
+                        key={pageNum}
+                        href={`/pornstars/${star.slug}?page=${pageNum}`}
+                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
+                          isCurrent
+                            ? "bg-rose-700 text-white border border-rose-700"
+                            : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
                         }`}
-                    >
-                      {pageNum}
-                    </Link>
-                  );
-                })}
+                      >
+                        {pageNum}
+                      </Link>
+                    );
+                  })}
+                </div>
 
                 {currentPage < totalPages ? (
                   <Link
                     href={`/pornstars/${star.slug}?page=${currentPage + 1}`}
-                    className="h-11 px-4 flex items-center justify-center bg-zinc-900 hover:bg-rose-800 text-zinc-300 hover:text-white font-bold transition-all duration-200 font-mono text-xs uppercase tracking-wider rounded-sm active:scale-95 shadow-md"
+                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
                   >
-                    Next <ChevronRight size={16} className="ml-1" />
+                    Next <ChevronRight size={14} />
                   </Link>
                 ) : (
-                  <div className="h-11 px-4 flex items-center justify-center bg-zinc-950 text-zinc-700 font-mono text-xs uppercase tracking-wider rounded-sm cursor-not-allowed opacity-50 shadow-sm">
-                    Next <ChevronRight size={16} className="ml-1" />
+                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
+                    Next <ChevronRight size={14} />
                   </div>
                 )}
               </div>
             )}
           </>
         ) : (
-          <div className="text-zinc-500 text-center py-20 font-light tracking-widest uppercase">
-            No porn videos available for this performer yet.
+          <div className="bg-[#111] border border-zinc-900 py-20 text-center mt-4">
+            <Film className="mx-auto text-zinc-800 mb-3" size={40} />
+            <div className="text-zinc-500 font-bold tracking-widest uppercase text-xs">
+              No videos available for {star.name} yet.
+            </div>
           </div>
         )}
       </div>
 
-      {/* Upgraded Footer with Legal Links */}
-      <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202] mt-16 w-full">
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
-          <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
-          <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition duration-300">Terms of Service</Link>
-          <Link href="/2257" className="hover:text-white transition duration-300">18 U.S.C. 2257</Link>
-          <Link href="/contact" className="hover:text-white transition duration-300">Contact Us</Link>
+      {/* =========================================
+          FOOTER
+          ========================================= */}
+      <footer className="border-t border-zinc-900 pt-12 pb-8 text-center bg-[#050505] mt-auto">
+        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-8 text-[10px] uppercase tracking-widest text-zinc-600 font-bold px-4">
+          <Link href="/dmca" className="hover:text-zinc-300 transition-colors">DMCA / Copyright</Link>
+          <Link href="/privacy-policy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="text-rose-800 hover:text-rose-600 transition-colors">Terms of Service</Link>
+          <Link href="/2257" className="hover:text-zinc-300 transition-colors">18 U.S.C. 2257</Link>
+          <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact Us</Link>
         </div>
 
-        <div className="text-xl tracking-widest mb-4">
+        <div className="text-lg tracking-widest mb-3">
           <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-          <span className="font-light text-zinc-600">Cater</span>
+          <span className="font-light text-zinc-700">Cater</span>
         </div>
-        <p className="text-zinc-600 text-[10px] uppercase tracking-widest max-w-2xl mx-auto px-6 leading-relaxed mb-4">
+        <p className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-4">
           All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
         </p>
-        <p className="text-zinc-700 text-[10px] uppercase tracking-widest">
-          © {new Date().getFullYear()} • Exclusive Adult Cinema • 18+ Only
+        <p className="text-zinc-800 text-[9px] font-bold uppercase tracking-widest">
+          © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
         </p>
       </footer>
     </div>
