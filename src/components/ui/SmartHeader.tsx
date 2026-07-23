@@ -1,7 +1,7 @@
 // src/components/ui/SmartHeader.tsx
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { 
   Menu, Search, Video, MonitorPlay, TrendingUp, 
@@ -10,53 +10,55 @@ import {
 import SearchBar from "@/src/components/ui/SearchBar";
 
 export default function SmartHeader({ categories }: { categories: string[] }) {
-  const lastScrollY = useRef(0);
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
+  const [isHidden, setIsHidden] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(104); // Default safe fallback
+  
+  const headerRef = useRef<HTMLHeadingElement>(null);
+  const accumulatedScroll = useRef(0);
+  const lastY = useRef(0);
 
+  // 🔥 1. Measures the exact height of the top header so they stitch together perfectly.
+  // Updates instantly if you rotate your tablet or resize the window.
   useEffect(() => {
-    lastScrollY.current = window.scrollY;
-    let ticking = false;
+    const updateHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
 
+  // 🔥 2. Rock-solid Scroll Logic (Kills Jitter/Flicker)
+  useEffect(() => {
+    lastY.current = window.scrollY;
+    
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentY = window.scrollY;
-          const diff = currentY - lastScrollY.current;
-          
-          const wrapper = wrapperRef.current;
-          const inner = innerRef.current;
+      const currentY = window.scrollY;
+      const diff = currentY - lastY.current;
+      lastY.current = currentY;
 
-          if (wrapper && inner) {
-            const barHeight = inner.offsetHeight;
+      // Always snap open safely at the absolute top of the page
+      if (currentY < 60) {
+        setIsHidden(false);
+        accumulatedScroll.current = 0;
+        return;
+      }
 
-            // 15px threshold to ignore tiny scrollbar stutters
-            if (Math.abs(diff) > 15) {
-              if (diff > 0 && currentY > 120) {
-                // SCROLLING DOWN: Slide it up behind the main header
-                wrapper.style.marginTop = `-${barHeight}px`;
-                wrapper.style.opacity = '0';
-                wrapper.style.pointerEvents = 'none';
-              } else if (diff < 0) {
-                // SCROLLING UP: Slide it back down
-                wrapper.style.marginTop = '0px';
-                wrapper.style.opacity = '1';
-                wrapper.style.pointerEvents = 'auto';
-              }
-              lastScrollY.current = currentY;
-            }
+      // Accumulate scroll distance in the same direction
+      if ((diff > 0 && accumulatedScroll.current > 0) || (diff < 0 && accumulatedScroll.current < 0)) {
+        accumulatedScroll.current += diff;
+      } else {
+        // You changed directions, reset the counter
+        accumulatedScroll.current = diff;
+      }
 
-            // Always snap open at the absolute top of the page
-            if (currentY < 50) {
-              wrapper.style.marginTop = '0px';
-              wrapper.style.opacity = '1';
-              wrapper.style.pointerEvents = 'auto';
-              lastScrollY.current = currentY;
-            }
-          }
-          ticking = false;
-        });
-        ticking = true;
+      // Threshold: Requires 40px of continuous scrolling before it hides/shows
+      if (accumulatedScroll.current > 40) {
+        setIsHidden(true);
+      } else if (accumulatedScroll.current < -40) {
+        setIsHidden(false);
       }
     };
 
@@ -64,16 +66,17 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Notice we return a fragment (<></>) because these are now two separate blocks!
   return (
-    <header className="sticky top-0 z-[99999] flex flex-col w-full shadow-2xl shadow-black/90 bg-[#0a0a0a]">
-      
+    <>
       {/* =========================================
-          🔥 MAIN STATIC HEADER (Z-20)
-          Solid background ensures the sliding bar is completely hidden when it goes up.
-          Must be 'relative' (not absolute!) so it stays in the layout flow.
+          🔥 BLOCK 1: MAIN HEADER (ALWAYS STICKY, NEVER MOVES)
+          Z-index is 99999 so it sits above the category bar.
           ========================================= */}
-      <div className="relative z-20 bg-[#050505] border-b border-white/10">
-        
+      <header 
+        ref={headerRef} 
+        className="sticky top-0 z-[99999] w-full bg-[#050505] shadow-2xl shadow-black/90 border-b border-white/10"
+      >
         {/* 1. TOP ROW */}
         <div className="max-w-[1600px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 lg:gap-8">
@@ -121,59 +124,59 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             </Link>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* =========================================
-          🔥 CATEGORY ROW (SLIDING GARAGE DOOR)
-          Uses Z-10 so it hides underneath the Z-20 header above.
+          🔥 BLOCK 2: CATEGORY BAR (SEPARATE BUT STITCHED)
+          Z-index is 99998 so when it translates up, it hides under Block 1!
           ========================================= */}
       <div 
-        ref={wrapperRef}
-        className="relative z-10 w-full transition-all duration-200 ease-out origin-top"
+        className={`sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-all duration-300 ease-out transform-gpu ${
+          isHidden ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
+        }`}
+        style={{ 
+          top: `${headerHeight}px`, // This dynamic value stitches it perfectly to the bottom of the main header
+          transform: isHidden ? "translateY(-100%)" : "translateY(0)" 
+        }}
       >
-        <div ref={innerRef} className="w-full bg-[#111] border-b border-zinc-800">
-          
-          <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2 flex items-center flex-wrap gap-2">
-            <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
-              <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
-            </div>
-            
-            {categories.slice(0, 17).map((cat, i) => (
-              <Link
-                key={i}
-                href={`/category/${cat.toLowerCase()}`}
-                prefetch={false}
-                className="whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0"
-              >
-                {cat}
-              </Link>
-            ))}
-
-            {categories.length > 17 && (
-              <details className="relative z-50 group">
-                <summary className="list-none flex items-center gap-1 whitespace-nowrap bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm cursor-pointer select-none [&::-webkit-details-marker]:hidden">
-                  More <ChevronDown size={14} className="group-open:rotate-180 transition-transform duration-200" />
-                </summary>
-                
-                {/* Dropdown Menu */}
-                <div className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-sm shadow-2xl p-2 flex flex-col gap-1 z-[9999]">
-                  {categories.slice(17).map((cat, i) => (
-                    <Link
-                      key={i}
-                      href={`/category/${cat.toLowerCase()}`}
-                      prefetch={false}
-                      className="text-zinc-300 hover:text-rose-100 hover:bg-white/10 px-3 py-2 text-[11px] font-semibold tracking-wider uppercase transition-colors rounded-sm"
-                    >
-                      {cat}
-                    </Link>
-                  ))}
-                </div>
-              </details>
-            )}
+        <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2 flex items-center flex-wrap gap-2">
+          <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
+            <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
           </div>
           
+          {categories.slice(0, 17).map((cat, i) => (
+            <Link
+              key={i}
+              href={`/category/${cat.toLowerCase()}`}
+              prefetch={false}
+              className="whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0"
+            >
+              {cat}
+            </Link>
+          ))}
+
+          {categories.length > 17 && (
+            <details className="relative z-50 group">
+              <summary className="list-none flex items-center gap-1 whitespace-nowrap bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm cursor-pointer select-none [&::-webkit-details-marker]:hidden">
+                More <ChevronDown size={14} className="group-open:rotate-180 transition-transform duration-200" />
+              </summary>
+              
+              <div className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-sm shadow-2xl p-2 flex flex-col gap-1 z-[9999]">
+                {categories.slice(17).map((cat, i) => (
+                  <Link
+                    key={i}
+                    href={`/category/${cat.toLowerCase()}`}
+                    prefetch={false}
+                    className="text-zinc-300 hover:text-rose-100 hover:bg-white/10 px-3 py-2 text-[11px] font-semibold tracking-wider uppercase transition-colors rounded-sm"
+                  >
+                    {cat}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          )}
         </div>
       </div>
-    </header>
+    </>
   );
 }
