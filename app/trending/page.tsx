@@ -9,6 +9,7 @@ import Image from "next/image";
 import SearchBar from "@/src/components/ui/SearchBar";
 import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
+import SmartHeader from "@/src/components/ui/SmartHeader";
 
 export const revalidate = 120; // Caches the page for 2 minutes
 
@@ -103,74 +104,8 @@ export default async function TrendingPage({
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
       
-      {/* =========================================
-          🔥 SEXY FROSTED GLASS MEGA-HEADER
-          ========================================= */}
-      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/90 flex flex-col transition-all">
-        <div className="max-w-[1600px] w-full mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 lg:gap-8">
-            <button className="lg:hidden text-zinc-400 hover:text-white transition">
-              <Menu size={28} />
-            </button>
-            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-              <span className="font-light text-white">Cater</span>
-            </Link>
-          </div>
-          <div className="flex-1 max-w-2xl hidden md:block">
-            <SearchBar />
-          </div>
-          <div className="flex items-center gap-3 lg:gap-5">
-            <button className="md:hidden text-zinc-400 hover:text-white transition">
-              <Search size={24} />
-            </button>
-            <Link href="/admin/upload" className="hidden sm:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors border border-white/10 backdrop-blur-sm">
-              <Video size={16} /> Upload
-            </Link>
-            <Link href="/login" className="bg-rose-700 hover:bg-rose-600 text-white px-5 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(190,18,60,0.4)]">
-              Sign In
-            </Link>
-          </div>
-        </div>
-
-        <div className="border-t border-white/5 hidden lg:block">
-          <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <MonitorPlay size={18} /> Home
-            </Link>
-            <Link href="/trending" className="flex items-center gap-2 text-rose-500 border-b-2 border-rose-600 py-3 text-sm font-bold uppercase tracking-wide drop-shadow-md">
-              <TrendingUp size={18} /> Trending
-            </Link>
-            <Link href="/latest" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <Clock size={18} /> New Videos
-            </Link>
-            <Link href="/top-rated" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <Star size={18} /> Top Rated
-            </Link>
-            <Link href="/pornstars" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <Sparkles size={18} /> Pornstars
-            </Link>
-          </div>
-        </div>
-
-        <div className="border-t border-white/5 bg-black/20">
-          <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
-              <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
-            </div>
-            {megaCategories.map((cat, i) => (
-              <Link
-                key={i}
-                href={`/category/${cat.toLowerCase()}`}
-                prefetch={false}
-                className="whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0 backdrop-blur-md"
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </header>
+      {/* 🔥 THE NEW SLIDING SMART HEADER */}
+            <SmartHeader categories={megaCategories} />
 
       {/* =========================================
           💰 TOP WIDE AD BANNER

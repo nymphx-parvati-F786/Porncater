@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import SearchBar from "@/src/components/ui/SearchBar"; 
+import SearchBar from "@/src/components/ui/SearchBar";
+import SmartHeader from "@/src/components/ui/SmartHeader";
 
 // =========================================================
 // 🚀 SEO ENGINE (TOS METADATA)
@@ -15,39 +16,19 @@ export const metadata: Metadata = {
 };
 
 export default function TermsOfServicePage() {
+  const megaCategories = [
+    "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
+    "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
+    "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
+  ];
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20">
-      
+
       {/* Visually Hidden H1 Tag for SEO */}
       <h1 className="sr-only">Terms of Service - PornCater</h1>
 
-      {/* Navbar */}
-      <nav className="bg-black/60 backdrop-blur-xl border-b border-white/5 sticky top-0 z-50 transition-all">
-        <div className="max-w-[1400px] mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-12">
-            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-              <span className="font-light text-white">Cater</span>
-            </Link>
-
-            {/* Links */}
-            <div className="hidden md:flex items-center gap-8 text-[11px] uppercase tracking-widest text-zinc-400 font-medium">
-              <Link href="/" className="hover:text-white transition duration-300">Home</Link>
-              <Link href="/trending" className="hover:text-white transition duration-300">Trending</Link>
-              <Link href="/pornstars" className="hover:text-white transition duration-300">Pornstars</Link>
-            </div>
-          </div>
-
-          <SearchBar />
-
-          {/* Auth */}
-          <div className="flex items-center gap-6 text-sm tracking-wide">
-            <Link href="/admin/upload" className="bg-zinc-100 text-black px-6 py-2 rounded-sm text-[11px] uppercase tracking-widest font-semibold hover:bg-white hover:shadow-[0_0_15px_rgba(255,255,255,0.2)] transition-all duration-300">
-              Upload
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* 🔥 THE NEW SLIDING SMART HEADER */}
+      <SmartHeader categories={megaCategories} />
 
       {/* Main Content Formatted for Legal Readability */}
       <main className="max-w-4xl mx-auto px-6 py-16">
@@ -60,7 +41,7 @@ export default function TermsOfServicePage() {
           </p>
 
           <div className="space-y-8 text-sm text-zinc-400 font-light leading-relaxed">
-            
+
             <section>
               <h3 className="text-lg font-medium text-white mb-3 tracking-wide">1. Acceptance of Terms</h3>
               <p className="mb-4">
@@ -138,7 +119,7 @@ export default function TermsOfServicePage() {
 
       {/* Upgraded Footer with Legal Links */}
       <footer className="border-t border-white/5 pt-12 pb-8 text-center bg-[#020202]">
-        
+
         <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 mb-8 text-[11px] uppercase tracking-widest text-zinc-500 font-medium px-6">
           <Link href="/dmca" className="hover:text-white transition duration-300">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-white transition duration-300">Privacy Policy</Link>

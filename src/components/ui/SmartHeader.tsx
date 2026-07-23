@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation"; // 🔥 IMPORTED TO TRACK CURRENT PAGE
 import { 
   Menu, Search, Video, MonitorPlay, TrendingUp, 
   Clock, Star, Sparkles, Filter, ChevronDown 
@@ -17,8 +18,26 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
   const accumulatedScroll = useRef(0);
   const lastY = useRef(0);
 
-  // 🔥 1. Measures the exact height of the top header so they stitch together perfectly.
-  // Updates instantly if you rotate your tablet or resize the window.
+  // 🔥 Track the current URL path
+  const pathname = usePathname();
+
+  // 🔥 Helper to check if a link is the active page
+  const checkActive = (path: string) => {
+    if (path === "/") return pathname === "/"; // Exact match for home
+    return pathname?.startsWith(path); // Sub-page match for others (e.g. /pornstars/star-name)
+  };
+
+  // 🔥 Helper to generate dynamic classes for navbar links
+  const getNavClass = (path: string) => {
+    const isActive = checkActive(path);
+    return `flex items-center gap-2 py-3 text-sm font-bold uppercase tracking-wide transition-colors border-b-2 ${
+      isActive 
+        ? "text-rose-500 border-rose-600 drop-shadow-md" // ACTIVE: Red text & border
+        : "text-zinc-300 border-transparent hover:text-white" // INACTIVE: Zinc text & invisible border
+    }`;
+  };
+
+  // 1. Measures the exact height of the top header so they stitch together perfectly.
   useEffect(() => {
     const updateHeight = () => {
       if (headerRef.current) {
@@ -30,7 +49,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
 
-  // 🔥 2. Rock-solid Scroll Logic (Kills Jitter/Flicker)
+  // 2. Rock-solid Scroll Logic (Kills Jitter/Flicker)
   useEffect(() => {
     lastY.current = window.scrollY;
     
@@ -39,22 +58,18 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
       const diff = currentY - lastY.current;
       lastY.current = currentY;
 
-      // Always snap open safely at the absolute top of the page
       if (currentY < 60) {
         setIsHidden(false);
         accumulatedScroll.current = 0;
         return;
       }
 
-      // Accumulate scroll distance in the same direction
       if ((diff > 0 && accumulatedScroll.current > 0) || (diff < 0 && accumulatedScroll.current < 0)) {
         accumulatedScroll.current += diff;
       } else {
-        // You changed directions, reset the counter
         accumulatedScroll.current = diff;
       }
 
-      // Threshold: Requires 40px of continuous scrolling before it hides/shows
       if (accumulatedScroll.current > 40) {
         setIsHidden(true);
       } else if (accumulatedScroll.current < -40) {
@@ -66,12 +81,10 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Notice we return a fragment (<></>) because these are now two separate blocks!
   return (
     <>
       {/* =========================================
-          🔥 BLOCK 1: MAIN HEADER (ALWAYS STICKY, NEVER MOVES)
-          Z-index is 99999 so it sits above the category bar.
+          🔥 BLOCK 1: MAIN HEADER (ALWAYS STICKY)
           ========================================= */}
       <header 
         ref={headerRef} 
@@ -104,22 +117,22 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           </div>
         </div>
 
-        {/* 2. MIDDLE ROW */}
+        {/* 2. MIDDLE ROW (🔥 NOW DYNAMIC 🔥) */}
         <div className="border-t border-white/5 hidden lg:block">
           <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 text-rose-500 border-b-2 border-rose-600 py-3 text-sm font-bold uppercase tracking-wide drop-shadow-md">
+            <Link href="/" className={getNavClass("/")}>
               <MonitorPlay size={18} /> Home
             </Link>
-            <Link href="/trending" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+            <Link href="/trending" className={getNavClass("/trending")}>
               <TrendingUp size={18} /> Trending
             </Link>
-            <Link href="/latest" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+            <Link href="/latest" className={getNavClass("/latest")}>
               <Clock size={18} /> New Videos
             </Link>
-            <Link href="/top-rated" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+            <Link href="/top-rated" className={getNavClass("/top-rated")}>
               <Star size={18} /> Top Rated
             </Link>
-            <Link href="/pornstars" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
+            <Link href="/pornstars" className={getNavClass("/pornstars")}>
               <Sparkles size={18} /> Pornstars
             </Link>
           </div>
@@ -128,14 +141,13 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
 
       {/* =========================================
           🔥 BLOCK 2: CATEGORY BAR (SEPARATE BUT STITCHED)
-          Z-index is 99998 so when it translates up, it hides under Block 1!
           ========================================= */}
       <div 
-        className={`sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-all duration-150 ease-out transform-gpu ${
+        className={`sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-all duration-200 ease-out transform-gpu ${
           isHidden ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
         }`}
         style={{ 
-          top: `${headerHeight}px`, // This dynamic value stitches it perfectly to the bottom of the main header
+          top: `${headerHeight}px`,
           transform: isHidden ? "translateY(-100%)" : "translateY(0)" 
         }}
       >

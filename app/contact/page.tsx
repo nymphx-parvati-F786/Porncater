@@ -7,6 +7,7 @@ import {
   MonitorPlay, Star, ThumbsUp, Filter,
   TrendingUp, Menu, Search, Video
 } from "lucide-react";
+import SmartHeader from "@/src/components/ui/SmartHeader";
 
 // =========================================================
 // 🚀 SEO METADATA
@@ -27,79 +28,13 @@ export default function ContactPage() {
   ];
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-200 font-sans selection:bg-rose-900 selection:text-white pb-20 flex flex-col">
-      
-      {/* =========================================
-          🔥 SEXY FROSTED GLASS MEGA-HEADER
-          ========================================= */}
-      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-2xl shadow-black/90 flex flex-col transition-all">
-        <div className="max-w-[1600px] w-full mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4 lg:gap-8">
-            <button className="lg:hidden text-zinc-400 hover:text-white transition">
-              <Menu size={28} />
-            </button>
-            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
-              <span className="font-light text-white">Cater</span>
-            </Link>
-          </div>
-          <div className="flex-1 max-w-2xl hidden md:block">
-            <SearchBar />
-          </div>
-          <div className="flex items-center gap-3 lg:gap-5">
-            <button className="md:hidden text-zinc-400 hover:text-white transition">
-              <Search size={24} />
-            </button>
-            <Link href="/admin/upload" className="hidden sm:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors border border-white/10 backdrop-blur-sm">
-              <Video size={16} /> Upload
-            </Link>
-            <Link href="/login" className="bg-rose-700 hover:bg-rose-600 text-white px-5 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(190,18,60,0.4)]">
-              Sign In
-            </Link>
-          </div>
-        </div>
 
-        <div className="border-t border-white/5 hidden lg:block">
-          <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide drop-shadow-md">
-              <MonitorPlay size={18} /> Home
-            </Link>
-            <Link href="/trending" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <TrendingUp size={18} /> Trending
-            </Link>
-            <Link href="/latest" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <Clock size={18} /> New Videos
-            </Link>
-            <Link href="/top-rated" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <Star size={18} /> Top Rated
-            </Link>
-            <Link href="/pornstars" className="flex items-center gap-2 text-zinc-300 hover:text-white py-3 text-sm font-bold uppercase tracking-wide transition-colors">
-              <Sparkles size={18} /> Pornstars
-            </Link>
-          </div>
-        </div>
-
-        <div className="border-t border-white/5 bg-black/20">
-          <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
-            <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
-              <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
-            </div>
-            {megaCategories.map((cat, i) => (
-              <Link
-                key={i}
-                href={`/category/${cat.toLowerCase()}`}
-                prefetch={false}
-                className="whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0 backdrop-blur-md"
-              >
-                {cat}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </header>
+      {/* 🔥 THE NEW SLIDING SMART HEADER */}
+      <SmartHeader categories={megaCategories} />
 
       {/* Main Content */}
       <main className="flex-grow max-w-[1200px] mx-auto px-6 w-full pt-16 pb-24">
-        
+
         {/* Header */}
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4 text-rose-800">
@@ -114,10 +49,10 @@ export default function ContactPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
-          
+
           {/* Left Column: Contact Info & DMCA Warning */}
           <div className="lg:col-span-2 flex flex-col gap-8">
-            
+
             <div className="bg-zinc-900/40 border border-white/5 p-8 rounded-sm">
               <h3 className="text-lg font-serif italic text-white mb-6 flex items-center gap-3">
                 <MessageSquare size={18} className="text-rose-800" /> General Inquiries
@@ -155,13 +90,13 @@ export default function ContactPage() {
           {/* Right Column: The Contact Form */}
           <div className="lg:col-span-3">
             <form className="bg-zinc-900/20 border border-white/5 p-8 sm:p-10 rounded-sm flex flex-col gap-6">
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Name */}
                 <div className="flex flex-col gap-2">
                   <label htmlFor="name" className="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Your Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     id="name"
                     name="name"
                     required
@@ -173,8 +108,8 @@ export default function ContactPage() {
                 {/* Email */}
                 <div className="flex flex-col gap-2">
                   <label htmlFor="email" className="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Email Address</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     id="email"
                     name="email"
                     required
@@ -187,7 +122,7 @@ export default function ContactPage() {
               {/* Subject Dropdown */}
               <div className="flex flex-col gap-2">
                 <label htmlFor="subject" className="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Subject</label>
-                <select 
+                <select
                   id="subject"
                   name="subject"
                   required
@@ -203,7 +138,7 @@ export default function ContactPage() {
               {/* Message */}
               <div className="flex flex-col gap-2">
                 <label htmlFor="message" className="text-[10px] uppercase tracking-widest text-zinc-500 font-medium">Message</label>
-                <textarea 
+                <textarea
                   id="message"
                   name="message"
                   required
@@ -214,13 +149,13 @@ export default function ContactPage() {
               </div>
 
               {/* Submit Button */}
-              <button 
+              <button
                 type="submit"
                 className="mt-4 flex items-center justify-center gap-2 w-full sm:w-auto self-start bg-rose-800 hover:bg-rose-700 text-white px-8 py-3.5 rounded-sm text-[11px] uppercase tracking-widest font-bold transition-all duration-300 shadow-[0_0_15px_rgba(159,18,57,0.4)] hover:shadow-[0_0_25px_rgba(159,18,57,0.6)]"
               >
                 Send Message <Send size={14} />
               </button>
-              
+
               <p className="text-[10px] text-zinc-600 mt-2">
                 By submitting this form, you agree to our Privacy Policy and Terms of Service.
               </p>
