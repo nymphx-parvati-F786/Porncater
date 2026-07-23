@@ -75,7 +75,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           ========================================= */}
       <header 
         ref={headerRef} 
-        className="sticky top-0 z-[99999] w-full bg-[#050505] shadow-2xl shadow-black/90 border-b border-white/10"
+        className="sticky top-0 z-[99999] w-full bg-[#050505] border-white/10"
       >
         {/* 1. TOP ROW */}
         <div className="max-w-[1600px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4">
@@ -131,7 +131,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           Z-index is 99998 so when it translates up, it hides under Block 1!
           ========================================= */}
       <div 
-        className={`sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-all duration-300 ease-out transform-gpu ${
+        className={`sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-all duration-150 ease-out transform-gpu ${
           isHidden ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"
         }`}
         style={{ 
