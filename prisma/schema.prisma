@@ -13,6 +13,10 @@ datasource db {
   extensions = [pg_trgm] 
 }
 
+// ==========================================
+// ENUMS
+// ==========================================
+
 enum VideoStatus {
   PUBLISHED
   DMCA_TAKEDOWN
@@ -25,6 +29,10 @@ enum RecipientType {
   BCC
 }
 
+// ==========================================
+// CORE MEDIA PLATFORM
+// ==========================================
+
 model Video {
   id          Int         @id @default(autoincrement())
   title       String      @db.VarChar(500)
@@ -34,10 +42,12 @@ model Video {
   duration    String
   views       Int         @default(0)
   likes       Int         @default(0)      // Enables the "Adore" button
+  
   category    String?                    // Primary category (e.g., "Hardcore")
   tags        String[]                   // Enables specific tags: ["Anal", "POV", "HD"]
+  studio      String?                    // 🔥 AD TARGETING: The channel/network (e.g., "Vixen")
   
-  // Changed to Many-to-Many: Now a single video can feature 1, 2, or 10 Pornstars
+  // Many-to-Many: Now a single video can feature 1, 2, or 10 Pornstars
   pornstars   Pornstar[]
 
   // DMCA HANDLING
@@ -52,6 +62,7 @@ model Video {
   @@index([createdAt(sort: Desc)])
   // 🔥 THE MAGIC BULLET: GIN Trigram index for instant case-insensitive search
   @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([studio])
 }
 
 model Pornstar {
@@ -70,11 +81,73 @@ model Pornstar {
   // Implicit Many-to-Many relation with Videos
   videos      Video[]    
   
+  // 🔥 AD TARGETING: Banners that are explicitly targeted at this specific performer
+  targetedBanners Banner[]
+  
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
   @@index([views(sort: Desc)])
 }
+
+// ==========================================
+// ENTERPRISE AD SERVER NETWORK
+// ==========================================
+
+model Sponsor {
+  id          String     @id @default(uuid())
+  name        String     @unique // e.g., "Mad Cheddar", "Reality Kings", "Blacked"
+  isActive    Boolean    @default(true)
+  
+  campaigns   Campaign[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Campaign {
+  id          String     @id @default(uuid())
+  sponsorId   String
+  sponsor     Sponsor    @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  
+  name        String     // e.g., "RevShare Default", "Halloween Promo"
+  baseLink    String     // e.g., "https://join.blacked.com/track/MjUzMy..."
+  isActive    Boolean    @default(true)
+  
+  banners     Banner[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Banner {
+  id          String     @id @default(uuid())
+  campaignId  String
+  campaign    Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  dimension   String     // e.g., "970x70", "300x250"
+  imageUrl    String     // e.g., "https://img-s1-cdn.porncater.com/media/b970x70-a1b2.webp"
+  weight      Int        @default(10) // Higher number = shows up more often
+  isActive    Boolean    @default(true)
+
+  // 🔥 ADVANCED HYPER-TARGETING 🔥
+  targetStudios    String[]   // e.g., ["Vixen", "Tushy"]. If empty, shows globally.
+  targetCategories String[]   // e.g., ["VR", "Anal"]. If empty, shows globally.
+  targetStars      Pornstar[] // Link directly to performers (Many-to-Many)
+
+  // 🔥 ADDED THIS: Each specific image gets its exact, unique tracking link
+  trackingLink String
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([dimension])
+  @@index([isActive])
+}
+
+// ==========================================
+// CUSTOM EMAIL INBOX
+// ==========================================
 
 model InboxMessage {
   id               Int       @id @default(autoincrement())
@@ -100,11 +173,8 @@ model InboxMessage {
   // ===== METADATA =====
   sentAt           DateTime?
   receivedAt       DateTime  @default(now())
-
   sizeBytes        Int?
-
   headers          Json?
-
   hasAttachments   Boolean   @default(false)
 
   // ===== STATUS =====
@@ -124,41 +194,24 @@ model InboxMessage {
 }
 
 model InboxRecipient {
-
-  id Int @id @default(autoincrement())
-
-  type RecipientType
-
-  name String?
-
-  email String
-
-  messageId Int
-
-  message InboxMessage @relation(fields:[messageId], references:[id], onDelete: Cascade)
+  id          Int           @id @default(autoincrement())
+  type        RecipientType
+  name        String?
+  email       String
+  messageId   Int
+  message     InboxMessage  @relation(fields:[messageId], references:[id], onDelete: Cascade)
 
   @@index([email])
-
 }
 
 model InboxAttachment {
-
-  id Int @id @default(autoincrement())
-
-  filename String
-
-  mimeType String
-
-  sizeBytes Int
-
+  id          Int           @id @default(autoincrement())
+  filename    String
+  mimeType    String
+  sizeBytes   Int
   storagePath String?
-
-  contentId String?
-
-  isInline Boolean @default(false)
-
-  messageId Int
-
-  message InboxMessage @relation(fields:[messageId], references:[id], onDelete: Cascade)
-
+  contentId   String?
+  isInline    Boolean       @default(false)
+  messageId   Int
+  message     InboxMessage  @relation(fields:[messageId], references:[id], onDelete: Cascade)
 }

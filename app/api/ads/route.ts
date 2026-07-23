@@ -1,41 +1,88 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 export async function GET(req: Request) {
-  const { searchParams } = new URL(req.url);
-  const zoneId = searchParams.get("zoneId");
-
-  // 🕵️ THE STEALTH SHIELD: We grab the user's real IP and Browser info
-  const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
-  const userAgent = req.headers.get("user-agent") || "Mozilla/5.0 (Windows NT 10.0; Win64; x64)";
-
-  if (!zoneId) {
-    return NextResponse.json({ error: "Missing zoneId" }, { status: 400 });
-  }
-
   try {
-    // 🚀 Server-to-Server request to ExoClick (AdBlockers cannot see this!)
-    const exoRes = await fetch("https://s.magsrv.com/v1/api.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json"
-      },
-      // ExoClick requires this exact JSON structure
-      body: JSON.stringify({
-        user: {
-          ip: ip,
-          ua: userAgent
+    const { searchParams } = new URL(req.url);
+    const dimension = searchParams.get('dimension'); // e.g., "970x70"
+    const studio = searchParams.get('studio');       // e.g., "Vixen" (Optional)
+    const category = searchParams.get('category');   // e.g., "Anal" (Optional)
+
+    if (!dimension) {
+      return NextResponse.json({ error: 'Dimension parameter is required' }, { status: 400 });
+    }
+
+    // 1. Fetch active banners matching the dimension and active campaigns/sponsors
+    const banners = await prisma.banner.findMany({
+      where: {
+        dimension: dimension,
+        isActive: true,
+        campaign: {
+          isActive: true,
+          sponsor: { isActive: true }
         },
-        zones: [
-          { id: zoneId }
-        ]
-      }),
-      cache: "no-store", // Never cache ads! Every user needs unique targeted porn ads
+        // 🔥 STUDIO TARGETING LOGIC: Match specific studio OR global banners (empty array)
+        ...(studio ? {
+          OR: [
+            { targetStudios: { has: studio } },
+            { targetStudios: { isEmpty: true } }
+          ]
+        } : {})
+      },
+      include: {
+        campaign: { select: { baseLink: true, name: true } }
+      }
     });
-    
-    const data = await exoRes.json();
-    return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ error: "Ad fetch failed" }, { status: 500 });
+
+    if (banners.length === 0) {
+      // Ultimate safety net fallback: grab any active banner of that dimension globally
+      const fallbackBanners = await prisma.banner.findMany({
+        where: { dimension, isActive: true },
+        include: { campaign: { select: { baseLink: true } } }
+      });
+
+      if (fallbackBanners.length === 0) {
+        return NextResponse.json({ error: 'No active banners found for this slot' }, { status: 404 });
+      }
+      
+      return NextResponse.json(selectWeightedBanner(fallbackBanners, 'global_fallback'));
+    }
+
+    // 2. Return the winning banner based on your 'weight' priority math
+    const selectedBanner = selectWeightedBanner(banners, studio || 'general');
+    return NextResponse.json(selectedBanner);
+
+  } catch (error: any) {
+    console.error('Ad Server Error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+// 🔥 WEIGHTED RANDOM SELECTION ALGORITHM
+// Higher weight = mathematically higher chance of being picked
+function selectWeightedBanner(banners: any[], placementContext: string) {
+  const weightedPool: any[] = [];
+
+  banners.forEach((banner) => {
+    const weight = banner.weight || 10;
+    for (let i = 0; i < weight; i++) {
+      weightedPool.push(banner);
+    }
+  });
+
+  const randomIndex = Math.floor(Math.random() * weightedPool.length);
+  const winner = weightedPool[randomIndex];
+
+  // Dynamically append the Sub-ID so your NATS dashboard tracks exact placement performance
+  const trackingLinkWithSubId = `${winner.trackingLink}?subid=site_${winner.dimension}_${placementContext}`;
+
+  return {
+    id: winner.id,
+    imageUrl: winner.imageUrl,
+    trackingLink: trackingLinkWithSubId,
+    dimension: winner.dimension,
+    campaignName: winner.campaign.name
+  };
 }

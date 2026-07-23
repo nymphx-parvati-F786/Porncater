@@ -1,16 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import {
-  Play, User, Flame, Clock, Sparkles,
-  MonitorPlay, Star, ThumbsUp, Filter,
-  TrendingUp, Menu, Search, Video, ChevronDown // <-- Added ChevronDown
+  Flame, Clock, Sparkles, ThumbsUp
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
-import DirectBanner from "@/src/components/ui/ads/DirectBanner";
-import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+// 🔥 Import your Dynamic Database Ad Banner component
+import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
+import ExoClickIM from "@/src/components/ui/ads/ExoClickAds/ExoClickIM";
 
 export const revalidate = 60;
 
@@ -37,7 +35,7 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-// 🔥 MOCK NATIVE ADS: Replace these with your actual ExoClick/Sponsor links
+// MOCK NATIVE ADS
 const nativeAds = [
   { id: "ad1", title: "Play this Adult Game - No Download Required!", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-game-1.jpg", url: "https://your-affiliate-link.com" },
   { id: "ad2", title: "Meet Horny MILFs in your Exact Area Tonight", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-dating-1.jpg", url: "https://your-affiliate-link.com" },
@@ -50,12 +48,12 @@ const nativeAds = [
 export default async function Home() {
   const [trendingVideos, latestVideos, topPornstars] = await Promise.all([
     prisma.video.findMany({
-      take: 18, // 🔥 Changed to 18 so 18 videos + 6 ads = 24 cards (Perfect 6-column grid)
+      take: 18,
       orderBy: { views: "desc" },
       select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
     }),
     prisma.video.findMany({
-      take: 18, // 🔥 Changed to 18
+      take: 18,
       orderBy: { createdAt: "desc" },
       select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
     }),
@@ -71,7 +69,6 @@ export default async function Home() {
     "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
     "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
   ];
-
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -90,18 +87,27 @@ export default async function Home() {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <h1 className="sr-only">Free HD Porn Videos & Premium Adult Cinema - PornCater</h1>
 
-      {/* 🔥 THE NEW SLIDING SMART HEADER */}
+      {/* HEADER */}
       <SmartHeader categories={megaCategories} />
 
       {/* =========================================
-          💰 TOP WIDE AD BANNER
+          💰 TOP DYNAMIC AFFILIATE BANNER
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
-        <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
+      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
+        {/* Desktop View: Wide Super Leaderboard (970x70) */}
+        <AdBanner 
+          dimension="970x70" 
+          className="hidden md:block w-full max-w-[970px]" 
+        />
+        {/* Mobile View: High-Converting Box Banner (300x250) */}
+        <AdBanner 
+          dimension="300x250" 
+          className="block md:hidden mx-auto" 
+        />
       </div>
 
       {/* =========================================
-          🔥 HOT RIGHT NOW (TRENDING) + NATIVE ADS
+          🔥 TRENDING VIDEOS + NATIVE ADS
           ========================================= */}
       <section className="max-w-[1600px] mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
@@ -117,8 +123,6 @@ export default async function Home() {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-
-          {/* 1. Real Videos (18 Items) */}
           {trendingVideos.map((video) => (
             <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
@@ -142,14 +146,10 @@ export default async function Home() {
             </Link>
           ))}
 
-          {/* 2. Camouflaged Native Ads (6 Items - Fills the last row perfectly) */}
           {nativeAds.map((ad) => (
             <a key={ad.id} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-rose-900/50 transition-colors">
-                {/* Fallback img tag for external ad network URLs since they aren't in Next.js domains config */}
                 <img src={ad.thumbnail} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-110 transition-all duration-200" />
-
-                {/* Fake Badges to blend in */}
                 <div className="absolute top-1.5 left-1.5 bg-zinc-800/90 backdrop-blur-sm text-zinc-400 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-sm tracking-widest border border-zinc-700">
                   AD
                 </div>
@@ -167,19 +167,27 @@ export default async function Home() {
               </div>
             </a>
           ))}
-
         </div>
       </section>
 
       {/* =========================================
-          💰 MID-ROLL AD BANNER
+          💰 MID-PAGE DYNAMIC AD BANNER
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 py-4">
-        <DirectBanner banners={blackedLeaderboards} format="banner-728x90" />
+      <div className="max-w-[1600px] mx-auto px-4 py-4 flex justify-center">
+        {/* Desktop View: Wide Super Leaderboard (970x70) */}
+        <AdBanner 
+          dimension="970x70" 
+          className="hidden md:block w-full max-w-[970px]" 
+        />
+        {/* Mobile View: High-Converting Box Banner (300x250) */}
+        <AdBanner 
+          dimension="300x250" 
+          className="block md:hidden mx-auto" 
+        />
       </div>
 
       {/* =========================================
-          🕒 FRESH Upload (LATEST) + NATIVE ADS
+          🕒 LATEST VIDEOS + NATIVE ADS
           ========================================= */}
       <section className="bg-[#0c0c0c] border-y border-zinc-900/50">
         <div className="max-w-[1600px] mx-auto px-4 py-10">
@@ -196,8 +204,6 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-
-            {/* 1. Real Videos (18 Items) */}
             {latestVideos.map((video) => (
               <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
@@ -221,7 +227,6 @@ export default async function Home() {
               </Link>
             ))}
 
-            {/* 2. Camouflaged Native Ads (6 Items) */}
             {nativeAds.map((ad) => (
               <a key={`latest-${ad.id}`} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-amber-900/50 transition-colors">
@@ -243,13 +248,12 @@ export default async function Home() {
                 </div>
               </a>
             ))}
-
           </div>
         </div>
       </section>
 
       {/* =========================================
-          ⭐ ELEGANT PORNSTARS (SLEEK PILL DESIGN)
+          ⭐ TOP PORNSTARS
           ========================================= */}
       <section className="max-w-[1600px] mx-auto px-4 py-12">
         <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
@@ -284,17 +288,13 @@ export default async function Home() {
       </section>
 
       {/* =========================================
-          💰 BOTTOM SQUARE/NATIVE AD
+          💰 BOTTOM SQUARE AD SLOT
           ========================================= */}
       <div className="max-w-[1600px] mx-auto px-4 py-8 flex justify-center">
-        <div className="flex justify-center items-center w-full">
-          <iframe style={{ backgroundColor: "transparent" }} width="315" height="300" scrolling="no" frameBorder="0" {...({ allowtransparency: "true" } as any)} name="spot_id_10002484" src="//a.adtng.com/get/10002484?ata=deviparvatilovemuslimcocks" title="Advertisement" loading="lazy" />
-        </div>
+        <AdBanner dimension="300x250" className="mx-auto" />
       </div>
 
-      {/* =========================================
-          FOOTER
-          ========================================= */}
+      {/* FOOTER */}
       <footer className="border-t border-zinc-900 pt-16 pb-12 text-center bg-[#050505]">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 mb-10 text-[11px] uppercase tracking-widest text-zinc-500 font-bold px-4">
           <Link href="/dmca" className="hover:text-zinc-300 transition">DMCA / Copyright</Link>
@@ -315,6 +315,8 @@ export default async function Home() {
           © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
         </p>
       </footer>
+      {/* 💬 BOTTOM RIGHT SEXY CHAT BUBBLE */}
+        <ExoClickIM zoneId="5984398" />
     </div>
   );
 }

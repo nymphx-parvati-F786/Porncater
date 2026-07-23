@@ -28,6 +28,8 @@ import AdSpace from "@/src/components/ui/ads/AdSpace";
 import JuicyAd from "@/src/components/ui/ads/JuicyAdsBanner";
 import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import ExoClickBanner from "@/src/components/ui/ads/ExoClickAds/ExoClickBanner";
+import JuicyAdsBanner from "@/src/components/ui/ads/JuicyAds/JuicyAdsBanner";
 
 interface PageProps {
   params: Promise<{ id: string; slug: string }>;
@@ -291,15 +293,15 @@ export default async function WatchPage({ params }: PageProps) {
         <div className="w-full lg:w-[300px] shrink-0 flex flex-col gap-3 mx-auto lg:mx-0">
           {/* Ad 1 */}
           <div className="w-[300px] h-[250px] bg-zinc-900 border border-zinc-800 overflow-hidden mx-auto rounded-sm">
-            <JuicyAd adZone="1122022" width="300" height="250" />
+            <ExoClickBanner dimension="300x250" zoneId="5984388"/>
           </div>
           {/* Ad 2 */}
           <div className="w-[300px] h-[250px] bg-zinc-900 border border-zinc-800 overflow-hidden mx-auto hidden sm:block rounded-sm">
-            <AdSpace zoneId="5944198" format="banner-300x250" />
+            <ExoClickBanner dimension="300x250" zoneId="5984390"/>
           </div>
           {/* Ad 3 */}
           <div className="w-[300px] h-[250px] bg-zinc-900 border border-zinc-800 overflow-hidden mx-auto hidden lg:block rounded-sm">
-            <JuicyAd adZone="1122022" width="300" height="250" />
+            <JuicyAdsBanner zoneId="1122799" className="my-4 mx-auto md:hidden" />
           </div>
         </div>
 
