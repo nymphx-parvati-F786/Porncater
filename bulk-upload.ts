@@ -5,15 +5,17 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import 'dotenv/config';
 import { getVideoDurationInSeconds } from 'get-video-duration';
+import csv from 'csv-parser';
+
 // @ts-ignore
 import ffprobe from 'ffprobe-static';
 import ffmpeg from 'fluent-ffmpeg';
 // @ts-ignore
 import ffmpegStatic from 'ffmpeg-static';
+
 if (ffmpegStatic) {
   ffmpeg.setFfmpegPath(ffmpegStatic);
 } else {
-  // Handle the error however fits your app best
   throw new Error('Could not find the ffmpeg binary for this system.');
 }
 
@@ -21,10 +23,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // ------------------------------------------------------------------
-// NATIVE PIPELINE AUTO-LOGGER (Now with Spam Filter)
+// NATIVE PIPELINE AUTO-LOGGER
 // ------------------------------------------------------------------
 const LOG_DIR = path.join(__dirname, 'script_logs/pipeline_logs');
-if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR);
+if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_');
 const logFilePath = path.join(LOG_DIR, `pipeline-run-${timestamp}.txt`);
@@ -36,17 +38,12 @@ const originalStderrWrite = process.stderr.write.bind(process.stderr);
 // @ts-ignore
 process.stdout.write = function (chunk, encoding, callback) {
   const text = chunk.toString();
-
-  // 🔥 THE SPAM FILTER: Identifies aria2c live progress bars and empty line-clearing junk
   const isAriaProgressBar = /\[#[a-f0-9]{6}\s.*?\]/i.test(text);
   const isAriaSpacer = text.includes('\r') && text.trim() === '';
 
   if (!isAriaProgressBar && !isAriaSpacer) {
-    // Strip raw carriage returns so the text file formatting stays perfectly clean
     logStream.write(text.replace(/\r/g, ''));
   }
-
-  // ALWAYS push everything to the real console so you get the live animation on screen
   return originalStdoutWrite(chunk, encoding, callback);
 };
 
@@ -79,18 +76,38 @@ if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
 type ProcessResult = 'CLEAN_SUCCESS' | 'RETRY_SUCCESS' | 'FAILED';
 
+// 🔥 BACKUP STAR LIST (Add as many as you want)
+const EXTRA_KNOWN_STARS = [
+  "Mia Khalifa", "Riley Reid", "Lana Rhoades", "Sasha Grey", "Nicole Aniston",
+  "Cory Chase", "Brandi Love", "Dani Daniels", "Alexis Texas", "Kendra Lust",
+  "Madison Ivy", "August Ames", "Mia Malkova", "Jordi El Niño Polla", "Johnny Sins",
+  "Lena Paul", "Gia Derza", "Eva Elfie", "Emily Willis", "Angela White",
+  "Romi Rain", "Ava Addams", "Lisa Ann", "Julia Ann", "Kissa Sins", "Jane Wilde",
+  "Abella Danger", "Adriana Chechik", "Blake Blossom", "Cherie DeVille"
+];
+
 // ------------------------------------------------------------------
-// BUNNY.NET UPLOAD HELPERS
+// HELPERS
 // ------------------------------------------------------------------
+const generateSlug = (text: string) => {
+  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+};
+
+function formatDuration(totalSeconds: number): string {
+  if (!totalSeconds || isNaN(totalSeconds) || totalSeconds <= 0) return "0:00";
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+  if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 async function uploadToBunnyStream(title: string, filePath: string) {
   console.log(`[Bunny Stream] Creating entry for: ${title}`);
   const createRes = await fetch(`https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`, {
     method: 'POST',
     headers: { AccessKey: BUNNY_API_KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-      title,
-      collectionId: STREAM_GENERAL_FULL_SCENES_COLLECTION_ID // 🔥 Attached video to specific collection
-    })
+    body: JSON.stringify({ title, collectionId: STREAM_GENERAL_FULL_SCENES_COLLECTION_ID })
   });
   if (!createRes.ok) throw new Error('Failed to create Bunny Stream entry');
 
@@ -121,36 +138,14 @@ async function uploadToBunnyStorage(slug: string, filePath: string) {
     duplex: 'half'
   } as any);
 
-  if (!uploadRes.ok) {
-    const errorText = await uploadRes.text();
-    throw new Error(`Bunny Storage API Error (${uploadRes.status}): ${errorText}`);
-  }
+  if (!uploadRes.ok) throw new Error(`Bunny Storage API Error (${uploadRes.status})`);
   return `https://${STORAGE_PULLZONE}/${thumbnailPath}`;
-}
-
-// ------------------------------------------------------------------
-// TIME FORMATTING HELPER
-// ------------------------------------------------------------------
-function formatDuration(totalSeconds: number): string {
-  if (!totalSeconds || isNaN(totalSeconds) || totalSeconds <= 0) return "0:00";
-
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = Math.floor(totalSeconds % 60);
-
-  if (h > 0) {
-    // If it's 1 hour or longer, format as H:MM:SS
-    return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-  } else {
-    // If it's less than an hour, format as MM:SS
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
 }
 
 // ------------------------------------------------------------------
 // MAIN PROCESSING ENGINE
 // ------------------------------------------------------------------
-async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<ProcessResult> {
+async function processVideoUrl(targetUrl: string, masterRosterMap: Map<string, string>, maxRetries = 2): Promise<ProcessResult> {
   console.log(`\n=========================================`);
 
   let attempt = 1;
@@ -169,8 +164,9 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
       const durationRaw = metadata.duration || 0;
       const duration = formatDuration(durationRaw);
 
-      const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const tags = metadata.tags || [];
+      const slug = generateSlug(title);
+      const tags: string[] = metadata.tags || [];
+      const category = tags.length > 0 ? tags[0] : null;
 
       const videoPath = path.join(TEMP_DIR, `${slug}.mp4`);
       const thumbPath = path.join(TEMP_DIR, `${slug}.webp`);
@@ -183,9 +179,7 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
         writeThumbnail: true,
         downloader: 'aria2c',
         downloaderArgs: 'aria2c:-x 16 -s 16 -k 1M',
-        addHeader: [
-          'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        ],
+        addHeader: ['User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'],
       } as any);
 
       if (ytDlpProcess.stdout) ytDlpProcess.stdout.pipe(process.stdout);
@@ -194,66 +188,88 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
 
       console.log(`[Duration] Inspecting local .mp4 file to calculate exact length...`);
       let finalDuration = duration;
-      let thumbnailTimestamp = ['00:00:15']; // Default fallback if calculation fails
+      let thumbnailTimestamp = ['00:00:15'];
 
       try {
         const durationInSeconds = await getVideoDurationInSeconds(videoPath, ffprobe.path);
-
-        // Clean physical file formatting
         finalDuration = formatDuration(durationInSeconds);
 
-        // Calculate 35% of the video duration
         const thumbDuration = durationInSeconds * 0.35;
-
-        // Format to HH:MM:SS
         const thb_h = Math.floor(thumbDuration / 3600);
-        const thb_m = Math.floor((thumbDuration % 3600) / 60); // Added modulo here
+        const thb_m = Math.floor((thumbDuration % 3600) / 60);
         const thb_s = Math.floor(thumbDuration % 60);
 
-        const formattedThumbTime = `${thb_h.toString().padStart(2, '0')}:${thb_m.toString().padStart(2, '0')}:${thb_s.toString().padStart(2, '0')}`;
-        thumbnailTimestamp = [formattedThumbTime];
-
-        console.log(`[Duration] Successfully calculated: ${finalDuration}. Thumbnail mark set to: ${formattedThumbTime}`);
+        thumbnailTimestamp = [`${thb_h.toString().padStart(2, '0')}:${thb_m.toString().padStart(2, '0')}:${thb_s.toString().padStart(2, '0')}`];
       } catch (err) {
-        console.log(`[Duration Warning] Could not parse local file duration, using fallback 00:00:15.`);
+        console.log(`[Duration Warning] Could not parse local file duration, using fallback.`);
       }
 
       let finalThumbPath = fs.existsSync(thumbPath) ? thumbPath : videoPath.replace('.mp4', '.webp');
 
-      // 🔥 THE SHIELD: If the target site blocked the thumbnail download, generate our own!
       if (!fs.existsSync(finalThumbPath)) {
-        console.log(`[Thumbnail Engine] Source image missing (SSL blocked). Extracting high-res frame from local video...`);
-          await new Promise((resolve, reject) => {
-            ffmpeg(videoPath)
-              .on('end', () => resolve(true))
-              .on('error', (err) => reject(err))
-              .screenshots({
-                timestamps: thumbnailTimestamp, // Snaps a picture exactly at 35% of total duration or at 15 seconds seconds into the video
-                filename: path.basename(finalThumbPath),
-                folder: TEMP_DIR,
-                size: '1280x720'
-              });
-          });
-        console.log(`[Thumbnail Engine] Successfully generated custom fallback thumbnail.`);
+        console.log(`[Thumbnail Engine] Source image missing. Extracting high-res frame...`);
+        await new Promise((resolve, reject) => {
+          ffmpeg(videoPath)
+            .on('end', () => resolve(true))
+            .on('error', (err) => reject(err))
+            .screenshots({
+              timestamps: thumbnailTimestamp,
+              filename: path.basename(finalThumbPath),
+              folder: TEMP_DIR,
+              size: '1280x720'
+            });
+        });
       }
 
-      const videoUrl = await uploadToBunnyStream(title, videoPath);
-      const thumbnailUrl = await uploadToBunnyStorage(slug, finalThumbPath);
+      // 🔥 CONCURRENT UPLOADING: Double the speed!
+      console.log(`[CDN] Initiating dual-upload to Bunny Stream & Storage...`);
+      const [videoUrl, thumbnailUrl] = await Promise.all([
+        uploadToBunnyStream(title, videoPath),
+        uploadToBunnyStorage(slug, finalThumbPath)
+      ]);
 
-      console.log(`[Database] Instantiating Prisma engine payload for: ${slug}`);
-      await prisma.video.create({
-        data: {
+      // 🔥 SMART PORNSTAR MAPPER
+      const matchedStars = new Map<string, string>();
+      const searchableText = `${title} ${tags.join(" ")}`.toLowerCase();
+
+      for (const [starSlug, starName] of masterRosterMap.entries()) {
+        const escapedStar = starName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`\\b${escapedStar}\\b`, 'i');
+        if (regex.test(searchableText)) {
+          matchedStars.set(starSlug, starName);
+        }
+      }
+
+      const pornstarConnections = Array.from(matchedStars.entries()).map(([pSlug, pName]) => ({
+        where: { slug: pSlug },
+        create: { name: pName, slug: pSlug, avatarUrl: null }
+      }));
+
+      console.log(`[Database] Upserting video and ${pornstarConnections.length} pornstar stubs...`);
+      
+      // 🔥 UPSERT: Prevents crashes if you restart the script on the same URL
+      await prisma.video.upsert({
+        where: { slug },
+        update: {
+          videoUrl,
+          thumbnail: thumbnailUrl,
+          pornstars: { connectOrCreate: pornstarConnections }
+        },
+        create: {
           title,
           slug,
           videoUrl,
           thumbnail: thumbnailUrl,
           duration: finalDuration,
+          category,
           tags,
+          status: "PUBLISHED",
           views: Math.floor(Math.random() * 5000) + 1000,
+          pornstars: { connectOrCreate: pornstarConnections }
         }
       });
 
-      console.log(`[Success] Pipeline execution fully finished for: ${title}`);
+      console.log(`[Success] Pipeline finished for: ${title}`);
 
       if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
       if (fs.existsSync(finalThumbPath)) fs.unlinkSync(finalThumbPath);
@@ -271,7 +287,7 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
     }
   }
 
-  console.error(`[FATAL ERROR] All ${maxRetries} attempts exhausted. Abandoning URL.`);
+  console.error(`[FATAL ERROR] All attempts exhausted. Abandoning URL.`);
   return 'FAILED';
 }
 
@@ -279,28 +295,53 @@ async function processVideoUrl(targetUrl: string, maxRetries = 2): Promise<Proce
 // PIPELINE RUN ROUTINE
 // ------------------------------------------------------------------
 async function run() {
+  console.log("🔄 Synchronizing PostgreSQL auto-increment sequences...");
+  try {
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Pornstar"', 'id'), COALESCE((SELECT MAX(id) FROM "Pornstar"), 1));`);
+    await prisma.$executeRawUnsafe(`SELECT setval(pg_get_serial_sequence('"Video"', 'id'), COALESCE((SELECT MAX(id) FROM "Video"), 1));`);
+  } catch (e) {}
+
+  // 1. Build the Master Roster
+  const csvFilePath = path.join(process.cwd(), 'Pornstar_rows.csv');
+  const rawNames: string[] = [];
+
+  if (fs.existsSync(csvFilePath)) {
+    console.log("📂 Reading Pornstar_rows.csv...");
+    await new Promise((resolve) => {
+      fs.createReadStream(csvFilePath)
+        .pipe(csv())
+        .on('data', (data) => { if (data.name) rawNames.push(data.name.trim()); })
+        .on('end', resolve);
+    });
+  }
+
+  const masterRosterMap = new Map<string, string>();
+  for (const name of [...rawNames, ...EXTRA_KNOWN_STARS]) {
+    if (!name) continue;
+    const slug = generateSlug(name);
+    if (slug && !masterRosterMap.has(slug)) masterRosterMap.set(slug, name.trim());
+  }
+  console.log(`🧠 Master Roster loaded with ${masterRosterMap.size} performers.`);
+
+  // 2. Read Targets
   const urlsFilePath = path.join(__dirname, 'urls.txt');
   const failedFilePath = path.join(__dirname, 'failed_urls.txt');
 
   if (!fs.existsSync(urlsFilePath)) {
-    console.error(`[Error] Target database parsing file (urls.txt) missing from runtime context.`);
+    console.error(`[Error] urls.txt missing.`);
     process.exit(1);
   }
 
-  const urlsToScrape = fs.readFileSync(urlsFilePath, 'utf-8')
-    .split('\n')
-    .map(url => url.trim())
-    .filter(url => url.length > 0);
-
-  console.log(`[Loader] Loaded ${urlsToScrape.length} target records from urls.txt storage resource.`);
+  const urlsToScrape = fs.readFileSync(urlsFilePath, 'utf-8').split('\n').map(u => u.trim()).filter(u => u.length > 0);
+  console.log(`[Loader] Loaded ${urlsToScrape.length} target records.\n`);
 
   let cleanSucceeded = 0;
   let retrySucceeded = 0;
   let failedUrls: string[] = [];
 
+  // 3. Process Sequence
   for (const url of urlsToScrape) {
-    const status = await processVideoUrl(url);
-
+    const status = await processVideoUrl(url, masterRosterMap);
     if (status === 'CLEAN_SUCCESS') cleanSucceeded++;
     else if (status === 'RETRY_SUCCESS') retrySucceeded++;
     else if (status === 'FAILED') failedUrls.push(url);
@@ -311,7 +352,6 @@ async function run() {
   console.log(`\n=========================================`);
   console.log(`🚀 [PIPELINE EXECUTION COMPLETE]`);
   console.log(`=========================================`);
-  console.log(`Total Target URLs : ${urlsToScrape.length}`);
   console.log(`Succeeded (Clean) : ${cleanSucceeded}`);
   console.log(`Succeeded (Retry) : ${retrySucceeded}`);
   console.log(`Total Failed      : ${failedUrls.length}`);
@@ -319,7 +359,6 @@ async function run() {
 
   if (failedUrls.length > 0) {
     fs.writeFileSync(failedFilePath, failedUrls.join('\n'), 'utf-8');
-    console.log(`[Log] Dumped ${failedUrls.length} failed URLs into: ${failedFilePath}`);
   }
 
   await prisma.$disconnect();
