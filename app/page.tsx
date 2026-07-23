@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import {
   Play, User, Flame, Clock, Sparkles,
   MonitorPlay, Star, ThumbsUp, Filter,
-  TrendingUp, Menu, Search, Video
+  TrendingUp, Menu, Search, Video, ChevronDown // <-- Added ChevronDown
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -70,6 +70,7 @@ export default async function Home() {
     "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
     "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
   ];
+  
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -139,11 +140,13 @@ export default async function Home() {
         </div>
 
         <div className="border-t border-white/5 bg-black/20">
-          <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2.5 flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2.5 flex items-center flex-wrap gap-2">
             <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
               <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
             </div>
-            {megaCategories.map((cat, i) => (
+            
+            {/* 1. Slice out the first 17 categories to show by default */}
+            {megaCategories.slice(0, 17).map((cat, i) => (
               <Link
                 key={i}
                 href={`/category/${cat.toLowerCase()}`}
@@ -153,6 +156,30 @@ export default async function Home() {
                 {cat}
               </Link>
             ))}
+
+            {/* 2. Hide the rest behind a pure HTML5 zero-JS dropdown */}
+            {megaCategories.length > 17 && (
+              <details className="relative z-50 group">
+                {/* summary acts as the button. hide default marker, add styling */}
+                <summary className="list-none flex items-center gap-1 whitespace-nowrap bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm backdrop-blur-md cursor-pointer select-none [&::-webkit-details-marker]:hidden">
+                  More <ChevronDown size={14} className="group-open:rotate-180 transition-transform duration-200" />
+                </summary>
+                
+                {/* Dropdown Menu */}
+                <div className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-48 bg-black/90 backdrop-blur-xl border border-white/10 rounded-sm shadow-2xl p-2 flex flex-col gap-1 z-50">
+                  {megaCategories.slice(17).map((cat, i) => (
+                    <Link
+                      key={i}
+                      href={`/category/${cat.toLowerCase()}`}
+                      prefetch={false}
+                      className="text-zinc-300 hover:text-rose-100 hover:bg-white/10 px-3 py-2 text-[11px] font-semibold tracking-wider uppercase transition-colors rounded-sm"
+                    >
+                      {cat}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
         </div>
       </header>

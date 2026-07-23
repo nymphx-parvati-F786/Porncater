@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { 
   Play, Pause, Volume2, VolumeX, Maximize, Minimize, 
   SkipBack, SkipForward, Settings, ExternalLink, Repeat
@@ -19,6 +19,10 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   const containerRef = useRef<HTMLDivElement>(null);
   const firedTrackingEvents = useRef<Set<string>>(new Set());
   const abortControllerRef = useRef<AbortController | null>(null);
+  
+  // Timer ref for auto-hiding controls
+  const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastTapRef = useRef<number>(0); // For mobile double-tap logic
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -29,6 +33,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
+  const [isHovering, setIsHovering] = useState(false);
   
   // Ad State
   const [adAttempted, setAdAttempted] = useState(false);
@@ -51,18 +56,106 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
 
   const [adCountdown, setAdCountdown] = useState(5);
 
+  // ==========================================
+  // SMART CONTROL HIDING & FULLSCREEN SYNC
+  // ==========================================
+  const resetControlsTimeout = useCallback(() => {
+    setShowControls(true);
+    if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
+    
+    // Only auto-hide if video is playing
+    if (isPlaying && !adState.isPlaying) {
+      controlsTimeoutRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 2500);
+    }
+  }, [isPlaying, adState.isPlaying]);
+
   useEffect(() => {
+    resetControlsTimeout();
     return () => {
+      if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
       if (abortControllerRef.current) abortControllerRef.current.abort();
     };
+  }, [isPlaying, resetControlsTimeout]);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  // ==========================================
+  // KEYBOARD SHORTCUTS
+  // ==========================================
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Prevent triggering if user is typing in a search bar or input
+      if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+      
+      const video = videoRef.current;
+      if (!video || adState.isPlaying) return;
+
+      switch (e.key.toLowerCase()) {
+        case ' ':
+        case 'k':
+          e.preventDefault();
+          togglePlay();
+          resetControlsTimeout();
+          break;
+        case 'arrowright':
+          e.preventDefault();
+          video.currentTime = Math.min(video.currentTime + 10, video.duration);
+          resetControlsTimeout();
+          break;
+        case 'arrowleft':
+          e.preventDefault();
+          video.currentTime = Math.max(video.currentTime - 10, 0);
+          resetControlsTimeout();
+          break;
+        case 'arrowup':
+          e.preventDefault();
+          const newVolUp = Math.min(video.volume + 0.1, 1);
+          video.volume = newVolUp;
+          setVolume(newVolUp);
+          setIsMuted(newVolUp === 0);
+          resetControlsTimeout();
+          break;
+        case 'arrowdown':
+          e.preventDefault();
+          const newVolDown = Math.max(video.volume - 0.1, 0);
+          video.volume = newVolDown;
+          setVolume(newVolDown);
+          setIsMuted(newVolDown === 0);
+          resetControlsTimeout();
+          break;
+        case 'm':
+          e.preventDefault();
+          toggleMute();
+          resetControlsTimeout();
+          break;
+        case 'f':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isPlaying, adState.isPlaying, isFullscreen]);
+
+  // ==========================================
+  // AD ENGINE & TRACKING
+  // ==========================================
   const fireTrackingPixel = (urls: string[] | undefined) => {
     if (!urls) return;
     urls.forEach(url => {
       if (url && !firedTrackingEvents.current.has(url)) {
         firedTrackingEvents.current.add(url);
-        const img = new Image();
+        const img = new window.Image();
         img.src = url;
       }
     });
@@ -75,7 +168,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     setIsLoadingAd(true);
 
     try {
-      const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), 2000); // 2 seconds max
+      const timeoutId = setTimeout(() => abortControllerRef.current?.abort(), 2000);
       const response = await fetch(vastTagUrl, { signal: abortControllerRef.current.signal });
       clearTimeout(timeoutId);
       
@@ -121,27 +214,70 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     }
   };
 
+  // ==========================================
+  // PLAYBACK & INTERACTION
+  // ==========================================
   const togglePlay = async () => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Instantly pause if playing
     if (isPlaying) {
       video.pause();
       setIsPlaying(false);
       return;
     }
 
-    // Handle initial play / ad injection ONLY once
     if (!adAttempted && vastTagUrl) {
-      setAdAttempted(true); // Never try again, even if it fails
+      setAdAttempted(true);
       const adSuccess = await loadAd();
       if (adSuccess) return; 
     }
 
-    // Standard play (Lightning fast)
     video.play().catch(() => {});
     setIsPlaying(true);
+  };
+
+  // Mobile Double Tap to Seek
+  const handleVideoTouch = (e: React.MouseEvent<HTMLVideoElement> | React.TouchEvent<HTMLVideoElement>) => {
+    if (adState.isPlaying) return;
+
+    const now = Date.now();
+    const DOUBLE_TAP_DELAY = 300;
+
+    if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+      // It's a double tap!
+      const video = videoRef.current;
+      if (!video) return;
+
+      // Get X coordinate to determine left or right side
+      const rect = e.currentTarget.getBoundingClientRect();
+      const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+      const clickX = clientX - rect.left;
+      
+      if (clickX > rect.width / 2) {
+        // Tap Right -> Forward 10s
+        video.currentTime = Math.min(video.currentTime + 10, video.duration);
+        showActionAnimation('forward');
+      } else {
+        // Tap Left -> Backward 10s
+        video.currentTime = Math.max(video.currentTime - 10, 0);
+        showActionAnimation('rewind');
+      }
+      resetControlsTimeout();
+    } else {
+      // Single tap -> Toggle Play/Pause
+      togglePlay();
+      resetControlsTimeout();
+    }
+    
+    lastTapRef.current = now;
+  };
+
+  // Visual feedback for double tap
+  const [actionAnim, setActionAnim] = useState<'forward' | 'rewind' | null>(null);
+  const showActionAnimation = (type: 'forward' | 'rewind') => {
+    setActionAnim(type);
+    setTimeout(() => setActionAnim(null), 500);
   };
 
   useEffect(() => {
@@ -161,7 +297,6 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     setProgress(0);
     setCurrentTime(0);
     
-    // Slight timeout ensures React flushes the DOM before we tell the main video to play
     setTimeout(() => {
       if (videoRef.current) {
         videoRef.current.load();
@@ -211,13 +346,6 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     setProgress(parseFloat(e.target.value));
   };
 
-  const formatTime = (time: number) => {
-    if (isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-  };
-
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const video = videoRef.current;
     if (!video) return;
@@ -258,29 +386,46 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     } else {
       if (document.exitFullscreen) document.exitFullscreen();
     }
-    setIsFullscreen(!isFullscreen);
+  };
+
+  const formatTime = (time: number) => {
+    if (isNaN(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60);
+    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   return (
     <div 
       ref={containerRef}
-      className="relative bg-black w-full h-full group flex items-center justify-center font-sans select-none overflow-hidden"
-      onMouseMove={() => setShowControls(true)}
+      className={`relative bg-black w-full h-full group flex items-center justify-center font-sans select-none overflow-hidden ${!showControls && isPlaying ? 'cursor-none' : 'cursor-default'}`}
+      onMouseMove={resetControlsTimeout}
       onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
+      onMouseEnter={() => setIsHovering(true)}
     >
+      {/* NATIVE VIDEO ELEMENT */}
       <video
         ref={videoRef}
         src={adState.isPlaying ? (adState.mediaUrl || undefined) : src}
         poster={adState.isPlaying ? undefined : poster}
         loop={!adState.isPlaying && isLooping}
-        className="w-full h-full object-contain cursor-pointer"
+        className="w-full h-full object-contain"
         onTimeUpdate={handleTimeUpdate}
         onEnded={handleVideoEnded}
         onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
-        onClick={adState.isPlaying ? undefined : togglePlay}
+        onClick={handleVideoTouch}
+        onTouchEnd={handleVideoTouch}
+        playsInline // Critical for iOS inline playback
       />
 
-      {/* Ad Interaction Layers */}
+      {/* DOUBLE TAP ANIMATIONS */}
+      {actionAnim && (
+        <div className={`absolute top-1/2 -translate-y-1/2 bg-black/60 backdrop-blur-md rounded-full p-4 pointer-events-none animate-pulse ${actionAnim === 'forward' ? 'right-1/4' : 'left-1/4'}`}>
+           {actionAnim === 'forward' ? <SkipForward size={32} className="text-white" /> : <SkipBack size={32} className="text-white" />}
+        </div>
+      )}
+
+      {/* AD INTERACTION LAYERS */}
       {adState.isPlaying && (
         <>
           {adState.clickThroughUrl && (
@@ -290,91 +435,104 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
               rel="noopener noreferrer" 
               className="absolute inset-0 z-20 cursor-pointer flex items-start justify-end p-4"
             >
-              <div className="bg-black/90 border border-zinc-700 text-white text-xs px-4 py-2 flex items-center gap-2 hover:bg-zinc-800 transition-colors">
-                Visit Advertiser <ExternalLink size={12} />
+              <div className="bg-rose-700 text-white font-bold text-[10px] px-4 py-2 uppercase tracking-widest flex items-center gap-2 hover:bg-rose-600 transition-colors">
+                Visit Sponsor <ExternalLink size={12} strokeWidth={2.5} />
               </div>
             </a>
           )}
 
           <div className="absolute bottom-20 right-0 z-30 pointer-events-auto">
             {adCountdown > 0 ? (
-              <div className="bg-black border-l-2 border-zinc-500 text-zinc-300 text-xs px-5 py-3">
-                Skip ad in <span className="text-white font-bold">{adCountdown}</span>
+              <div className="bg-black/90 border-l-2 border-zinc-600 text-zinc-300 text-[10px] uppercase font-bold tracking-widest px-5 py-3">
+                Skip ad in <span className="text-white text-sm">{adCountdown}</span>
               </div>
             ) : (
               <button 
                 onClick={(e) => { e.stopPropagation(); skipAd(); }}
-                className="bg-zinc-800 hover:bg-zinc-700 border-l-2 border-rose-600 text-white font-bold text-xs uppercase px-6 py-3 transition-colors"
+                className="bg-black/90 hover:bg-zinc-900 border-l-2 border-rose-600 text-white font-bold text-xs uppercase px-6 py-3 transition-colors flex items-center gap-2"
               >
-                Skip Ad
+                Skip Ad <SkipForward size={14} strokeWidth={2.5} />
               </button>
             )}
           </div>
         </>
       )}
 
-      {/* Loading Ad State */}
+      {/* LOADING SPINNER */}
       {isLoadingAd && (
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 text-white text-xs uppercase font-bold z-20">
-          <div className="w-8 h-8 border-2 border-t-rose-600 border-zinc-800 rounded-full animate-spin" />
-          Loading
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 text-white text-[10px] uppercase tracking-widest font-bold z-20">
+          <div className="w-10 h-10 border-[3px] border-t-rose-600 border-zinc-800 rounded-full animate-spin" />
+          Buffering
         </div>
       )}
 
-      {/* Sharp Center Play Button */}
+      {/* GIANT PLAY BUTTON OVERLAY */}
       {!isPlaying && !adState.isPlaying && !isLoadingAd && (
         <button 
           onClick={togglePlay}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-16 flex items-center justify-center bg-rose-700 hover:bg-rose-600 text-white transition-colors z-10"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-14 flex items-center justify-center bg-rose-700 hover:bg-rose-600 text-white transition-colors z-10 shadow-[0_0_20px_rgba(190,18,60,0.5)] border border-rose-500/30"
         >
-          <Play size={36} className="ml-1" fill="currentColor" strokeWidth={0} />
+          <Play size={32} className="ml-1" fill="currentColor" strokeWidth={0} />
         </button>
       )}
 
-      {/* Controls Bar */}
-      <div className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent px-4 py-4 transition-opacity duration-200 z-20 ${showControls ? 'opacity-100' : 'opacity-0'} ${adState.isPlaying || isLoadingAd ? 'pointer-events-none opacity-0' : ''}`}>
+      {/* BOTTOM CONTROLS BAR */}
+      <div 
+        className={`absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent pt-12 pb-2 md:pb-4 px-2 md:px-4 transition-all duration-300 z-20 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'} ${adState.isPlaying || isLoadingAd ? 'hidden' : ''}`}
+        onClick={(e) => e.stopPropagation()} // Prevent clicking controls from pausing video
+      >
         
-        {/* Progress Bar (Sharp, flat) */}
-        <div className="relative w-full h-1 bg-zinc-700 mb-4 group/progress cursor-pointer flex items-center">
+        {/* RAZOR SHARP PROGRESS BAR */}
+        <div className="relative w-full h-1.5 md:h-1 bg-zinc-800 mb-4 group/progress cursor-pointer flex items-center hover:h-2 transition-all">
           <input
             type="range"
             min="0"
             max="100"
+            step="0.1"
             value={progress || 0}
             onChange={handleSeek}
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30"
           />
+          {/* Loaded Buffer (Mocked visually) */}
+          <div className="absolute top-0 left-0 h-full bg-zinc-600 w-[85%] pointer-events-none" />
+          
+          {/* Active Progress */}
           <div 
-            className="absolute top-0 left-0 h-full bg-rose-600 pointer-events-none"
+            className="absolute top-0 left-0 h-full bg-rose-600 pointer-events-none shadow-[0_0_10px_rgba(225,29,72,0.8)]"
             style={{ width: `${progress}%` }}
           />
+          {/* Scrubber Thumb */}
           <div 
-            className="absolute w-1.5 h-3 bg-white opacity-0 group-hover/progress:opacity-100 pointer-events-none z-20"
-            style={{ left: `calc(${progress}% - 3px)` }}
+            className="absolute w-1 h-3 md:h-4 bg-white opacity-0 group-hover/progress:opacity-100 pointer-events-none z-20 transition-opacity"
+            style={{ left: `calc(${progress}% - 2px)` }}
           />
         </div>
 
-        <div className="flex items-center justify-between text-zinc-200">
-          <div className="flex items-center gap-5 pointer-events-auto">
-            <button onClick={togglePlay} className="hover:text-rose-500 transition-colors">
-              {isPlaying ? <Pause size={20} fill="currentColor" strokeWidth={0} /> : <Play size={20} fill="currentColor" strokeWidth={0} />}
+        {/* TOOLBAR */}
+        <div className="flex items-center justify-between text-zinc-200 px-1 md:px-2">
+          
+          {/* LEFT SIDE: Play, Seek, Volume, Time */}
+          <div className="flex items-center gap-4 md:gap-6 pointer-events-auto">
+            <button onClick={togglePlay} className="hover:text-rose-500 transition-colors p-1">
+              {isPlaying ? <Pause size={22} fill="currentColor" strokeWidth={0} /> : <Play size={22} fill="currentColor" strokeWidth={0} />}
             </button>
 
-            <div className="flex items-center gap-3 text-zinc-400">
+            {/* PC Only Seek Buttons (Hidden on mobile to save space) */}
+            <div className="hidden md:flex items-center gap-4 text-zinc-400">
               <button onClick={() => { if (videoRef.current) videoRef.current.currentTime -= 10; }} className="hover:text-white transition-colors">
-                <SkipBack size={16} strokeWidth={2} />
+                <SkipBack size={18} strokeWidth={2} />
               </button>
               <button onClick={() => { if (videoRef.current) videoRef.current.currentTime += 10; }} className="hover:text-white transition-colors">
-                <SkipForward size={16} strokeWidth={2} />
+                <SkipForward size={18} strokeWidth={2} />
               </button>
             </div>
 
             <div className="flex items-center gap-2 group/volume">
-              <button onClick={toggleMute} className="hover:text-white transition-colors">
-                {isMuted ? <VolumeX size={18} strokeWidth={2} /> : <Volume2 size={18} strokeWidth={2} />}
+              <button onClick={toggleMute} className="hover:text-rose-500 transition-colors p-1 text-zinc-300">
+                {isMuted || volume === 0 ? <VolumeX size={20} strokeWidth={2} /> : <Volume2 size={20} strokeWidth={2} />}
               </button>
-              <div className="w-0 overflow-hidden group-hover/volume:w-16 transition-all duration-200 flex items-center">
-                {/* Sharp Rectangle Volume Thumb */}
+              <div className="w-0 overflow-hidden group-hover/volume:w-16 transition-all duration-300 flex items-center">
+                {/* Ultra Sharp Flat Volume Slider */}
                 <input
                   type="range"
                   min="0"
@@ -383,46 +541,51 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
                   value={isMuted ? 0 : volume}
                   onChange={handleVolumeChange}
                   className="w-full h-1 bg-zinc-700 cursor-pointer appearance-none outline-none 
-                             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-1.5 [&::-webkit-slider-thumb]:h-3 
+                             [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-1 [&::-webkit-slider-thumb]:h-3 
                              [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
-                             [&::-moz-range-thumb]:w-1.5 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:border-none 
+                             [&::-moz-range-thumb]:w-1 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:border-none 
                              [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:rounded-none"
                 />
               </div>
             </div>
 
-            <span className="text-[11px] font-mono tracking-wider ml-2">
-              <span className="text-white">{formatTime(currentTime)}</span> / <span className="text-zinc-500">{formatTime(duration)}</span>
+            <span className="text-[11px] md:text-xs font-mono tracking-wider ml-1 select-none pointer-events-none">
+              <span className="text-white">{formatTime(currentTime)}</span> 
+              <span className="text-zinc-600 mx-1">/</span> 
+              <span className="text-zinc-400">{formatTime(duration)}</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-5 pointer-events-auto">
+          {/* RIGHT SIDE: Settings, Loop, Fullscreen */}
+          <div className="flex items-center gap-4 md:gap-6 pointer-events-auto">
+            
             <button 
               onClick={() => setIsLooping(!isLooping)} 
-              className={`transition-colors ${isLooping ? 'text-rose-500' : 'text-zinc-400 hover:text-white'}`}
+              className={`transition-colors p-1 hidden sm:block ${isLooping ? 'text-rose-500' : 'text-zinc-400 hover:text-white'}`}
             >
-              <Repeat size={16} strokeWidth={2} />
+              <Repeat size={18} strokeWidth={2} />
             </button>
 
-            <div className="relative group/speed flex items-center gap-1 cursor-pointer text-zinc-400 hover:text-white transition-colors">
-              <span className="text-[10px] font-bold">{playbackRate}x</span>
-              <Settings size={14} strokeWidth={2} />
+            <div className="relative group/speed flex items-center gap-1.5 cursor-pointer text-zinc-400 hover:text-white transition-colors p-1">
+              <Settings size={18} strokeWidth={2} className="group-hover/speed:rotate-90 transition-transform duration-300" />
               
-              <div className="absolute bottom-full right-0 mb-4 bg-zinc-900 border border-zinc-800 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-all">
+              <div className="absolute bottom-full right-0 mb-4 bg-black/90 backdrop-blur-md border border-zinc-800 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-all flex flex-col py-2 rounded-sm shadow-2xl">
+                <div className="px-4 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold mb-1">Playback Speed</div>
                 {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
                   <div 
                     key={rate}
                     onClick={() => changeSpeed(rate)}
-                    className={`px-4 py-2 text-[11px] font-bold cursor-pointer hover:bg-zinc-800 ${playbackRate === rate ? 'text-rose-500' : 'text-zinc-300'}`}
+                    className={`px-6 py-2 text-xs font-bold cursor-pointer hover:bg-zinc-800 flex items-center justify-between gap-4 ${playbackRate === rate ? 'text-rose-500' : 'text-zinc-300'}`}
                   >
-                    {rate}x
+                    {rate === 1 ? 'Normal' : `${rate}x`}
+                    {playbackRate === rate && <span className="w-1.5 h-1.5 bg-rose-500 rounded-full" />}
                   </div>
                 ))}
               </div>
             </div>
 
-            <button onClick={toggleFullscreen} className="text-zinc-400 hover:text-white transition-colors">
-              {isFullscreen ? <Minimize size={18} strokeWidth={2} /> : <Maximize size={18} strokeWidth={2} />}
+            <button onClick={toggleFullscreen} className="text-zinc-300 hover:text-rose-500 transition-colors p-1">
+              {isFullscreen ? <Minimize size={20} strokeWidth={2} /> : <Maximize size={20} strokeWidth={2} />}
             </button>
           </div>
         </div>
