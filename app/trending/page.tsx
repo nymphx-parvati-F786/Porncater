@@ -133,7 +133,7 @@ export default async function TrendingPage({
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
           {videos.length > 0 ? (
             videos.map((video, index) => (
-              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
+              <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
                   <Image 
                     src={video.thumbnail} 

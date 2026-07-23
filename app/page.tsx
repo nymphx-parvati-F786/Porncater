@@ -120,7 +120,7 @@ export default async function Home() {
 
           {/* 1. Real Videos (18 Items) */}
           {trendingVideos.map((video) => (
-            <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
+            <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
                 <Image src={video.thumbnail} alt={video.title} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover" />
                 <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
@@ -199,7 +199,7 @@ export default async function Home() {
 
             {/* 1. Real Videos (18 Items) */}
             {latestVideos.map((video) => (
-              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
+              <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
                   <Image src={video.thumbnail} alt={video.title} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover" />
                   <div className="absolute top-1.5 left-1.5 bg-amber-600/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">

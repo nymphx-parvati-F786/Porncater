@@ -182,7 +182,7 @@ export default async function LatestPage({
           {/* 1. Real Videos */}
           {videos.length > 0 ? (
             videos.map((video, index) => (
-              <Link key={video.id} href={`/watch/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
+              <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
                   <Image
                     src={video.thumbnail}

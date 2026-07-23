@@ -85,7 +85,7 @@ export async function generateMetadata(
   const tags = video.tags?.join(', ') || '';
   const seoKeywords = `${starNames}, ${tags}, ${video.title}, free HD porn, watch sex tube, adult video stream`;
   const seoDescription = `Watch ${video.title}${starNames ? ` starring ${starNames}` : ''} in full HD. Stream exclusive free porn scenes on PornCater.`;
-  const canonicalUrl = `https://porncater.com/watch/${videoId}/${resolvedParams.slug}`;
+  const canonicalUrl = `https://porncater.com/video/${videoId}/${resolvedParams.slug}`;
 
   return {
     title: `${video.title} - Free HD Porn | PornCater`,
@@ -196,7 +196,7 @@ export default async function WatchPage({ params }: PageProps) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://porncater.com/" },
-      { "@type": "ListItem", position: 2, name: "Watch", item: `https://porncater.com/watch/${video.id}/${resolvedParams.slug}` }
+      { "@type": "ListItem", position: 2, name: "Video", item: `https://porncater.com/video/${video.id}/${resolvedParams.slug}` }
     ]
   };
 
@@ -353,7 +353,7 @@ export default async function WatchPage({ params }: PageProps) {
 
           {/* Videos */}
           {relatedVideos.map((v) => (
-            <Link key={v.id} href={`/watch/${v.id}/${v.slug}`} className="group flex flex-col bg-[#0a0a0a] border border-zinc-800 rounded-sm overflow-hidden hover:border-rose-900 transition-colors">
+            <Link key={v.id} href={`/video/${v.id}/${v.slug}`} className="group flex flex-col bg-[#0a0a0a] border border-zinc-800 rounded-sm overflow-hidden hover:border-rose-900 transition-colors">
               <div className="relative aspect-video bg-black">
                 <Image src={v.thumbnail} alt={v.title} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover group-hover:opacity-80 transition-opacity" />
                 <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm">{formatDuration(v.duration)}</div>

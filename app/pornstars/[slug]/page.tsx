@@ -145,7 +145,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       "item": {
         "@type": "VideoObject",
         "name": video.title,
-        "url": `https://porncater.com/watch/${video.id}/${video.slug}`,
+        "url": `https://porncater.com/video/${video.id}/${video.slug}`,
         "thumbnailUrl": video.thumbnail
       }
     }))
@@ -251,7 +251,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
               {videos.map((video) => (
                 <Link 
                   key={video.id} 
-                  href={`/watch/${video.id}/${video.slug}`} 
+                  href={`/video/${video.id}/${video.slug}`} 
                   prefetch={false} 
                   className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
                 >
