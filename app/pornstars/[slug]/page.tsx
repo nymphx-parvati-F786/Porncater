@@ -2,10 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
 import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight, ThumbsUp } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image"; 
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
+import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -35,11 +36,11 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   if (!star) return { title: 'Pornstar Not Found | PornCater' };
 
   const canonicalUrl = `https://porncater.com/pornstars/${starSlug}?page=${page}`;
-  
+
   return {
     title: `${star.name} Porn Videos & Profile - Page ${page} | PornCater`,
-    description: star.bio 
-      ? `${star.name} bio: ${star.bio.substring(0, 120)}... Stream exclusive HD videos.` 
+    description: star.bio
+      ? `${star.name} bio: ${star.bio.substring(0, 120)}... Stream exclusive HD videos.`
       : `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
     alternates: {
       canonical: canonicalUrl,
@@ -80,7 +81,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
   const [videos, totalVideos] = await Promise.all([
     prisma.video.findMany({
       where: {
-        status: "PUBLISHED", 
+        status: "PUBLISHED",
         pornstars: {
           some: { id: star.id }
         }
@@ -154,7 +155,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-200 font-sans selection:bg-rose-600 selection:text-white flex flex-col">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, personSchema, itemListSchema]) }} />
-      
+
       {/* 🔥 THE UNIFIED SMART HEADER */}
       <SmartHeader categories={megaCategories} />
 
@@ -163,7 +164,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
           ========================================= */}
       <div className="bg-[#111] border-b border-zinc-900 pt-6 pb-6 shadow-md">
         <div className="max-w-[1600px] mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-4 md:gap-6 items-start">
-          
+
           {/* Portrait Avatar (Matching Directory Style) */}
           <div className="relative w-28 h-36 sm:w-36 sm:h-48 shrink-0 bg-black border border-zinc-800 overflow-hidden">
             <img
@@ -216,7 +217,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                 {star.bio}
               </p>
             )}
-            
+
             {star.tags && star.tags.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-auto">
                 {star.tags.map((tag: string, i: number) => (
@@ -234,7 +235,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
           🔥 DENSE VIDEO GRID
           ========================================= */}
       <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 mt-6 flex-grow">
-        
+
         <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-4">
           <h2 className="text-lg md:text-xl font-bold uppercase tracking-widest text-white flex items-center gap-2">
             <Film className="text-rose-600" size={18} />
@@ -249,10 +250,10 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
           <>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 sm:gap-2.5">
               {videos.map((video) => (
-                <Link 
-                  key={video.id} 
-                  href={`/video/${video.id}/${video.slug}`} 
-                  prefetch={false} 
+                <Link
+                  key={video.id}
+                  href={`/video/${video.id}/${video.slug}`}
+                  prefetch={false}
                   className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
                 >
                   {/* Raw Image Container */}
@@ -264,7 +265,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                       sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
                       className="object-cover group-hover:opacity-80 transition-none"
                     />
-                    
+
                     {/* Sharp HD Badge */}
                     <div className="absolute top-0 left-0 bg-rose-700 text-white text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
                       HD
@@ -320,11 +321,10 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                       <Link
                         key={pageNum}
                         href={`/pornstars/${star.slug}?page=${pageNum}`}
-                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
-                          isCurrent
+                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${isCurrent
                             ? "bg-rose-700 text-white border border-rose-700"
                             : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </Link>
@@ -355,6 +355,11 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
             </div>
           </div>
         )}
+      </div>
+
+      {/* 3. 🔥 BFORE FOOTER AD BANNER 900x250 */}
+      <div className="w-full flex justify-center my-1 overflow-hidden">
+        <AdRotator />
       </div>
 
       {/* =========================================

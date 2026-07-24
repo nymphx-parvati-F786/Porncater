@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+// 🔥 Import your Floating Ad Components
+import ExoClickSticky from "@/src/components/ui/ads/ExoClickAds/ExoClickSticky";
+import ExoClickIM from "@/src/components/ui/ads/ExoClickAds/ExoClickIM";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -53,7 +57,23 @@ export default function RootLayout({
           content="e3101afb907fa706467fa4a2213b3058"
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      
+      <body className="min-h-full flex flex-col bg-[#0a0a0a] text-zinc-300">
+        
+        {/* 1. Main Content Renders First */}
+        {children}
+
+        {/* 
+          2. GLOBAL FLOATING ADS (Render Last)
+          z-[9999] ensures they sit on top of everything (headers, footers, video players).
+          Because they are in layout.tsx, they follow the user seamlessly from page to page!
+        */}
+        <ExoClickSticky zoneId="5984712" className="z-[9999]" />
+        
+        {/* Keep the chat bubble here if you want it popping up! Just set frequency capping in ExoClick */}
+        <ExoClickIM zoneId="5984398" className="z-[9999]" />
+        
+      </body>
     </html>
   );
 }

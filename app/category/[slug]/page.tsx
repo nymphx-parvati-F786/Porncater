@@ -12,6 +12,8 @@ import SearchBar from "@/src/components/ui/SearchBar";
 import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
+import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
 export const revalidate = 120; // Cache category pages for 2 minutes on CDN
 
@@ -199,10 +201,19 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       <SmartHeader categories={megaCategories} />
 
       {/* =========================================
-          💰 TOP WIDE AD BANNER
+          💰 TOP DYNAMIC AFFILIATE BANNER
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
-        <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
+      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
+        {/* Desktop View: Wide Super Leaderboard (970x70) */}
+        <AdBanner
+          dimension="970x70"
+          className="hidden md:block w-full max-w-s[970px]"
+        />
+        {/* Mobile View: High-Converting Box Banner (300x250) */}
+        <AdBanner
+          dimension="300x250"
+          className="block md:hidden mx-auto"
+        />
       </div>
 
       {/* =========================================
@@ -235,8 +246,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <Link
               href={`/category/${slug}?sort=newest`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "newest"
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
-                  : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
+                : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
             >
               Newest
@@ -245,8 +256,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <Link
               href={`/category/${slug}?sort=most-viewed`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "most-viewed"
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
-                  : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
+                : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
             >
               Most Viewed
@@ -255,8 +266,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             <Link
               href={`/category/${slug}?sort=top-rated`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "top-rated"
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
-                  : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
+                : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
             >
               Top Rated
@@ -311,7 +322,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
           )}
 
           {/* 2. Camouflaged Native Ads */}
-          {videos.length > 0 && nativeAds.map((ad) => (
+          {/* {videos.length > 0 && nativeAds.map((ad) => (
             <a key={ad.id} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
               <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-amber-900/50 transition-colors">
                 <img src={ad.thumbnail} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-110 transition-all duration-200" />
@@ -331,7 +342,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 </div>
               </div>
             </a>
-          ))}
+          ))} */}
 
         </div>
 
@@ -370,8 +381,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                   key={pageNum}
                   href={buildPageUrl(pageNum)}
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                      ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
-                      : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                    ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                    : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                     }`}
                 >
                   {pageNum}
@@ -399,8 +410,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       {/* =========================================
           💰 BOTTOM-ROLL AD BANNER
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 py-8">
-        <DirectBanner banners={blackedLeaderboards} format="banner-728x90" />
+      <div className="w-full flex justify-center my-1 overflow-hidden">
+        <AdRotator />
       </div>
 
       {/* =========================================

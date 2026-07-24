@@ -10,6 +10,8 @@ import SearchBar from "@/src/components/ui/SearchBar";
 import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 
 export const revalidate = 120; // Caches the page for 2 minutes
 
@@ -34,16 +36,16 @@ export default async function TrendingPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
-  
+
   // 🔥 24 Videos fills a 6-column grid perfectly (4 rows)
-  const videosPerPage = 24;
+  const videosPerPage = 36;
   const currentPage = Math.max(1, parseInt(resolvedParams.page as string) || 1);
   const skipAmount = (currentPage - 1) * videosPerPage;
 
   // =========================================================================
   // 🚀 HIGH-PERFORMANCE DATA FETCHING ARCHITECTURE (DEFERRED JOIN)
   // =========================================================================
-  
+
   // Step A: Fast Index-Only scan. 
   // Postgres leverages your @@index([views(sort: Desc)]) perfectly here.
   const videoIds = await prisma.video.findMany({
@@ -78,11 +80,11 @@ export default async function TrendingPage({
   const tableStats = await prisma.$queryRaw<{ estimate: number }[]>`
     SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';
   `;
-  
+
   const estimatedTotal = Number(tableStats[0]?.estimate || 0);
 
   // Step D: SEO Hard Cap - Never let bots crawl past page 200
-  const hardPageLimit = 200; 
+  const hardPageLimit = 200;
   const calculatedPages = Math.ceil(estimatedTotal / videosPerPage);
   const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
 
@@ -103,15 +105,24 @@ export default async function TrendingPage({
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
-      
+
       {/* 🔥 THE NEW SLIDING SMART HEADER */}
-            <SmartHeader categories={megaCategories} />
+      <SmartHeader categories={megaCategories} />
 
       {/* =========================================
-          💰 TOP WIDE AD BANNER
+          💰 TOP DYNAMIC AFFILIATE BANNER
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
-        <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
+      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
+        {/* Desktop View: Wide Super Leaderboard (970x70) */}
+        <AdBanner
+          dimension="970x70"
+          className="hidden md:block w-full max-w-[970px]"
+        />
+        {/* Mobile View: High-Converting Box Banner (300x250) */}
+        <AdBanner
+          dimension="300x250"
+          className="block md:hidden mx-auto"
+        />
       </div>
 
       {/* =========================================
@@ -135,13 +146,13 @@ export default async function TrendingPage({
             videos.map((video, index) => (
               <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
-                  <Image 
-                    src={video.thumbnail} 
-                    alt={video.title} 
-                    fill 
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw" 
+                  <Image
+                    src={video.thumbnail}
+                    alt={video.title}
+                    fill
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                     priority={index < 6}
-                    className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]" 
+                    className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]"
                   />
                   <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
                     HD
@@ -173,7 +184,7 @@ export default async function TrendingPage({
         {/* ========================================================= */}
         {totalPages > 1 && (
           <div className="mt-12 pt-8 flex items-center justify-center gap-2">
-            
+
             {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
@@ -202,11 +213,10 @@ export default async function TrendingPage({
                 <Link
                   key={pageNum}
                   href={`/trending?page=${pageNum}`}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
-                    currentPage === pageNum
-                      ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
-                      : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                  }`}
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
+                    ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                    : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                    }`}
                 >
                   {pageNum}
                 </Link>
@@ -230,13 +240,9 @@ export default async function TrendingPage({
         )}
       </section>
 
-      {/* =========================================
-          💰 BOTTOM SQUARE AD
-          ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 py-8 flex justify-center">
-        <div className="flex justify-center items-center w-full">
-          <iframe style={{ backgroundColor: "transparent" }} width="315" height="300" scrolling="no" frameBorder="0" {...({ allowtransparency: "true" } as any)} name="spot_id_10002484" src="//a.adtng.com/get/10002484?ata=deviparvatilovemuslimcocks" title="Advertisement" loading="lazy" />
-        </div>
+      {/* 3. 🔥 BFORE FOOTER AD BANNER 900x250 */}
+      <div className="w-full flex justify-center my-1 overflow-hidden">
+        <AdRotator />
       </div>
 
       {/* =========================================

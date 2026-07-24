@@ -11,6 +11,8 @@ import SearchBar from "@/src/components/ui/SearchBar";
 import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
+import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
 export const revalidate = 120;
 
@@ -138,9 +140,20 @@ export default async function TopRatedPage({
             {/* 🔥 THE NEW SLIDING SMART HEADER */}
             <SmartHeader categories={megaCategories} />
 
-            {/* Top Wide Ad Banner */}
-            <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
-                <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
+            {/* =========================================
+                💰 TOP DYNAMIC AFFILIATE BANNER
+                ========================================= */}
+            <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
+                {/* Desktop View: Wide Super Leaderboard (970x70) */}
+                <AdBanner
+                    dimension="970x70"
+                    className="hidden md:block w-full max-w-[970px]"
+                />
+                {/* Mobile View: High-Converting Box Banner (300x250) */}
+                <AdBanner
+                    dimension="300x250"
+                    className="block md:hidden mx-auto"
+                />
             </div>
 
             {/* Title & Time-Range Filter Bar */}
@@ -244,7 +257,7 @@ export default async function TopRatedPage({
                     )}
 
                     {/* Camouflaged Native Ads */}
-                    {videos.length > 0 && nativeAds.map((ad) => (
+                    {/* {videos.length > 0 && nativeAds.map((ad) => (
                         <a key={ad.id} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
                             <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-amber-900/50 transition-colors">
                                 <img src={ad.thumbnail} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-110 transition-all duration-200" />
@@ -264,7 +277,7 @@ export default async function TopRatedPage({
                                 </div>
                             </div>
                         </a>
-                    ))}
+                    ))} */}
 
                 </div>
 
@@ -330,8 +343,8 @@ export default async function TopRatedPage({
             </section>
 
             {/* Bottom Ad Leaderboard */}
-            <div className="max-w-[1600px] mx-auto px-4 py-8">
-                <DirectBanner banners={blackedLeaderboards} format="banner-728x90" />
+            <div className="w-full flex justify-center my-1 overflow-hidden">
+                <AdRotator />
             </div>
 
             {/* =========================================

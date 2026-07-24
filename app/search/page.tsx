@@ -10,9 +10,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import SearchBar from "@/src/components/ui/SearchBar";
-import DirectBanner from "@/src/components/ui/ads/DirectBanner";
-import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
 export const revalidate = 60; // Cache search responses for 60s at the edge
 
@@ -52,7 +51,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const resolvedParams = await searchParams;
   const q = typeof resolvedParams.q === "string" ? resolvedParams.q.trim() : "";
   const page = resolvedParams.page ? String(resolvedParams.page) : "1";
-  
+
   if (!q) {
     return { title: "Search Free HD Porn Videos | PornCater" };
   }
@@ -109,7 +108,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   // =========================================================================
   // 🚀 DEFERRED JOIN SEARCH QUERY ARCHITECTURE
   // =========================================================================
-  
+
   // Step A: Index-Only Scan to get matching IDs
   const videoIds = await prisma.video.findMany({
     where: whereClause,
@@ -155,7 +154,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
-  const buildPageUrl = (page: number | string) => 
+  const buildPageUrl = (page: number | string) =>
     `/search?q=${encodeURIComponent(q)}&page=${page}&sort=${currentSort}`;
 
   // Structured Data Schema for Search Results
@@ -185,14 +184,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
       />
 
       {/* 🔥 THE NEW SLIDING SMART HEADER */}
-                  <SmartHeader categories={megaCategories} />
-
-      {/* =========================================
-          💰 TOP WIDE AD BANNER
-          ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2">
-        <DirectBanner banners={blackedSuperLeaderboards} format="banner-970x70" />
-      </div>
+      <SmartHeader categories={megaCategories} />
 
       {/* =========================================
           🔥 SEARCH HEADER & DYNAMIC FILTERS
@@ -223,33 +215,30 @@ export default async function SearchPage({ searchParams }: PageProps) {
 
             <Link
               href={`/search?q=${encodeURIComponent(q)}&sort=most-viewed`}
-              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                currentSort === "most-viewed"
+              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "most-viewed"
                   ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
                   : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
+                }`}
             >
               Most Viewed
             </Link>
 
             <Link
               href={`/search?q=${encodeURIComponent(q)}&sort=newest`}
-              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                currentSort === "newest"
+              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "newest"
                   ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
                   : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
+                }`}
             >
               Newest
             </Link>
 
             <Link
               href={`/search?q=${encodeURIComponent(q)}&sort=top-rated`}
-              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${
-                currentSort === "top-rated"
+              className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "top-rated"
                   ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
                   : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
-              }`}
+                }`}
             >
               Top Rated
             </Link>
@@ -297,7 +286,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
             ))}
 
             {/* 2. Camouflaged Native Ads */}
-            {nativeAds.map((ad) => (
+            {/* {nativeAds.map((ad) => (
               <a key={ad.id} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
                 <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-amber-900/50 transition-colors">
                   <img src={ad.thumbnail} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-110 transition-all duration-200" />
@@ -317,7 +306,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   </div>
                 </div>
               </a>
-            ))}
+            ))} */}
 
           </div>
         ) : (
@@ -376,11 +365,10 @@ export default async function SearchPage({ searchParams }: PageProps) {
                 <Link
                   key={pageNum}
                   href={buildPageUrl(pageNum)}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
-                    currentPage === pageNum
+                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
                       ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
                       : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                  }`}
+                    }`}
                 >
                   {pageNum}
                 </Link>
@@ -404,11 +392,9 @@ export default async function SearchPage({ searchParams }: PageProps) {
         )}
       </section>
 
-      {/* =========================================
-          💰 BOTTOM-ROLL AD BANNER
-          ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 py-8">
-        <DirectBanner banners={blackedLeaderboards} format="banner-728x90" />
+      {/* 3. 🔥 BFORE FOOTER AD BANNER 900x250 */}
+      <div className="w-full flex justify-center my-1 overflow-hidden">
+        <AdRotator />
       </div>
 
       {/* =========================================

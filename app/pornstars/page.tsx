@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Star, ChevronLeft, ChevronRight, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
 export const revalidate = 120; // Caches the page for 2 minutes
 
@@ -20,14 +21,14 @@ const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
 export default async function PornstarsDirectory({ searchParams }: DirectoryProps) {
   const resolvedSearchParams = await searchParams;
-  
+
   // We keep the searchQuery logic in the backend just in case, but removed the UI for it
   const searchQuery = (resolvedSearchParams.search as string) || "";
   const letterQuery = (resolvedSearchParams.letter as string) || "";
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
-  
+
   // Dense wall of models
-  const performersPerPage = 36; 
+  const performersPerPage = 36;
 
   let queryCondition: any = {};
   if (searchQuery) {
@@ -62,14 +63,14 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-200 font-sans selection:bg-rose-600 selection:text-white flex flex-col">
-      
+
       <SmartHeader categories={megaCategories} />
 
       {/* =========================================
           🎬 RAW TUBE HEADER & A-Z INDEX
           ========================================= */}
       <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 pt-6 pb-4">
-        
+
         {/* Minimal Title Row */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
           <h1 className="text-lg md:text-xl font-bold uppercase tracking-widest text-white flex items-center gap-2">
@@ -83,15 +84,15 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
 
         {/* Brutalist A-Z Tube Filtering Bar */}
         <div className="flex flex-wrap gap-[1px] bg-zinc-800 border border-zinc-800 p-[1px] mb-4">
-          <Link 
-            href="/pornstars" 
+          <Link
+            href="/pornstars"
             className={`flex-1 min-w-[30px] py-1.5 text-center text-[10px] sm:text-xs font-bold uppercase transition-none ${!letterQuery && !searchQuery ? 'bg-rose-700 text-white' : 'bg-zinc-950 text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
           >
             All
           </Link>
           {alphabet.map((letter) => (
-            <Link 
-              key={letter} 
+            <Link
+              key={letter}
               href={`/pornstars?letter=${letter}`}
               className={`flex-1 min-w-[24px] py-1.5 text-center text-[10px] sm:text-xs font-bold transition-none ${letterQuery === letter ? 'bg-rose-700 text-white' : 'bg-[#050505] text-zinc-500 hover:bg-zinc-800 hover:text-white'}`}
             >
@@ -110,22 +111,22 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5 sm:gap-2.5">
               {pornstars.map((star, index) => {
                 const globalRank = (currentPage - 1) * performersPerPage + (index + 1);
-                
+
                 return (
-                  <Link 
-                    key={star.slug} 
-                    href={`/pornstars/${star.slug}`} 
+                  <Link
+                    key={star.slug}
+                    href={`/pornstars/${star.slug}`}
                     className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
                   >
                     {/* Raw Image Container */}
                     <div className="relative w-full aspect-[3/4] bg-black overflow-hidden">
-                      <img 
-                        src={star.avatarUrl || "/thumbnails/default-avatar.png"} 
-                        alt={star.name} 
+                      <img
+                        src={star.avatarUrl || "/thumbnails/default-avatar.png"}
+                        alt={star.name}
                         loading="lazy"
-                        className="absolute inset-0 w-full h-full object-cover object-[50%_20%] group-hover:opacity-80 transition-none" 
+                        className="absolute inset-0 w-full h-full object-cover object-[50%_20%] group-hover:opacity-80 transition-none"
                       />
-                      
+
                       {/* Sharp Rank Badge (Top Left) */}
                       <div className="absolute top-0 left-0 bg-rose-700 text-white text-[10px] font-bold px-1.5 py-0.5">
                         #{globalRank}
@@ -178,11 +179,10 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
                       <Link
                         key={pageNum}
                         href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${pageNum}`}
-                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
-                          isCurrent
+                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${isCurrent
                             ? "bg-rose-700 text-white border border-rose-700"
                             : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-                        }`}
+                          }`}
                       >
                         {pageNum}
                       </Link>
@@ -216,6 +216,11 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
             </Link>
           </div>
         )}
+      </div>
+
+      {/* 3. 🔥 BFORE FOOTER AD BANNER 900x250 */}
+      <div className="w-full flex justify-center my-1 overflow-hidden">
+        <AdRotator />
       </div>
 
       {/* =========================================
