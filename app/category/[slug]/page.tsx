@@ -9,7 +9,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import SearchBar from "@/src/components/ui/SearchBar";
-import DirectBanner from "@/src/components/ui/ads/DirectBanner";
 import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
