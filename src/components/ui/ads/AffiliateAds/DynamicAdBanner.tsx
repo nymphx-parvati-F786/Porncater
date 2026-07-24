@@ -97,9 +97,9 @@ export default function AdBanner({
         )}
         
         {/* Subtle 'Sponsored' badge so it blends in like premium content */}
-        <span className="absolute top-1.5 right-1.5 bg-black/80 text-zinc-500 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-[2px] border border-zinc-800">
+        {/* <span className="absolute top-1.5 right-1.5 bg-black/80 text-zinc-500 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-[2px] border border-zinc-800">
           Sponsored
-        </span>
+        </span> */}
       </a>
     </div>
   );
