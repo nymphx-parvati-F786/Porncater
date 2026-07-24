@@ -1,6 +1,7 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect } from "react";
 
 declare global {
   interface Window {
@@ -35,14 +36,15 @@ export default function ExoClickBanner({
   const finalWidth = width || preset.width;
   const finalHeight = height || preset.height;
 
-  // 🔥 Trigger serve ONLY after the script script is loaded and ready
-  const handleScriptLoad = () => {
+  // 🔥 THE SPA FIX: useEffect runs on every single route change, 
+  // guaranteeing the ad requests a fresh impression when they click a new video.
+  useEffect(() => {
     try {
       (window.AdProvider = window.AdProvider || []).push({ serve: {} });
     } catch (err) {
       console.error("ExoClick serve trigger error:", err);
     }
-  };
+  }, [zoneId]);
 
   return (
     <div
@@ -52,11 +54,11 @@ export default function ExoClickBanner({
       {/* Skeleton Loader for CLS */}
       <div className="absolute inset-0 bg-zinc-900/20 animate-pulse -z-10 rounded-sm" />
 
+      {/* 🔥 STATIC ID FIX: Tells Next.js to only inject this engine ONCE globally */}
       <Script
-        id={`exoclick-magsrv-provider-${zoneId}`}
+        id="exoclick-magsrv-provider-global"
         strategy="lazyOnload"
         src="https://a.magsrv.com/ad-provider.js"
-        onLoad={handleScriptLoad}
       />
 
       <ins
