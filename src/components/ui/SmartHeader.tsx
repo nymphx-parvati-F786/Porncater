@@ -152,7 +152,8 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
 
       <div
         ref={categoryBarRef}
-        className="sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-all duration-200 ease-out transform-gpu opacity-100 pointer-events-auto"
+        // 🔥 Changed transition-all to transition-transform duration-200
+        className="sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-transform duration-200 ease-out transform-gpu opacity-100 pointer-events-auto"
         style={{
           top: `${headerHeight}px`,
           transform: "translateY(0)"

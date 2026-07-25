@@ -40,7 +40,7 @@ export default function AdBanner({
         }
 
         const res = await fetch(url.toString(), { signal: controller.signal });
-        
+
         if (res.ok) {
           const data = await res.json();
           if (data && data.imageUrl) {
@@ -67,7 +67,7 @@ export default function AdBanner({
   // 🔥 THE FALLBACK CTA: Shown if loading, if API fails, OR if ad-blocker kills the image.
   // We NEVER return `null` because collapsing the container causes a Cumulative Layout Shift.
   const renderFallback = () => (
-    <div 
+    <div
       className={`w-full h-full flex flex-col items-center justify-center p-4 text-center rounded-sm ${loading ? 'animate-pulse bg-zinc-900/40' : 'border border-rose-900/40 bg-gradient-to-b from-zinc-900 to-black cursor-pointer'}`}
     >
       {!loading && (
@@ -84,30 +84,33 @@ export default function AdBanner({
   );
 
   return (
-    <div 
+    <div
       className={`relative block rounded-sm bg-[#0a0a0a] overflow-hidden ${className}`}
       // 🔥 THE CLS KILLER: This locks the box to the exact dimensions of the expected ad instantly.
-      style={{ 
-        width: "100%", 
-        maxWidth: `${adWidth}px`, 
-        aspectRatio: aspectRatio 
+      style={{
+        width: "100%",
+        maxWidth: `${adWidth}px`,
+        aspectRatio: aspectRatio
       }}
     >
-      <a 
-        href={ad?.trackingLink || "#"} 
-        target="_blank" 
+      <a
+        href={ad?.trackingLink || "#"}
+        target="_blank"
         rel="noopener noreferrer nofollow sponsored"
         className="block w-full h-full relative group active:scale-[0.98] transition-transform"
       >
         {(!ad || loading || imageFailed) ? renderFallback() : (
-          <Image 
-            src={ad.imageUrl} 
-            alt={targetStudio || "Promoted Content"} 
-            fill
-            sizes={`(max-width: 768px) 100vw, ${adWidth}px`}
-            priority={priority} // 🔥 Toggles fetchPriority="high" and removes loading="lazy" automatically
-            className="object-cover rounded-sm"
-            onError={() => setImageFailed(true)} 
+          <img
+            src={ad.imageUrl}
+            alt={targetStudio || "Promoted Content"}
+            width={adWidth}
+            height={adHeight}
+            // 🔥 THE LCP FIX: If priority is true, force eager loading and high fetch priority
+            fetchPriority={priority ? "high" : "auto"}
+            loading={priority ? "eager" : "lazy"}
+            className="w-full h-auto object-cover rounded-sm"
+            style={{ aspectRatio: aspectRatio }}
+            onError={() => setImageFailed(true)}
           />
         )}
 
