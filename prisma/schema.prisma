@@ -60,8 +60,9 @@ model Video {
   // === INDEXES FOR MAXIMUM SPEED ===
   @@index([views(sort: Desc)])
   @@index([createdAt(sort: Desc)])
-  // 🔥 THE MAGIC BULLET: GIN Trigram index for instant case-insensitive search
   @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
+  // 🔥 ADD THIS: Speeds up category filtering & search
+  @@index([category(ops: raw("gin_trgm_ops"))], type: Gin)
   @@index([studio])
 }
 
@@ -88,6 +89,8 @@ model Pornstar {
   updatedAt   DateTime   @updatedAt
 
   @@index([views(sort: Desc)])
+  // 🔥 ADD THIS: Makes the A-Z index and search instant
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
 }
 
 // ==========================================

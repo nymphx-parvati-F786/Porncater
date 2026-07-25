@@ -49,10 +49,7 @@ export default function JuicyAdsBanner({
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden max-w-full ${className}`}
-      style={{
-        width: `${finalWidth}px`,
-        minHeight: `${finalHeight}px`,
-      }}
+      style={{ width: finalWidth, height: finalHeight }}
     >
       {/* 1. Reserved Space Skeleton (Prevents Cumulative Layout Shift) */}
       <div className="absolute inset-0 bg-zinc-900/20 animate-pulse -z-10 rounded-sm" />

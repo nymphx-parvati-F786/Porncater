@@ -10,11 +10,19 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.b-cdn.net', // Whitelists all BunnyCDN zones
+        hostname: '**.b-cdn.net',
       },
       {
         protocol: 'https',
-        hostname: 'porncater.com', // Your own domain
+        hostname: 'img-s1-cdn.porncater.com', // 🔥 The missing piece
+      },
+      {
+        protocol: 'https',
+        hostname: '**.bkcdn.net', // 🔥 From your PSI report
+      },
+      {
+        protocol: 'https',
+        hostname: 'porncater.com',
       },
     ],
     

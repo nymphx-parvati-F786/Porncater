@@ -118,17 +118,37 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   };
 
   // =========================================================================
-  // 🚀 DEFERRED JOIN DATA FETCHING FOR CATEGORY PAGES
+  // 🚀 HIGH-PERFORMANCE RAW SQL CATEGORY FETCHING
   // =========================================================================
 
-  // Step A: Fast Index-Only Scan to grab matching IDs
-  const videoIds = await prisma.video.findMany({
-    where: whereClause,
-    select: { id: true },
-    orderBy: prismaOrderBy,
-    skip: skipAmount,
-    take: videosPerPage,
-  });
+  let videoIds: { id: number }[] = [];
+
+  // Exact match on Category/Tags, Fuzzy match on Title
+  if (currentSort === "most-viewed") {
+    videoIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery})
+      ORDER BY views DESC
+      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+    `;
+  } else if (currentSort === "newest") {
+    videoIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery})
+      ORDER BY "createdAt" DESC
+      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+    `;
+  } else {
+    videoIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery})
+      ORDER BY likes DESC
+      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+    `;
+  }
 
   const ids = videoIds.map((v) => v.id);
 
@@ -151,8 +171,14 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
   }
 
-  // Step C: Count total matching items for pagination
-  const totalCount = await prisma.video.count({ where: whereClause });
+  // Step C: Fast Count
+  const countResult = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT COUNT(*) as count FROM "Video"
+    WHERE status = 'PUBLISHED' 
+      AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery});
+  `;
+  
+  const totalCount = Number(countResult[0]?.count || 0);
 
   const hardPageLimit = 200;
   const calculatedPages = Math.ceil(totalCount / videosPerPage);

@@ -49,7 +49,7 @@ export default function ExoClickBanner({
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden max-w-full ${className}`}
-      style={{ width: finalWidth, minHeight: finalHeight }}
+      style={{ width: finalWidth, height: finalHeight }}
     >
       {/* Skeleton Loader for CLS */}
       <div className="absolute inset-0 bg-zinc-900/20 animate-pulse -z-10 rounded-sm" />

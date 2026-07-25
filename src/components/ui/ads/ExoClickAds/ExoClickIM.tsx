@@ -34,11 +34,10 @@ export default function ExoClickIM({
         src="https://a.magsrv.com/ad-provider.js"
         onLoad={handleScriptLoad}
       />
-
-      {/* Removed 'hidden' class so the script can detect the container */}
-      <div className={className}>
+      {/* 🔥 THE ISOLATION CHAMBER: Fixed positioning takes it completely out of the document flow. It literally CANNOT cause CLS. */}
+      <div className={`fixed bottom-0 right-0 z-[9999] pointer-events-none ${className}`}>
         <ins
-          className="eas6a97888e6"
+          className="eas6a97888e6 pointer-events-auto"
           data-zoneid={zoneId}
         />
       </div>

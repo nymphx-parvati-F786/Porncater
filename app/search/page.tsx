@@ -106,40 +106,61 @@ export default async function SearchPage({ searchParams }: PageProps) {
   };
 
   // =========================================================================
-  // 🚀 DEFERRED JOIN SEARCH QUERY ARCHITECTURE
+  // 🚀 DEFERRED JOIN RAW TRIGRAM ARCHITECTURE
   // =========================================================================
 
-  // Step A: Index-Only Scan to get matching IDs
-  const videoIds = await prisma.video.findMany({
-    where: whereClause,
-    select: { id: true },
-    orderBy: prismaOrderBy,
-    skip: skipAmount,
-    take: videosPerPage,
-  });
+  // Step A: Index-Only Scan using pg_trgm % operator and similarity() ranking
+  let videoIds: { id: number }[] = [];
+
+  // We use explicit raw queries per sort to guarantee Prisma doesn't garble the SQL translation
+  if (currentSort === "most-viewed") {
+    videoIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags))
+      ORDER BY views DESC, similarity(title, ${q}) DESC
+      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+    `;
+  } else if (currentSort === "newest") {
+    videoIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags))
+      ORDER BY "createdAt" DESC, similarity(title, ${q}) DESC
+      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+    `;
+  } else {
+    videoIds = await prisma.$queryRaw<{ id: number }[]>`
+      SELECT id FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags))
+      ORDER BY likes DESC, similarity(title, ${q}) DESC
+      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+    `;
+  }
 
   const ids = videoIds.map((v) => v.id);
 
-  // Step B: Fetch full row details for target IDs
+  // Step B: Fetch full row details for target IDs (Remains the same, highly efficient)
   let videos: any[] = [];
   if (ids.length > 0) {
     const unorderedVideos = await prisma.video.findMany({
       where: { id: { in: ids } },
       select: {
-        id: true,
-        slug: true,
-        title: true,
-        thumbnail: true,
-        duration: true,
-        views: true,
-        likes: true,
+        id: true, slug: true, title: true, thumbnail: true, duration: true, views: true, likes: true,
       },
     });
     videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
   }
 
-  // Step C: Count total search matches for pagination calculation
-  const totalCount = await prisma.video.count({ where: whereClause });
+  // Step C: Blazing fast Trigram Count (Bypasses Prisma's slow count mechanism)
+  const countResult = await prisma.$queryRaw<{ count: bigint }[]>`
+    SELECT COUNT(*) as count FROM "Video"
+    WHERE status = 'PUBLISHED' 
+      AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags));
+  `;
+
+  const totalCount = Number(countResult[0]?.count || 0);
 
   const hardPageLimit = 100;
   const calculatedPages = Math.ceil(totalCount / videosPerPage);
@@ -216,8 +237,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
             <Link
               href={`/search?q=${encodeURIComponent(q)}&sort=most-viewed`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "most-viewed"
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
-                  : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
+                : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
             >
               Most Viewed
@@ -226,8 +247,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
             <Link
               href={`/search?q=${encodeURIComponent(q)}&sort=newest`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "newest"
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
-                  : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
+                : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
             >
               Newest
@@ -236,8 +257,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
             <Link
               href={`/search?q=${encodeURIComponent(q)}&sort=top-rated`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "top-rated"
-                  ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
-                  : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
+                ? "bg-rose-900/20 text-rose-500 border border-rose-900/50"
+                : "bg-[#111] hover:bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800"
                 }`}
             >
               Top Rated
@@ -366,8 +387,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   key={pageNum}
                   href={buildPageUrl(pageNum)}
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                      ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
-                      : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
+                    ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                    : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                     }`}
                 >
                   {pageNum}

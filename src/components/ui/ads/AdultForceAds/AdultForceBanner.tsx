@@ -29,18 +29,17 @@ export default function AdultForceBanner({
   return (
     <div
       className={`relative flex items-center justify-center overflow-hidden rounded-sm bg-[#0a0a0a] border border-zinc-900/50 ${className}`}
-      style={{ 
-        width: `${width}px`, 
-        maxWidth: "100%", 
-        minHeight: `${height}px` // Prevents Cumulative Layout Shift (CLS)
+      // 🔥 STRICT LOCK: We force exact dimensions and aspect-ratio. 
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        maxWidth: "100%",
+        aspectRatio: `${width} / ${height}`
       }}
     >
-      {/* Skeleton loader reserve space */}
       {!isLoaded && (
         <div className="absolute inset-0 bg-zinc-900/30 animate-pulse flex items-center justify-center z-0">
-          <span className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest">
-            Sponsored Offer
-          </span>
+          <span className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest">Sponsored Offer</span>
         </div>
       )}
 
@@ -54,7 +53,7 @@ export default function AdultForceBanner({
           height={height}
           scrolling="no"
           frameBorder="0"
-        //   allowTransparency={true}
+          //   allowTransparency={true}
           loading="lazy" // Defers loading until scrolled into viewport
           onLoad={() => setIsLoaded(true)}
           className={`z-10 transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
