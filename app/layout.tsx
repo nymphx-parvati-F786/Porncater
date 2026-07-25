@@ -72,7 +72,7 @@ export default function RootLayout({
 
         {/* 2. Global Floating & Sticky Ads */}
         {/* <ExoClickSticky zoneId="5984712" className="z-[9999]" /> */}
-        <ExoClickIM zoneId="5984398" className="z-[9999]" />
+        <ExoClickIM zoneId="5984398" className="z-50" />
       </body>
     </html>
   );
