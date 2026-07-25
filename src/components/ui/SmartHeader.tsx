@@ -167,7 +167,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
 
             {/* 🚀 SEXY MOBILE-READY UPLOAD BUTTON */}
             <Link
-              href="/admin/upload"
+              href="/upload"
               className="flex items-center gap-1.5 sm:gap-2 bg-rose-900/20 hover:bg-rose-900/40 sm:bg-white/5 sm:hover:bg-white/10 text-rose-500 sm:text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border border-rose-900/50 sm:border-white/10 shadow-[0_0_10px_rgba(190,18,60,0.15)] sm:shadow-none group"
             >
               <Video size={16} className="group-hover:scale-110 transition-transform" />
