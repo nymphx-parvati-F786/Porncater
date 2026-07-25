@@ -199,7 +199,7 @@ export default async function WatchPage({ params }: PageProps) {
             className="hidden md:block w-full max-w-[970px]"
           />
           <AdBanner
-            dimension="300x250"
+            dimension="300x100"
             priority={true}
             className="block md:hidden mx-auto"
           />
