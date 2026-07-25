@@ -36,7 +36,7 @@ export default function ExoClickSticky({
         onLoad={handleScriptLoad}
       />
       {/* 🔥 Fixed to the bottom center, immune to layout shifts */}
-      <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${className}`} aria-hidden="true">
+      <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${className}`}>
         <ins
           className="eas6a97888e17 block pointer-events-auto"
           data-zoneid={zoneId}
