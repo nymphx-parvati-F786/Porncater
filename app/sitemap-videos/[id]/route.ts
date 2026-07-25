@@ -1,3 +1,4 @@
+// app/sitemap-videos/[id]/route.ts
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -16,21 +17,22 @@ function convertToSeconds(timeStr: string | null | undefined): number {
 
 function escapeXml(unsafe: string | null | undefined): string {
   if (!unsafe) return "";
-  return unsafe.replace(/[<>&'"]/g, (c) => {
-    switch (c) {
-      case "<": return "&lt;";
-      case ">": return "&gt;";
-      case "&": return "&amp;";
-      case "'": return "&apos;";
-      case '"': return "&quot;";
-      default: return c;
-    }
-  });
+  // Strip illegal XML control characters and replace special entities
+  return unsafe
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+    .replace(/[<>&'"]/g, (c) => {
+      switch (c) {
+        case "<": return "&lt;";
+        case ">": return "&gt;";
+        case "&": return "&amp;";
+        case "'": return "&apos;";
+        case '"': return "&quot;";
+        default: return c;
+      }
+    });
 }
 
-// 🔥 THE FIX: Use 'any' for the context to instantly satisfy Vercel's build strictness
 export async function GET(request: Request, context: any) {
-  // Await the params object (Required in Next.js 15+)
   const resolvedParams = await context.params;
   const chunkId = parseInt(resolvedParams.id, 10);
 
@@ -53,7 +55,7 @@ export async function GET(request: Request, context: any) {
   });
 
   if (videos.length === 0) {
-     return new NextResponse("Not found", { status: 404 });
+    return new NextResponse("Not found", { status: 404 });
   }
 
   let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
