@@ -447,17 +447,14 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
         </>
       )}
 
-      {/* HARD SEEK FLASH */}
+      {/* ULTRA-MINIMAL SEEK FLASH – pure chevron only */}
       {actionAnim && (
         <div
-          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none flex items-center justify-center w-16 h-16 bg-black border border-white/30 ${actionAnim === 'forward' ? 'right-[18%]' : 'left-[18%]'
+          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none text-white text-6xl font-extralight leading-none select-none ${actionAnim === 'forward' ? 'right-[19%]' : 'left-[19%]'
             }`}
+          style={{ opacity: 0.9 }}
         >
-          {actionAnim === 'forward' ? (
-            <SkipForward size={28} className="text-white" strokeWidth={2.5} />
-          ) : (
-            <SkipBack size={28} className="text-white" strokeWidth={2.5} />
-          )}
+          {actionAnim === 'forward' ? '›' : '‹'}
         </div>
       )}
 
