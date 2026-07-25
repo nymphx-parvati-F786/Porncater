@@ -6,21 +6,39 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Menu, Search, Video, MonitorPlay, TrendingUp,
-  Clock, Star, Sparkles, Filter, ChevronDown
+  Clock, Star, Sparkles, Filter, ChevronDown, X
 } from "lucide-react";
 import SearchBar from "@/src/components/ui/SearchBar";
 
 export default function SmartHeader({ categories }: { categories: string[] }) {
   const [headerHeight, setHeaderHeight] = useState(104);
+  
+  // 🔥 NEW: Mobile States
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const headerRef = useRef<HTMLHeadingElement>(null);
-
-  // 🔥 NEW: We use a ref for the category bar to bypass React rendering on scroll
   const categoryBarRef = useRef<HTMLDivElement>(null);
 
   const accumulatedScroll = useRef(0);
   const lastY = useRef(0);
   const pathname = usePathname();
+
+  // 🔥 NEW: Auto-close mobile menus when the route changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsMobileSearchOpen(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; };
+  }, [isMobileMenuOpen]);
 
   const checkActive = (path: string) => {
     if (path === "/") return pathname === "/";
@@ -35,6 +53,14 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
       }`;
   };
 
+  const getMobileNavClass = (path: string) => {
+    const isActive = checkActive(path);
+    return `flex items-center gap-4 py-4 text-lg font-bold uppercase tracking-widest border-b border-white/5 transition-colors ${isActive
+      ? "text-rose-500"
+      : "text-zinc-300 hover:text-white"
+      }`;
+  };
+
   useEffect(() => {
     const updateHeight = () => {
       if (headerRef.current) {
@@ -44,7 +70,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
     updateHeight();
     window.addEventListener("resize", updateHeight);
     return () => window.removeEventListener("resize", updateHeight);
-  }, []);
+  }, [isMobileSearchOpen]); // Recalculate if search bar opens
 
   // 🔥 ROCK-SOLID, REACT-FREE SCROLL LOGIC
   useEffect(() => {
@@ -60,7 +86,6 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           const bar = categoryBarRef.current;
 
           if (bar) {
-            // Always snap open safely at the absolute top of the page
             if (currentY < 60) {
               bar.style.transform = "translateY(0)";
               bar.style.opacity = "1";
@@ -76,7 +101,6 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
               accumulatedScroll.current = diff;
             }
 
-            // 🔥 Direct DOM manipulation (Zero React lag)
             if (accumulatedScroll.current > 40) {
               bar.style.transform = "translateY(-100%)";
               bar.style.opacity = "0";
@@ -105,7 +129,12 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
       >
         <div className="max-w-[1600px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 lg:gap-8">
-            <button aria-label="Open Mobile Menu" className="lg:hidden text-zinc-400 hover:text-white transition">
+            {/* 🔥 Hooked up mobile menu button */}
+            <button 
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open Mobile Menu" 
+              className="lg:hidden text-zinc-400 hover:text-white transition"
+            >
               <Menu size={28} aria-hidden="true" />
             </button>
             <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
@@ -113,46 +142,80 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
               <span className="font-light text-white">Cater</span>
             </Link>
           </div>
+          
           <div className="flex-1 max-w-2xl hidden md:block">
             <SearchBar />
           </div>
+
           <div className="flex items-center gap-3 lg:gap-5">
-            <button aria-label="Open Mobile Search" className="md:hidden text-zinc-400 hover:text-white transition">
-              <Search size={24} aria-hidden="true" />
+            {/* 🔥 Hooked up mobile search button */}
+            <button 
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              aria-label="Toggle Mobile Search" 
+              className="md:hidden text-zinc-400 hover:text-white transition"
+            >
+              {isMobileSearchOpen ? <X size={24} aria-hidden="true" /> : <Search size={24} aria-hidden="true" />}
             </button>
             <Link href="/admin/upload" className="hidden sm:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors border border-white/10">
               <Video size={16} /> Upload
             </Link>
-            {/* <Link href="/login" className="bg-rose-700 hover:bg-rose-600 text-white px-5 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors shadow-[0_0_15px_rgba(190,18,60,0.4)]">
-              Sign In
-            </Link> */}
           </div>
         </div>
 
+        {/* 🔥 MOBILE SEARCH BAR DROPDOWN */}
+        {isMobileSearchOpen && (
+          <div className="md:hidden w-full px-4 py-3 bg-[#111] border-t border-zinc-900 animate-in slide-in-from-top-2 duration-200">
+            <SearchBar />
+          </div>
+        )}
+
+        {/* Desktop Navigation */}
         <div className="border-t border-white/5 hidden lg:block">
           <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
-            <Link href="/" className={getNavClass("/")}>
-              <MonitorPlay size={18} /> Home
-            </Link>
-            <Link href="/trending" className={getNavClass("/trending")}>
-              <TrendingUp size={18} /> Trending
-            </Link>
-            <Link href="/latest" className={getNavClass("/latest")}>
-              <Clock size={18} /> New Videos
-            </Link>
-            <Link href="/top-rated" className={getNavClass("/top-rated")}>
-              <Star size={18} /> Top Rated
-            </Link>
-            <Link href="/pornstars" className={getNavClass("/pornstars")}>
-              <Sparkles size={18} /> Pornstars
-            </Link>
+            <Link href="/" className={getNavClass("/")}><MonitorPlay size={18} /> Home</Link>
+            <Link href="/trending" className={getNavClass("/trending")}><TrendingUp size={18} /> Trending</Link>
+            <Link href="/latest" className={getNavClass("/latest")}><Clock size={18} /> New Videos</Link>
+            <Link href="/top-rated" className={getNavClass("/top-rated")}><Star size={18} /> Top Rated</Link>
+            <Link href="/pornstars" className={getNavClass("/pornstars")}><Sparkles size={18} /> Pornstars</Link>
           </div>
         </div>
       </header>
 
+      {/* 🔥 FULL SCREEN MOBILE MENU OVERLAY */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[100000] bg-[#050505] flex flex-col overflow-y-auto animate-in slide-in-from-left-full duration-300">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+            <Link href="/" className="text-3xl tracking-widest cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+              <span className="font-light text-white">Cater</span>
+            </Link>
+            <button 
+              onClick={() => setIsMobileMenuOpen(false)} 
+              className="text-zinc-400 hover:text-white p-2"
+            >
+              <X size={32} />
+            </button>
+          </div>
+          
+          <nav className="flex flex-col px-6 py-8">
+            <Link href="/" className={getMobileNavClass("/")}><MonitorPlay size={20} /> Home</Link>
+            <Link href="/trending" className={getMobileNavClass("/trending")}><TrendingUp size={20} /> Trending</Link>
+            <Link href="/latest" className={getMobileNavClass("/latest")}><Clock size={20} /> New Videos</Link>
+            <Link href="/top-rated" className={getMobileNavClass("/top-rated")}><Star size={20} /> Top Rated</Link>
+            <Link href="/pornstars" className={getMobileNavClass("/pornstars")}><Sparkles size={20} /> Pornstars</Link>
+            
+            <div className="mt-8 pt-8 border-t border-white/5">
+              <Link href="/admin/upload" className="flex items-center justify-center gap-2 bg-rose-900/20 text-rose-500 border border-rose-900/50 px-4 py-4 rounded-sm text-sm font-bold uppercase tracking-wider transition-colors w-full">
+                <Video size={18} /> Upload Video
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* Dynamic Category Bar */}
       <div
         ref={categoryBarRef}
-        // 🔥 Changed transition-all to transition-transform duration-200
         className="sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-transform duration-200 ease-out transform-gpu opacity-100 pointer-events-auto"
         style={{
           top: `${headerHeight}px`,

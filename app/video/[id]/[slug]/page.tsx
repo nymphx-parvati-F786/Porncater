@@ -241,9 +241,6 @@ export default async function WatchPage({ params }: PageProps) {
                 <div className="flex items-center gap-2">
                   <LikeButton videoId={video.id} />
                   <EmbedCodeGenerator videoId={video.id} videoTitle={video.title} />
-                  <button className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-[10px] md:text-xs font-bold uppercase rounded-sm transition">
-                    <Download size={14} /> Save
-                  </button>
                   <ReportButton videoId={video.id} />
                 </div>
               </div>
