@@ -12,7 +12,7 @@ import SearchBar from "@/src/components/ui/SearchBar";
 
 export default function SmartHeader({ categories }: { categories: string[] }) {
   const [headerHeight, setHeaderHeight] = useState(104);
-  
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
@@ -143,9 +143,9 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
       <header ref={headerRef} className="sticky top-0 z-[99999] w-full bg-[#050505] border-white/10">
         <div className="max-w-[1600px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 lg:gap-8">
-            <button 
+            <button
               onClick={() => setIsMobileMenuOpen(true)}
-              aria-label="Open Mobile Menu" 
+              aria-label="Open Mobile Menu"
               className="lg:hidden text-zinc-400 hover:text-white transition"
             >
               <Menu size={28} aria-hidden="true" />
@@ -155,22 +155,35 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
               <span className="font-light text-white">Cater</span>
             </Link>
           </div>
-          
+
           <div className="flex-1 max-w-2xl hidden md:block">
             <SearchBar />
           </div>
 
-          <div className="flex items-center gap-3 lg:gap-5">
-            <button 
+          {/* =========================================
+              🔥 RIGHT SIDE: UPLOAD & SEARCH
+              ========================================= */}
+          <div className="flex items-center gap-3 sm:gap-4 lg:gap-5">
+
+            {/* 🚀 SEXY MOBILE-READY UPLOAD BUTTON */}
+            <Link
+              href="/admin/upload"
+              className="flex items-center gap-1.5 sm:gap-2 bg-rose-900/20 hover:bg-rose-900/40 sm:bg-white/5 sm:hover:bg-white/10 text-rose-500 sm:text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border border-rose-900/50 sm:border-white/10 shadow-[0_0_10px_rgba(190,18,60,0.15)] sm:shadow-none group"
+            >
+              <Video size={16} className="group-hover:scale-110 transition-transform" />
+              {/* Text hides ONLY on ultra-tiny screens (< 360px), stays visible on standard modern phones */}
+              <span className="hidden min-[360px]:block">Upload</span>
+            </Link>
+
+            {/* Mobile Search Toggle */}
+            <button
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-              aria-label="Toggle Mobile Search" 
-              className="md:hidden text-zinc-400 hover:text-white transition"
+              aria-label="Toggle Mobile Search"
+              className="md:hidden text-zinc-400 hover:text-white transition p-1"
             >
               {isMobileSearchOpen ? <X size={24} aria-hidden="true" /> : <Search size={24} aria-hidden="true" />}
             </button>
-            <Link href="/admin/upload" className="hidden sm:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors border border-white/10">
-              <Video size={16} /> Upload
-            </Link>
+
           </div>
         </div>
 
@@ -198,21 +211,21 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
               <span className="font-serif italic text-rose-800 pr-1">Porn</span>
               <span className="font-light text-white">Cater</span>
             </Link>
-            <button 
-              onClick={() => setIsMobileMenuOpen(false)} 
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
               className="text-zinc-400 hover:text-white p-2"
             >
               <X size={32} />
             </button>
           </div>
-          
+
           <nav className="flex flex-col px-6 py-8">
             <Link href="/" className={getMobileNavClass("/")}><MonitorPlay size={20} /> Home</Link>
             <Link href="/trending" className={getMobileNavClass("/trending")}><TrendingUp size={20} /> Trending</Link>
             <Link href="/latest" className={getMobileNavClass("/latest")}><Clock size={20} /> New Videos</Link>
             <Link href="/top-rated" className={getMobileNavClass("/top-rated")}><Star size={20} /> Top Rated</Link>
             <Link href="/pornstars" className={getMobileNavClass("/pornstars")}><Sparkles size={20} /> Pornstars</Link>
-            
+
             <div className="mt-8 pt-8 border-t border-white/5">
               <Link href="/admin/upload" className="flex items-center justify-center gap-2 bg-rose-900/20 text-rose-500 border border-rose-900/50 px-4 py-4 rounded-sm text-sm font-bold uppercase tracking-wider transition-colors w-full">
                 <Video size={18} /> Upload Video
@@ -234,7 +247,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
         }}
       >
         <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2 flex items-center flex-wrap gap-2">
-          
+
           {/* Static Niches Label */}
           <div className="flex items-center gap-1 text-zinc-400 mr-1 shrink-0 px-1">
             <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
@@ -244,7 +257,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           {categories.map((cat, i) => {
             const visibilityClass = getMainVisibilityClass(i);
             if (visibilityClass === "hidden") return null;
-            
+
             return (
               <Link
                 key={`main-${i}`}
