@@ -30,8 +30,8 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
   const getNavClass = (path: string) => {
     const isActive = checkActive(path);
     return `flex items-center gap-2 py-3 text-sm font-bold uppercase tracking-wide transition-colors border-b-2 ${isActive
-        ? "text-rose-500 border-rose-600 drop-shadow-md"
-        : "text-zinc-300 border-transparent hover:text-white"
+      ? "text-rose-500 border-rose-600 drop-shadow-md"
+      : "text-zinc-300 border-transparent hover:text-white"
       }`;
   };
 
@@ -117,8 +117,8 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <SearchBar />
           </div>
           <div className="flex items-center gap-3 lg:gap-5">
-            <button className="md:hidden text-zinc-400 hover:text-white transition">
-              <Search size={24} />
+            <button aria-label="Open Mobile Search" className="md:hidden text-zinc-400 hover:text-white transition">
+              <Search size={24} aria-hidden="true" />
             </button>
             <Link href="/admin/upload" className="hidden sm:flex items-center gap-2 bg-white/5 hover:bg-white/10 text-white px-4 py-2 rounded-sm text-xs font-bold uppercase tracking-wider transition-colors border border-white/10">
               <Video size={16} /> Upload

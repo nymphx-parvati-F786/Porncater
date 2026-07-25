@@ -2,32 +2,16 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   images: {
-    // 🔥 ZERO-LAG ARCHITECTURE: 
-    // We tell Next.js to calculate the exact screen sizes, but let BunnyCDN do all the heavy lifting!
-    loader: 'custom',
-    loaderFile: './src/utils/bunnyLoader.ts',
-    
+    // 🔥 Remove the custom loader. We are using Next.js default optimization now.
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.b-cdn.net',
-      },
-      {
-        protocol: 'https',
-        hostname: 'img-s1-cdn.porncater.com', // 🔥 The missing piece
-      },
-      {
-        protocol: 'https',
-        hostname: '**.bkcdn.net', // 🔥 From your PSI report
-      },
-      {
-        protocol: 'https',
-        hostname: 'porncater.com',
-      },
+      { protocol: 'https', hostname: '**.b-cdn.net' },
+      { protocol: 'https', hostname: 'img-s1-cdn.porncater.com' },
+      { protocol: 'https', hostname: '**.bkcdn.net' },
+      { protocol: 'https', hostname: 'porncater.com' },
     ],
-    
-    // Cache optimized images for 30 days
-    minimumCacheTTL: 2592000,
+    formats: ['image/webp'], // Force WebP generation
+    minimumCacheTTL: 2592000, // 🔥 CRITICAL: Cache optimized images for 30 days so Vercel doesn't overcharge you
+    dangerouslyAllowSVG: true,
   },
 }
 

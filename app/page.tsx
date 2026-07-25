@@ -82,10 +82,12 @@ export default async function Home() {
         <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
           <AdBanner
             dimension="970x70"
+            priority={true}
             className="hidden md:block w-full max-w-[970px]"
           />
           <AdBanner
             dimension="300x250"
+            priority={true}
             className="block md:hidden mx-auto"
           />
         </div>

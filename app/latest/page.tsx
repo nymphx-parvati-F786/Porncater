@@ -126,11 +126,13 @@ export default async function LatestPage({
         {/* Desktop View: Wide Super Leaderboard (970x70) */}
         <AdBanner
           dimension="970x70"
+          priority={true}
           className="hidden md:block w-full max-w-[970px]"
         />
         {/* Mobile View: High-Converting Box Banner (300x250) */}
         <AdBanner
           dimension="300x250"
+          priority={true}
           className="block md:hidden mx-auto"
         />
       </div>
