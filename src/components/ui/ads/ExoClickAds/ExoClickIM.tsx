@@ -34,10 +34,13 @@ export default function ExoClickIM({
         src="https://a.magsrv.com/ad-provider.js"
         onLoad={handleScriptLoad}
       />
-      {/* 🔥 THE ISOLATION CHAMBER: Fixed positioning takes it completely out of the document flow. It literally CANNOT cause CLS. */}
-      <div className={`fixed bottom-0 right-0 z-[9999] pointer-events-none ${className}`}>
+      
+      {/* 🔥 THE FIX: Removed the pointer-events trap and fixed positioning. 
+          ExoClick's JS will automatically position this as a fixed chat bubble 
+          and the close button will now perfectly register clicks. */}
+      <div className={className}>
         <ins
-          className="eas6a97888e6 pointer-events-auto"
+          className="eas6a97888e6"
           data-zoneid={zoneId}
         />
       </div>
