@@ -106,10 +106,13 @@ export default async function SearchPage({ searchParams }: PageProps) {
   };
 
   // =========================================================================
-  // 🚀 DEFERRED JOIN RAW TRIGRAM ARCHITECTURE
+  // 🚀 DEFERRED JOIN RAW TRIGRAM ARCHITECTURE (UPDATED FOR PARTIAL MATCHING)
   // =========================================================================
 
-  // Step A: Index-Only Scan using pg_trgm % operator and similarity() ranking
+  // Create a wildcard query for substring matching (e.g., "%cuc%")
+  const wildcardQuery = `%${q}%`;
+
+  // Step A: Index-Only Scan using pg_trgm % operator, ILIKE for partials, and similarity() ranking
   let videoIds: { id: number }[] = [];
 
   // We use explicit raw queries per sort to guarantee Prisma doesn't garble the SQL translation
@@ -117,7 +120,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
     videoIds = await prisma.$queryRaw<{ id: number }[]>`
       SELECT id FROM "Video"
       WHERE status = 'PUBLISHED' 
-        AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags))
+        AND (
+          title ILIKE ${wildcardQuery} 
+          OR category ILIKE ${wildcardQuery} 
+          OR array_to_string(tags, ' ') ILIKE ${wildcardQuery}
+          OR title % ${q}
+        )
       ORDER BY views DESC, similarity(title, ${q}) DESC
       LIMIT ${videosPerPage} OFFSET ${skipAmount};
     `;
@@ -125,7 +133,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
     videoIds = await prisma.$queryRaw<{ id: number }[]>`
       SELECT id FROM "Video"
       WHERE status = 'PUBLISHED' 
-        AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags))
+        AND (
+          title ILIKE ${wildcardQuery} 
+          OR category ILIKE ${wildcardQuery} 
+          OR array_to_string(tags, ' ') ILIKE ${wildcardQuery}
+          OR title % ${q}
+        )
       ORDER BY "createdAt" DESC, similarity(title, ${q}) DESC
       LIMIT ${videosPerPage} OFFSET ${skipAmount};
     `;
@@ -133,7 +146,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
     videoIds = await prisma.$queryRaw<{ id: number }[]>`
       SELECT id FROM "Video"
       WHERE status = 'PUBLISHED' 
-        AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags))
+        AND (
+          title ILIKE ${wildcardQuery} 
+          OR category ILIKE ${wildcardQuery} 
+          OR array_to_string(tags, ' ') ILIKE ${wildcardQuery}
+          OR title % ${q}
+        )
       ORDER BY likes DESC, similarity(title, ${q}) DESC
       LIMIT ${videosPerPage} OFFSET ${skipAmount};
     `;
@@ -157,7 +175,12 @@ export default async function SearchPage({ searchParams }: PageProps) {
   const countResult = await prisma.$queryRaw<{ count: bigint }[]>`
     SELECT COUNT(*) as count FROM "Video"
     WHERE status = 'PUBLISHED' 
-      AND (title % ${q} OR category % ${q} OR ${normalizedTag} = ANY(tags));
+      AND (
+        title ILIKE ${wildcardQuery} 
+        OR category ILIKE ${wildcardQuery} 
+        OR array_to_string(tags, ' ') ILIKE ${wildcardQuery}
+        OR title % ${q}
+      );
   `;
 
   const totalCount = Number(countResult[0]?.count || 0);
