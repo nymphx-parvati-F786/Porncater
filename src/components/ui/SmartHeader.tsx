@@ -13,7 +13,6 @@ import SearchBar from "@/src/components/ui/SearchBar";
 export default function SmartHeader({ categories }: { categories: string[] }) {
   const [headerHeight, setHeaderHeight] = useState(104);
   
-  // 🔥 NEW: Mobile States
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
@@ -24,13 +23,11 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
   const lastY = useRef(0);
   const pathname = usePathname();
 
-  // 🔥 NEW: Auto-close mobile menus when the route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
     setIsMobileSearchOpen(false);
   }, [pathname]);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -70,9 +67,8 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
     updateHeight();
     window.addEventListener("resize", updateHeight);
     return () => window.removeEventListener("resize", updateHeight);
-  }, [isMobileSearchOpen]); // Recalculate if search bar opens
+  }, [isMobileSearchOpen]);
 
-  // 🔥 ROCK-SOLID, REACT-FREE SCROLL LOGIC
   useEffect(() => {
     lastY.current = window.scrollY;
     let ticking = false;
@@ -121,15 +117,32 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // ========================================================================
+  // 🔥 DYNAMIC VISIBILITY LOGIC (ZERO JS OVERHEAD, PURE CSS BREAKPOINTS)
+  // ========================================================================
+  const getMainVisibilityClass = (index: number) => {
+    if (index < 2) return "flex";                     // Always visible (Mobile shows 2)
+    if (index < 5) return "hidden sm:flex";           // Tablet Portrait shows 5
+    if (index < 8) return "hidden md:flex";           // Tablet Landscape shows 8
+    if (index < 12) return "hidden lg:flex";          // Small Desktop shows 12
+    if (index < 17) return "hidden xl:flex";          // Large Desktop shows 17
+    return "hidden";                                  // Never in main bar
+  };
+
+  const getDropdownVisibilityClass = (index: number) => {
+    if (index < 2) return "hidden";                   // Never in dropdown
+    if (index < 5) return "flex sm:hidden";           // In dropdown on mobile, hidden on tablet+
+    if (index < 8) return "flex md:hidden";           // In dropdown up to md, hidden on md+
+    if (index < 12) return "flex lg:hidden";          // In dropdown up to lg, hidden on lg+
+    if (index < 17) return "flex xl:hidden";          // In dropdown up to xl, hidden on xl+
+    return "flex";                                    // Always in dropdown
+  };
+
   return (
     <>
-      <header
-        ref={headerRef}
-        className="sticky top-0 z-[99999] w-full bg-[#050505] border-white/10"
-      >
+      <header ref={headerRef} className="sticky top-0 z-[99999] w-full bg-[#050505] border-white/10">
         <div className="max-w-[1600px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 lg:gap-8">
-            {/* 🔥 Hooked up mobile menu button */}
             <button 
               onClick={() => setIsMobileMenuOpen(true)}
               aria-label="Open Mobile Menu" 
@@ -148,7 +161,6 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           </div>
 
           <div className="flex items-center gap-3 lg:gap-5">
-            {/* 🔥 Hooked up mobile search button */}
             <button 
               onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
               aria-label="Toggle Mobile Search" 
@@ -162,14 +174,12 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
           </div>
         </div>
 
-        {/* 🔥 MOBILE SEARCH BAR DROPDOWN */}
         {isMobileSearchOpen && (
           <div className="md:hidden w-full px-4 py-3 bg-[#111] border-t border-zinc-900 animate-in slide-in-from-top-2 duration-200">
             <SearchBar />
           </div>
         )}
 
-        {/* Desktop Navigation */}
         <div className="border-t border-white/5 hidden lg:block">
           <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
             <Link href="/" className={getNavClass("/")}><MonitorPlay size={18} /> Home</Link>
@@ -181,7 +191,6 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
         </div>
       </header>
 
-      {/* 🔥 FULL SCREEN MOBILE MENU OVERLAY */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-[100000] bg-[#050505] flex flex-col overflow-y-auto animate-in slide-in-from-left-full duration-300">
           <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
@@ -213,7 +222,9 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
         </div>
       )}
 
-      {/* Dynamic Category Bar */}
+      {/* ========================================================================
+          🔥 SMART SINGLE-LEVEL CATEGORY BAR
+          ======================================================================== */}
       <div
         ref={categoryBarRef}
         className="sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-transform duration-200 ease-out transform-gpu opacity-100 pointer-events-auto"
@@ -223,41 +234,54 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
         }}
       >
         <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2 flex items-center flex-wrap gap-2">
-          <div className="flex items-center gap-1 text-zinc-400 mr-2 shrink-0 px-2">
+          
+          {/* Static Niches Label */}
+          <div className="flex items-center gap-1 text-zinc-400 mr-1 shrink-0 px-1">
             <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
           </div>
 
-          {categories.slice(0, 17).map((cat, i) => (
-            <Link
-              key={i}
-              href={`/category/${cat.toLowerCase()}`}
-              prefetch={false}
-              className="whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0"
-            >
-              {cat}
-            </Link>
-          ))}
+          {/* Dynamic Main Bar Rendering */}
+          {categories.map((cat, i) => {
+            const visibilityClass = getMainVisibilityClass(i);
+            if (visibilityClass === "hidden") return null;
+            
+            return (
+              <Link
+                key={`main-${i}`}
+                href={`/category/${cat.toLowerCase()}`}
+                prefetch={false}
+                className={`${visibilityClass} items-center justify-center whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0`}
+              >
+                {cat}
+              </Link>
+            );
+          })}
 
-          {categories.length > 17 && (
-            <details className="relative z-50 group">
-              <summary className="list-none flex items-center gap-1 whitespace-nowrap bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm cursor-pointer select-none [&::-webkit-details-marker]:hidden">
-                More <ChevronDown size={14} className="group-open:rotate-180 transition-transform duration-200" />
-              </summary>
+          {/* Dynamic "More" Dropdown */}
+          <details className="relative z-50 group shrink-0">
+            <summary className="list-none flex items-center gap-1 whitespace-nowrap bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm cursor-pointer select-none [&::-webkit-details-marker]:hidden">
+              More <ChevronDown size={14} className="group-open:rotate-180 transition-transform duration-200" />
+            </summary>
 
-              <div className="absolute left-0 lg:left-auto lg:right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-sm shadow-2xl p-2 flex flex-col gap-1 z-[9999]">
-                {categories.slice(17).map((cat, i) => (
+            <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-sm shadow-2xl p-2 flex flex-col gap-1 z-[9999]">
+              {categories.map((cat, i) => {
+                const dropVisibilityClass = getDropdownVisibilityClass(i);
+                if (dropVisibilityClass === "hidden") return null;
+
+                return (
                   <Link
-                    key={i}
+                    key={`drop-${i}`}
                     href={`/category/${cat.toLowerCase()}`}
                     prefetch={false}
-                    className="text-zinc-300 hover:text-rose-100 hover:bg-white/10 px-3 py-2 text-[11px] font-semibold tracking-wider uppercase transition-colors rounded-sm"
+                    className={`${dropVisibilityClass} items-center text-zinc-300 hover:text-rose-100 hover:bg-white/10 px-3 py-2 text-[11px] font-semibold tracking-wider uppercase transition-colors rounded-sm`}
                   >
                     {cat}
                   </Link>
-                ))}
-              </div>
-            </details>
-          )}
+                );
+              })}
+            </div>
+          </details>
+
         </div>
       </div>
     </>
