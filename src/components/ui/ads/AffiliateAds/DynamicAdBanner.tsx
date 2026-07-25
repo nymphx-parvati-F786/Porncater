@@ -1,13 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
+
+export interface AdData {
+  imageUrl: string;
+  trackingLink: string;
+}
 
 interface AdBannerProps {
-  dimension?: string; // Format must be "WxH", e.g., "300x250", "970x70"
+  dimension?: string; // Format: "WxH", e.g., "300x250", "970x70"
   targetStudio?: string;
   className?: string;
-  priority?: boolean; // 🔥 NEW: Tells Next.js this is an LCP element!
+  priority?: boolean; // Set to true for above-the-fold LCP elements
+  initialAd?: AdData | null; // 🔥 Server-injected ad data for instant LCP
 }
 
 export default function AdBanner({
@@ -15,20 +20,22 @@ export default function AdBanner({
   targetStudio,
   className = "",
   priority = false,
+  initialAd = null,
 }: AdBannerProps) {
-  const [ad, setAd] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [ad, setAd] = useState<AdData | null>(initialAd);
+  const [loading, setLoading] = useState(!initialAd);
   const [imageFailed, setImageFailed] = useState(false);
 
-  // 🔥 MATHEMATICALLY PERFECT LAYOUT RESERVATION
-  // Parse the exact width and height from the dimension string to prevent CLS.
+  // Parse exact dimensions to reserve container layout instantly and eliminate CLS
   const [wStr, hStr] = dimension.split("x");
-  const adWidth = parseInt(wStr) || 300;
-  const adHeight = parseInt(hStr) || 250;
+  const adWidth = parseInt(wStr, 10) || 300;
+  const adHeight = parseInt(hStr, 10) || 250;
   const aspectRatio = `${adWidth} / ${adHeight}`;
 
   useEffect(() => {
-    // We use AbortController to prevent memory leaks if the user navigates away quickly
+    // If ad data was pre-fetched on the server, skip client-side fetching
+    if (initialAd) return;
+
     const controller = new AbortController();
 
     const fetchAd = async () => {
@@ -44,7 +51,6 @@ export default function AdBanner({
         if (res.ok) {
           const data = await res.json();
           if (data && data.imageUrl) {
-            // Force HTTPS for protocol-relative URLs
             if (data.imageUrl.startsWith("//")) {
               data.imageUrl = "https:" + data.imageUrl;
             }
@@ -53,7 +59,7 @@ export default function AdBanner({
         }
       } catch (error: any) {
         if (error.name !== "AbortError") {
-          console.error("Ad fetch error (Likely blocked by extension):", error);
+          console.error("Ad fetch error:", error);
         }
       } finally {
         setLoading(false);
@@ -62,13 +68,15 @@ export default function AdBanner({
 
     fetchAd();
     return () => controller.abort();
-  }, [dimension, targetStudio]);
+  }, [dimension, targetStudio, initialAd]);
 
-  // 🔥 THE FALLBACK CTA: Shown if loading, if API fails, OR if ad-blocker kills the image.
-  // We NEVER return `null` because collapsing the container causes a Cumulative Layout Shift.
   const renderFallback = () => (
     <div
-      className={`w-full h-full flex flex-col items-center justify-center p-4 text-center rounded-sm ${loading ? 'animate-pulse bg-zinc-900/40' : 'border border-rose-900/40 bg-gradient-to-b from-zinc-900 to-black cursor-pointer'}`}
+      className={`w-full h-full flex flex-col items-center justify-center p-4 text-center rounded-sm ${
+        loading
+          ? "animate-pulse bg-zinc-900/40"
+          : "border border-rose-900/40 bg-gradient-to-b from-zinc-900 to-black cursor-pointer"
+      }`}
     >
       {!loading && (
         <>
@@ -86,11 +94,10 @@ export default function AdBanner({
   return (
     <div
       className={`relative block rounded-sm bg-[#0a0a0a] overflow-hidden ${className}`}
-      // 🔥 THE CLS KILLER: This locks the box to the exact dimensions of the expected ad instantly.
       style={{
         width: "100%",
         maxWidth: `${adWidth}px`,
-        aspectRatio: aspectRatio
+        aspectRatio: aspectRatio,
       }}
     >
       <a
@@ -99,13 +106,15 @@ export default function AdBanner({
         rel="noopener noreferrer nofollow sponsored"
         className="block w-full h-full relative group active:scale-[0.98] transition-transform"
       >
-        {(!ad || loading || imageFailed) ? renderFallback() : (
+        {!ad || loading || imageFailed ? (
+          renderFallback()
+        ) : (
           <img
             src={ad.imageUrl}
             alt={targetStudio || "Promoted Content"}
             width={adWidth}
             height={adHeight}
-            // 🔥 THE LCP FIX: If priority is true, force eager loading and high fetch priority
+            // 🔥 NATIVE LCP OPTIMIZATION: Bypasses client JS and Vercel image proxy
             fetchPriority={priority ? "high" : "auto"}
             loading={priority ? "eager" : "lazy"}
             className="w-full h-auto object-cover rounded-sm"
@@ -113,11 +122,6 @@ export default function AdBanner({
             onError={() => setImageFailed(true)}
           />
         )}
-
-        {/* Optional: Subtle native tagging */}
-        {/* <span className="absolute top-1.5 right-1.5 bg-black/80 text-zinc-500 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-[2px] border border-zinc-800 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
-          Sponsored
-        </span> */}
       </a>
     </div>
   );

@@ -32,6 +32,39 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
+// 🔥 SERVER-SIDE AD FETCHING HELPER
+async function getTopBannerAd(dimension: string, studio?: string) {
+  try {
+    const banner = await prisma.banner.findFirst({
+      where: {
+        dimension: dimension,
+        isActive: true,
+        ...(studio ? { targetStudios: { has: studio } } : {}),
+      },
+      orderBy: { weight: "desc" },
+      select: {
+        imageUrl: true,
+        trackingLink: true,
+      },
+    });
+
+    if (!banner) return null;
+
+    let imageUrl = banner.imageUrl;
+    if (imageUrl.startsWith("//")) {
+      imageUrl = "https:" + imageUrl;
+    }
+
+    return {
+      imageUrl,
+      trackingLink: banner.trackingLink,
+    };
+  } catch (error) {
+    console.error("Failed to pre-fetch banner on server:", error);
+    return null;
+  }
+}
+
 export default async function Home() {
   const [trendingVideos, latestVideos, topPornstars] = await Promise.all([
     prisma.video.findMany({
@@ -69,6 +102,12 @@ export default async function Home() {
     }
   };
 
+  // Fetch desktop and mobile ads concurrently alongside your existing queries
+  const [topDesktopAd, topMobileAd] = await Promise.all([
+    getTopBannerAd("970x70"),
+    getTopBannerAd("300x250"),
+  ]);
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
@@ -80,14 +119,18 @@ export default async function Home() {
       <main>
         {/* TOP DYNAMIC AFFILIATE BANNER */}
         <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
+          {/* Desktop View (970x70) */}
           <AdBanner
             dimension="970x70"
-            priority={true}
+            priority={true} // 🔥 Forces browser eager load
+            initialAd={topDesktopAd} // 🔥 0ms network wait time
             className="hidden md:block w-full max-w-[970px]"
           />
+          {/* Mobile View (300x250) */}
           <AdBanner
             dimension="300x250"
-            priority={true}
+            priority={true} // 🔥 Forces browser eager load
+            initialAd={topMobileAd} // 🔥 0ms network wait time
             className="block md:hidden mx-auto"
           />
         </div>
