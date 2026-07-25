@@ -129,9 +129,9 @@ export default async function LatestPage({
           priority={true}
           className="hidden md:block w-full max-w-[970px]"
         />
-        {/* Mobile View: High-Converting Box Banner (300x250) */}
+        {/* Mobile View: High-Converting Box Banner (300x100) */}
         <AdBanner
-          dimension="300x250"
+          dimension="300x100"
           priority={true}
           className="block md:hidden mx-auto"
         />

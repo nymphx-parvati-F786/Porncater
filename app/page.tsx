@@ -128,7 +128,7 @@ export default async function Home() {
           />
           {/* Mobile View (300x250) */}
           <AdBanner
-            dimension="300x250"
+            dimension="300x100"
             priority={true} // 🔥 Forces browser eager load
             initialAd={topMobileAd} // 🔥 0ms network wait time
             className="block md:hidden mx-auto"
