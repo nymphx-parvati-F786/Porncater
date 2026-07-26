@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Script from "next/script";
 
 declare global {
@@ -17,44 +18,43 @@ export default function ExoClickIM({
   zoneId = "5984398",
   className = "",
 }: ExoClickIMProps) {
+
+  // 🔥 THE FIX: This ensures the ad fires every time the user navigates to a new page,
+  // even if the ad-provider.js script is already cached by Next.js!
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.AdProvider = window.AdProvider || [];
+      // We wrap it in a try-catch so ad-blockers don't crash your React tree
+      try {
+        window.AdProvider.push({ serve: {} });
+      } catch (error) {
+        // silent fail for ad blockers
+      }
+    }
+  }, [zoneId]);
+
   return (
-    <>
-      {/* Load ExoClick as late as possible without killing fill rate */}
+    <div className={`exo-im-wrapper ${className}`}>
+      {/* 
+        afterInteractive ensures it loads fast enough to make you money, 
+        but after your critical LCP images load 
+      */}
       <Script
-        id={`exoclick-im-${zoneId}`}
-        strategy="lazyOnload"
+        id="exoclick-ad-provider"
+        strategy="afterInteractive"
         src="https://a.magsrv.com/ad-provider.js"
-        onLoad={() => {
-          try {
-            (window.AdProvider = window.AdProvider || []).push({ serve: {} });
-          } catch {
-            // silent fail
-          }
-        }}
       />
 
       {/* 
-        Wrapper that isolates the ad from the main document flow.
-        This significantly reduces CLS caused by ExoClick injecting 
-        the floating chat-style unit.
+        The actual injection point. 
+        No absolute positioning or pointer-events are needed here because 
+        ExoClick's script will automatically turn this into a fixed bottom-right chat bubble.
       */}
-      <div
-        className={`exo-im-root ${className}`}
-        style={{
-          position: "relative",
-          zIndex: 9999,
-          // Prevent the injected unit from pushing content
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ pointerEvents: "auto" }}>
-          <ins
-            className="eas6a97888e6"
-            data-zoneid={zoneId}
-            style={{ display: "block" }}
-          />
-        </div>
-      </div>
-    </>
+      <ins
+        className="eas6a97888e6"
+        data-zoneid={zoneId}
+        style={{ display: "none" }} // Hide the anchor tag itself so it takes up 0px height in DOM
+      />
+    </div>
   );
 }
