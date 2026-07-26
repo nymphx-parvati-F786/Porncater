@@ -13,7 +13,8 @@ export default function robots(): MetadataRoute.Robots {
         '/embed/', // Don't let Google index the headless iframes as standalone pages
       ],
     },
-    // Submit both your standard sitemap AND your new hardcore video sitemap
+    // 🔥 THE FIX: Use explicit, clean non-www URLs. 
+    // NO trailing slashes. NO old sitemap names.
     sitemap: [
       'https://porncater.com/sitemap.xml',
       'https://porncater.com/sitemap-videos.xml'

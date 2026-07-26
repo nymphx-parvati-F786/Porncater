@@ -102,11 +102,41 @@ export default async function TrendingPage({
     "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
   ];
 
+  // Add this inside the component, right before return:
+  const canonicalUrl = `https://porncater.com/trending${currentPage > 1 ? `?page=${currentPage}` : ''}`;
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Trending Videos", "item": "https://porncater.com/trending" }
+    ]
+  };
+
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Trending Porn Videos",
+    "url": canonicalUrl,
+    "numberOfItems": videos.length,
+    "itemListElement": videos.map((video, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "name": video.title,
+      "image": video.thumbnail
+    }))
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
 
       {/* 🔥 THE NEW SLIDING SMART HEADER */}
       <SmartHeader categories={megaCategories} />
+
+      {/* Inject SEO Schemas */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, itemListSchema]) }} />
 
       {/* =========================================
           💰 TOP DYNAMIC AFFILIATE BANNER

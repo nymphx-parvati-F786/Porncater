@@ -42,25 +42,16 @@ async function getTopBannerAd(dimension: string, studio?: string) {
         ...(studio ? { targetStudios: { has: studio } } : {}),
       },
       orderBy: { weight: "desc" },
-      select: {
-        imageUrl: true,
-        trackingLink: true,
-      },
+      select: { imageUrl: true, trackingLink: true },
     });
 
     if (!banner) return null;
 
     let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
+    if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
 
-    return {
-      imageUrl,
-      trackingLink: banner.trackingLink,
-    };
+    return { imageUrl, trackingLink: banner.trackingLink };
   } catch (error) {
-    console.error("Failed to pre-fetch banner on server:", error);
     return null;
   }
 }
@@ -90,7 +81,18 @@ export default async function Home() {
     "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
   ];
 
-  const jsonLd = {
+  // Fetch desktop and mobile ads concurrently
+  const [topDesktopAd, topMobileAd] = await Promise.all([
+    getTopBannerAd("970x70"),
+    getTopBannerAd("300x250"),
+  ]);
+
+  // =========================================================
+  // 🚀 HOME PAGE SEO SCHEMAS
+  // =========================================================
+  
+  // 1. WebSite Schema (Enables the Google Sitelinks Search Box)
+  const websiteSchema = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "PornCater",
@@ -102,35 +104,42 @@ export default async function Home() {
     }
   };
 
-  // Fetch desktop and mobile ads concurrently alongside your existing queries
-  const [topDesktopAd, topMobileAd] = await Promise.all([
-    getTopBannerAd("970x70"),
-    getTopBannerAd("300x250"),
-  ]);
+  // 2. ItemList Schema (Tells Google exactly what videos are trending right now)
+  const trendingItemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Trending Porn Videos",
+    "url": "https://porncater.com/trending",
+    "itemListElement": trendingVideos.map((video, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "name": video.title,
+      "image": video.thumbnail
+    }))
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* Inject SEO Schemas */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([websiteSchema, trendingItemListSchema]) }} />
       <h1 className="sr-only">Free HD Porn Videos & Premium Adult Cinema - PornCater</h1>
 
-      {/* HEADER */}
       <SmartHeader categories={megaCategories} />
 
       <main>
         {/* TOP DYNAMIC AFFILIATE BANNER */}
         <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
-          {/* Desktop View (970x70) */}
           <AdBanner
             dimension="970x70"
-            priority={true} // 🔥 Forces browser eager load
-            initialAd={topDesktopAd} // 🔥 0ms network wait time
+            priority={true} 
+            initialAd={topDesktopAd} 
             className="hidden md:block w-full max-w-[970px]"
           />
-          {/* Mobile View (300x250) */}
           <AdBanner
-            dimension="300x100"
-            priority={true} // 🔥 Forces browser eager load
-            initialAd={topMobileAd} // 🔥 0ms network wait time
+            dimension="300x250" // Updated to standard 300x250 box for mobile
+            priority={true} 
+            initialAd={topMobileAd} 
             className="block md:hidden mx-auto"
           />
         </div>
@@ -139,7 +148,7 @@ export default async function Home() {
         <section className="max-w-[1600px] mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
             <div className="flex items-center gap-3">
-              <Flame className="text-rose-800" size={24} strokeWidth={1.5} />
+              <Flame className="text-rose-600" size={24} strokeWidth={1.5} />
               <h2 className="text-2xl font-serif italic text-white tracking-wide">
                 Trending Porn Videos
               </h2>
@@ -180,7 +189,7 @@ export default async function Home() {
           <div className="max-w-[1600px] mx-auto px-4 py-10">
             <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
               <div className="flex items-center gap-3">
-                <Clock className="text-amber-700" size={24} strokeWidth={1.5} />
+                <Clock className="text-amber-600" size={24} strokeWidth={1.5} />
                 <h2 className="text-2xl font-serif italic text-white tracking-wide">
                   Latest Porn Videos
                 </h2>
@@ -221,7 +230,7 @@ export default async function Home() {
         <section className="max-w-[1600px] mx-auto px-4 py-12">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
             <div className="flex items-center gap-3">
-              <Sparkles className="text-amber-600" size={24} strokeWidth={1.5} />
+              <Sparkles className="text-amber-500" size={24} strokeWidth={1.5} />
               <h2 className="text-2xl font-serif italic text-white tracking-wide">
                 Top Pornstars
               </h2>
@@ -261,13 +270,13 @@ export default async function Home() {
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 mb-10 text-[11px] uppercase tracking-widest text-zinc-500 font-bold px-4">
           <Link href="/dmca" className="hover:text-zinc-300 transition">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-zinc-300 transition">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition">Terms of Service</Link>
+          <Link href="/terms" className="text-rose-600 hover:text-rose-500 transition">Terms of Service</Link>
           <Link href="/2257" className="hover:text-zinc-300 transition">18 U.S.C. 2257</Link>
           <Link href="/contact" className="hover:text-zinc-300 transition">Contact Us</Link>
         </div>
 
         <div className="text-xl tracking-widest mb-4">
-          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+          <span className="font-serif italic text-rose-600 pr-1">Porn</span>
           <span className="font-light text-zinc-600">Cater</span>
         </div>
         <p className="text-zinc-600 text-[10px] uppercase font-semibold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-6">

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -15,19 +15,50 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// 🔥 NEW: Explicit viewport export for Next.js 14/15
+export const viewport: Viewport = {
+  themeColor: "#050505", // Turns the mobile Safari/Chrome address bar pitch black
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
+
+// 🔥 UPGRADED ROOT METADATA
 export const metadata: Metadata = {
-  title: "PornCater | Free High Quality Porn Videos",
+  metadataBase: new URL("https://porncater.com"), // CRITICAL: Resolves all relative URLs for SEO
+  title: {
+    default: "PornCater | Free High Quality Porn Videos",
+    template: "%s | PornCater", // Automatically appends your brand to child page titles
+  },
   description:
     "Watch the best high-quality porn videos on PornCater. Discover trending pornstars, exclusive categories, and daily updated HD content.",
   other: {
     rating: "RTA-5042-1996-1400-1577-RTA",
   },
   openGraph: {
-    title: "PornCater",
+    title: "PornCater | Free High Quality Porn Videos",
     description: "Watch the best high-quality adult videos on PornCater.",
     url: "https://porncater.com",
     siteName: "PornCater",
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PornCater | Free High Quality Porn Videos",
+    description: "Watch the best high-quality adult videos on PornCater.",
+  },
+  // 🔥 THE GOOGLE VIDEO PREVIEW HACK
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1, // Tells Google to show full animated video previews in search results
+      "max-image-preview": "large", // Forces Google to show large hero images
+      "max-snippet": -1,
+    },
   },
 };
 

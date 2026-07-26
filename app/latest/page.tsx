@@ -8,7 +8,6 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import SearchBar from "@/src/components/ui/SearchBar";
-import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
@@ -31,15 +30,27 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
 
-// 🔥 MOCK NATIVE ADS
-const nativeAds = [
-  { id: "ad1", title: "Play this Adult Game - No Download Required!", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-game-1.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad2", title: "Meet Horny MILFs in your Exact Area Tonight", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-dating-1.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad3", title: "Exclusive Blacked VIP Pass - 70% OFF Today", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-promo-1.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad4", title: "Try Not To Cum Playing This 3D Sex Game", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-game-2.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad5", title: "She Wants to Fuck Right Now - Send a Message", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-dating-2.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad6", title: "The Best VR Porn Experience of 2026", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-vr-1.jpg", url: "https://your-affiliate-link.com" },
-];
+// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
+async function getTopBannerAd(dimension: string) {
+  try {
+    const banner = await prisma.banner.findFirst({
+      where: { dimension: dimension, isActive: true },
+      orderBy: { weight: "desc" },
+      select: { imageUrl: true, trackingLink: true },
+    });
+
+    if (!banner) return null;
+
+    let imageUrl = banner.imageUrl;
+    if (imageUrl.startsWith("//")) {
+      imageUrl = "https:" + imageUrl;
+    }
+
+    return { imageUrl, trackingLink: banner.trackingLink };
+  } catch (error) {
+    return null;
+  }
+}
 
 const megaCategories = [
   "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
@@ -88,10 +99,12 @@ export default async function LatestPage({
     videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
   }
 
-  // Step C: Blazing fast estimated count bypasses the Postgres full-table scan lock
-  const tableStats = await prisma.$queryRaw<{ estimate: number }[]>`
-    SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';
-  `;
+  // Step C: Concurrent requests for count and Top Ads
+  const [tableStats, topDesktopAd, topMobileAd] = await Promise.all([
+    prisma.$queryRaw<{ estimate: number }[]>`SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';`,
+    getTopBannerAd("970x70"),
+    getTopBannerAd("300x250") // Standardized mobile size
+  ]);
 
   // Parse estimate safely (raw queries can return BigInts)
   const estimatedTotal = Number(tableStats[0]?.estimate || 0);
@@ -110,29 +123,64 @@ export default async function LatestPage({
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
-  // Helper function to keep the sort param intact across pages
   const buildPageUrl = (page: number | string) => `/latest?page=${page}&sort=${currentSort}`;
+  const canonicalUrl = `https://porncater.com/latest${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
+
+  // =========================================================
+  // 🚀 SUPER JSON-LD SCHEMA INJECTION
+  // =========================================================
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Latest Videos", "item": canonicalUrl }
+    ]
+  };
+
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Latest Free HD Porn Videos",
+    "url": canonicalUrl,
+    "numberOfItems": videos.length,
+    "itemListElement": videos.map((video, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "name": video.title,
+      "image": video.thumbnail
+    }))
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
+      {/* Inject SEO Schema Graph */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, itemListSchema]) }}
+      />
 
       {/* 🔥 THE NEW SLIDING SMART HEADER */}
       <SmartHeader categories={megaCategories} />
 
       {/* =========================================
-                💰 TOP DYNAMIC AFFILIATE BANNER
-                ========================================= */}
+          💰 TOP DYNAMIC AFFILIATE BANNER
+          ========================================= */}
       <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
         {/* Desktop View: Wide Super Leaderboard (970x70) */}
         <AdBanner
           dimension="970x70"
           priority={true}
+          initialAd={topDesktopAd}
           className="hidden md:block w-full max-w-[970px]"
         />
-        {/* Mobile View: High-Converting Box Banner (300x100) */}
+        {/* Mobile View: High-Converting Box Banner (300x250) */}
         <AdBanner
-          dimension="300x100"
+          dimension="300x250"
           priority={true}
+          initialAd={topMobileAd}
           className="block md:hidden mx-auto"
         />
       </div>
@@ -144,7 +192,7 @@ export default async function LatestPage({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-800/80 pb-4">
 
           <div className="flex items-center gap-3">
-            <Clock className="text-rose-700" size={28} strokeWidth={2} />
+            <Clock className="text-rose-600" size={28} strokeWidth={2} />
             <div>
               <h1 className="text-2xl md:text-3xl font-serif italic text-white tracking-wide flex items-center gap-2">
                 {currentSort === "most-viewed" ? "Most Viewed Videos" : "Fresh Uploads"}
@@ -191,7 +239,7 @@ export default async function LatestPage({
       <section className="max-w-[1600px] mx-auto px-4 py-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
 
-          {/* 1. Real Videos */}
+          {/* Real Videos */}
           {videos.length > 0 ? (
             videos.map((video, index) => (
               <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
@@ -202,7 +250,7 @@ export default async function LatestPage({
                     fill
                     sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                     priority={index < 6}
-                    className="object-cover"
+                    className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]"
                   />
                   <div className="absolute top-1.5 left-1.5 bg-amber-600/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
                     {currentSort === "most-viewed" ? "HOT" : "NEW"}
@@ -218,7 +266,7 @@ export default async function LatestPage({
                   </h3>
                   <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
                     <span>{Number(video.views || 0).toLocaleString()} views</span>
-                    <span className="flex items-center gap-1 text-emerald-500"><ThumbsUp size={12} /> 100%</span>
+                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> 100%</span>
                   </div>
                 </div>
               </Link>
@@ -229,29 +277,6 @@ export default async function LatestPage({
               <p className="text-zinc-500 text-lg font-light tracking-wide uppercase">No videos found on this page.</p>
             </div>
           )}
-
-          {/* 2. Camouflaged Native Ads (Fills the exact 4th Row!) */}
-          {/* {videos.length > 0 && nativeAds.map((ad) => (
-            <a key={ad.id} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
-              <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-amber-900/50 transition-colors">
-                <img src={ad.thumbnail} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-110 transition-all duration-200" />
-                <div className="absolute top-1.5 left-1.5 bg-zinc-800/90 backdrop-blur-sm text-zinc-400 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-sm tracking-widest border border-zinc-700">
-                  AD
-                </div>
-                <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-amber-500 text-[9px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
-                  SPONSORED
-                </div>
-              </div>
-              <div className="mt-2 flex flex-col flex-grow">
-                <h3 className="font-light text-zinc-300 text-sm line-clamp-2 leading-relaxed group-hover:text-amber-500 transition-colors duration-75">
-                  {ad.title}
-                </h3>
-                <div className="flex items-center justify-between text-zinc-600 text-[10px] uppercase tracking-widest mt-auto pt-1.5 font-medium">
-                  <span>Promoted Content</span>
-                </div>
-              </div>
-            </a>
-          ))} */}
 
         </div>
 
@@ -265,7 +290,7 @@ export default async function LatestPage({
             {currentPage > 1 ? (
               <Link
                 href={buildPageUrl(currentPage - 1)}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-600/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
               >
                 <ChevronLeft size={16} />
               </Link>
@@ -290,7 +315,7 @@ export default async function LatestPage({
                   key={pageNum}
                   href={buildPageUrl(pageNum)}
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                    ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                    ? "border-rose-600 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(225,29,72,0.2)]"
                     : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                     }`}
                 >
@@ -303,7 +328,7 @@ export default async function LatestPage({
             {currentPage < totalPages ? (
               <Link
                 href={buildPageUrl(currentPage + 1)}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-600/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
               >
                 <ChevronRight size={16} />
               </Link>
@@ -327,13 +352,13 @@ export default async function LatestPage({
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 mb-10 text-[11px] uppercase tracking-widest text-zinc-500 font-bold px-4">
           <Link href="/dmca" className="hover:text-zinc-300 transition">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-zinc-300 transition">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition">Terms of Service</Link>
+          <Link href="/terms" className="text-rose-600 hover:text-rose-500 transition">Terms of Service</Link>
           <Link href="/2257" className="hover:text-zinc-300 transition">18 U.S.C. 2257</Link>
           <Link href="/contact" className="hover:text-zinc-300 transition">Contact Us</Link>
         </div>
 
         <div className="text-xl tracking-widest mb-4">
-          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+          <span className="font-serif italic text-rose-600 pr-1">Porn</span>
           <span className="font-light text-zinc-600">Cater</span>
         </div>
         <p className="text-zinc-600 text-[10px] uppercase font-semibold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-6">

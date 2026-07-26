@@ -3,13 +3,10 @@ import { Prisma } from "@prisma/client";
 import { Metadata } from "next";
 import {
   FolderOpen, ChevronLeft, ChevronRight, ThumbsUp,
-  SlidersHorizontal, Clock, Sparkles, MonitorPlay,
-  Star, Filter, TrendingUp, Menu, Search, Video, Eye
+  SlidersHorizontal, Eye
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
-import { blackedSuperLeaderboards, blackedLeaderboards } from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
@@ -41,15 +38,27 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
 
-// 🔥 Camouflaged Native Ads for Grid Symmetry
-const nativeAds = [
-  { id: "ad1", title: "Play this Adult Game - No Download Required!", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-game-1.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad2", title: "Meet Horny MILFs in your Exact Area Tonight", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-dating-1.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad3", title: "Exclusive Blacked VIP Pass - 70% OFF Today", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-promo-1.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad4", title: "Try Not To Cum Playing This 3D Sex Game", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-game-2.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad5", title: "She Wants to Fuck Right Now - Send a Message", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-dating-2.jpg", url: "https://your-affiliate-link.com" },
-  { id: "ad6", title: "The Best VR Porn Experience of 2026", thumbnail: "https://porncater-pz.b-cdn.net/mad-cheddar-media/native/native-vr-1.jpg", url: "https://your-affiliate-link.com" },
-];
+// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
+async function getTopBannerAd(dimension: string) {
+  try {
+    const banner = await prisma.banner.findFirst({
+      where: { dimension: dimension, isActive: true },
+      orderBy: { weight: "desc" },
+      select: { imageUrl: true, trackingLink: true },
+    });
+
+    if (!banner) return null;
+
+    let imageUrl = banner.imageUrl;
+    if (imageUrl.startsWith("//")) {
+      imageUrl = "https:" + imageUrl;
+    }
+
+    return { imageUrl, trackingLink: banner.trackingLink };
+  } catch (error) {
+    return null;
+  }
+}
 
 const megaCategories = [
   "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
@@ -66,7 +75,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const slug = resolvedParams.slug;
   const page = resolvedSearchParams.page ? String(resolvedSearchParams.page) : "1";
   const displayTitle = formatCategoryTitle(slug);
-  const canonicalUrl = `https://porncater.com/category/${slug}?page=${page}`;
+  const canonicalUrl = `https://porncater.com/category/${slug}${page !== "1" ? `?page=${page}` : ""}`;
 
   return {
     title: `Free ${displayTitle} Porn Videos & HD XXX Clips - Page ${page} | PornCater`,
@@ -96,26 +105,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
   const currentSort = (resolvedSearchParams.sort as string) || "newest";
 
-  const videosPerPage = 24; // 24 videos + 6 native ads = perfect 30 item grid
+  const videosPerPage = 24;
   const skipAmount = (currentPage - 1) * videosPerPage;
-
-  // Define dynamic Prisma sort order based on filter selection
-  let prismaOrderBy: Prisma.VideoOrderByWithRelationInput = { createdAt: "desc" };
-  if (currentSort === "most-viewed") {
-    prismaOrderBy = { views: "desc" };
-  } else if (currentSort === "top-rated") {
-    prismaOrderBy = { likes: "desc" };
-  }
-
-  // Matching Clause: Searches category column, tags array, or title string
-  const whereClause: Prisma.VideoWhereInput = {
-    status: "PUBLISHED",
-    OR: [
-      { category: { equals: rawSearchQuery, mode: "insensitive" } },
-      { tags: { has: rawSearchQuery.toLowerCase() } },
-      { title: { contains: rawSearchQuery, mode: "insensitive" } }
-    ]
-  };
 
   // =========================================================================
   // 🚀 HIGH-PERFORMANCE RAW SQL CATEGORY FETCHING
@@ -123,7 +114,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   let videoIds: { id: number }[] = [];
 
-  // Exact match on Category/Tags, Fuzzy match on Title
+  // Exact match on Category/Tags, Fuzzy match on Title using Trigram
   if (currentSort === "most-viewed") {
     videoIds = await prisma.$queryRaw<{ id: number }[]>`
       SELECT id FROM "Video"
@@ -158,33 +149,29 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     const unorderedVideos = await prisma.video.findMany({
       where: { id: { in: ids } },
       select: {
-        id: true,
-        slug: true,
-        title: true,
-        thumbnail: true,
-        duration: true,
-        views: true,
-        likes: true,
+        id: true, slug: true, title: true, thumbnail: true,
+        duration: true, views: true, likes: true,
       },
     });
     // Preserve sorted order from Step A
     videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
   }
 
-  // Step C: Fast Count
-  const countResult = await prisma.$queryRaw<{ count: bigint }[]>`
-    SELECT COUNT(*) as count FROM "Video"
-    WHERE status = 'PUBLISHED' 
-      AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery});
-  `;
-  
-  const totalCount = Number(countResult[0]?.count || 0);
+  // Fetch count and Ads concurrently for maximum speed
+  const [countResult, topDesktopAd, topMobileAd] = await Promise.all([
+    prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count FROM "Video"
+      WHERE status = 'PUBLISHED' 
+        AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery});
+    `,
+    getTopBannerAd("970x70"),
+    getTopBannerAd("300x250") // 🔥 Fixed mobile ad dimension to 300x250 standard
+  ]);
 
+  const totalCount = Number(countResult[0]?.count || 0);
   const hardPageLimit = 200;
   const calculatedPages = Math.ceil(totalCount / videosPerPage);
   const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
-
-  // =========================================================================
 
   const generatePagination = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -194,14 +181,18 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   };
 
   const buildPageUrl = (page: number | string) => `/category/${slug}?page=${page}&sort=${currentSort}`;
+  const canonicalUrl = `https://porncater.com/category/${slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
 
-  // Structured Data Schema for Category SEO Graph
+  // =========================================================
+  // 🚀 SUPER JSON-LD SCHEMA INJECTION
+  // =========================================================
+
   const categorySchema = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": `Free ${displayTitle} Porn Videos - PornCater`,
     "description": `Browse the best collection of ${displayTitle} adult scenes and HD sex videos on PornCater.`,
-    "url": `https://porncater.com/category/${slug}`
+    "url": canonicalUrl
   };
 
   const breadcrumbSchema = {
@@ -210,8 +201,24 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     "itemListElement": [
       { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
       { "@type": "ListItem", "position": 2, "name": "Categories", "item": "https://porncater.com/category/" },
-      { "@type": "ListItem", "position": 3, "name": displayTitle, "item": `https://porncater.com/category/${slug}` }
+      { "@type": "ListItem", "position": 3, "name": displayTitle, "item": canonicalUrl }
     ]
+  };
+
+  // 🔥 THE NEW ITEMLIST SCHEMA (Ranks category grids instantly on Google)
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": `Top ${displayTitle} Porn Videos`,
+    "url": canonicalUrl,
+    "numberOfItems": videos.length,
+    "itemListElement": videos.map((video, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "name": video.title,
+      "image": video.thumbnail
+    }))
   };
 
   return (
@@ -219,38 +226,32 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       {/* Inject SEO Schema Graph */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([categorySchema, breadcrumbSchema]) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([categorySchema, breadcrumbSchema, itemListSchema]) }}
       />
 
-      {/* 🔥 THE NEW SLIDING SMART HEADER */}
       <SmartHeader categories={megaCategories} />
 
-      {/* =========================================
-          💰 TOP DYNAMIC AFFILIATE BANNER
-          ========================================= */}
+      {/* TOP DYNAMIC AFFILIATE BANNER */}
       <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
-        {/* Desktop View: Wide Super Leaderboard (970x70) */}
         <AdBanner
           dimension="970x70"
           priority={true}
-          className="hidden md:block w-full max-w-s[970px]"
+          initialAd={topDesktopAd}
+          className="hidden md:block w-full max-w-[970px]"
         />
-        {/* Mobile View: High-Converting Box Banner (300x100) */}
         <AdBanner
-          dimension="300x100"
+          dimension="300x250"
           priority={true}
+          initialAd={topMobileAd}
           className="block md:hidden mx-auto"
         />
       </div>
 
-      {/* =========================================
-          🔥 DIRECTORY HEADER & DYNAMIC FILTERS
-          ========================================= */}
+      {/* DIRECTORY HEADER & DYNAMIC FILTERS */}
       <div className="max-w-[1600px] mx-auto px-4 pt-6 pb-2">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-zinc-800/80 pb-4">
-
           <div className="flex items-center gap-3">
-            <FolderOpen className="text-rose-700" size={32} strokeWidth={1.5} />
+            <FolderOpen className="text-rose-600" size={32} strokeWidth={1.5} />
             <div>
               <h1 className="text-2xl md:text-3xl font-serif italic text-white tracking-wide flex items-center gap-2">
                 {displayTitle} Videos
@@ -264,12 +265,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             </div>
           </div>
 
-          {/* 🔥 FUNCTIONAL SORT BAR FOR CATEGORIES */}
           <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
             <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-800 px-3 py-1.5 rounded-sm text-xs font-bold uppercase tracking-wider text-white">
               <SlidersHorizontal size={14} className="text-zinc-400" /> Sort
             </div>
-
             <Link
               href={`/category/${slug}?sort=newest`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "newest"
@@ -279,7 +278,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             >
               Newest
             </Link>
-
             <Link
               href={`/category/${slug}?sort=most-viewed`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "most-viewed"
@@ -289,7 +287,6 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
             >
               Most Viewed
             </Link>
-
             <Link
               href={`/category/${slug}?sort=top-rated`}
               className={`px-4 py-1.5 rounded-sm text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${currentSort === "top-rated"
@@ -303,13 +300,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         </div>
       </div>
 
-      {/* =========================================
-          🎥 THE 24-CARD VIDEO GRID
-          ========================================= */}
+      {/* THE 24-CARD VIDEO GRID */}
       <section className="max-w-[1600px] mx-auto px-4 py-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-
-          {/* 1. Real Category Videos */}
           {videos.length > 0 ? (
             videos.map((video, index) => (
               <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
@@ -347,43 +340,15 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               <p className="text-zinc-500 text-lg font-light tracking-wide uppercase">No videos found for this category.</p>
             </div>
           )}
-
-          {/* 2. Camouflaged Native Ads */}
-          {/* {videos.length > 0 && nativeAds.map((ad) => (
-            <a key={ad.id} href={ad.url} target="_blank" rel="noopener noreferrer nofollow sponsored" className="group flex flex-col cursor-pointer">
-              <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md border border-transparent group-hover:border-amber-900/50 transition-colors">
-                <img src={ad.thumbnail} alt={ad.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover group-hover:brightness-110 transition-all duration-200" />
-                <div className="absolute top-1.5 left-1.5 bg-zinc-800/90 backdrop-blur-sm text-zinc-400 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-sm tracking-widest border border-zinc-700">
-                  AD
-                </div>
-                <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-amber-500 text-[9px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
-                  SPONSORED
-                </div>
-              </div>
-              <div className="mt-2 flex flex-col flex-grow">
-                <h3 className="font-light text-zinc-300 text-sm line-clamp-2 leading-relaxed group-hover:text-amber-500 transition-colors duration-75">
-                  {ad.title}
-                </h3>
-                <div className="flex items-center justify-between text-zinc-600 text-[10px] uppercase tracking-widest mt-auto pt-1.5 font-medium">
-                  <span>Promoted Content</span>
-                </div>
-              </div>
-            </a>
-          ))} */}
-
         </div>
 
-        {/* ========================================================= */}
-        {/* PAGINATION CONTROLS                                       */}
-        {/* ========================================================= */}
+        {/* PAGINATION CONTROLS */}
         {totalPages > 1 && (
           <div className="mt-12 pt-8 flex items-center justify-center gap-2">
-
-            {/* Previous Page Button */}
             {currentPage > 1 ? (
               <Link
                 href={buildPageUrl(currentPage - 1)}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-600/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
               >
                 <ChevronLeft size={16} />
               </Link>
@@ -393,22 +358,16 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               </div>
             )}
 
-            {/* Page Number Sequence */}
             {generatePagination().map((pageNum, index) => {
               if (pageNum === "...") {
-                return (
-                  <span key={`ellipsis-${index}`} className="px-2 text-zinc-600">
-                    ...
-                  </span>
-                );
+                return <span key={`ellipsis-${index}`} className="px-2 text-zinc-600">...</span>;
               }
-
               return (
                 <Link
                   key={pageNum}
                   href={buildPageUrl(pageNum)}
                   className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                    ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
+                    ? "border-rose-600 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(225,29,72,0.2)]"
                     : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
                     }`}
                 >
@@ -417,11 +376,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               );
             })}
 
-            {/* Next Page Button */}
             {currentPage < totalPages ? (
               <Link
                 href={buildPageUrl(currentPage + 1)}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
+                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-600/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
               >
                 <ChevronRight size={16} />
               </Link>
@@ -434,27 +392,23 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         )}
       </section>
 
-      {/* =========================================
-          💰 BOTTOM-ROLL AD BANNER
-          ========================================= */}
+      {/* BOTTOM-ROLL AD BANNER */}
       <div className="w-full flex justify-center my-1 overflow-hidden">
         <AdRotator />
       </div>
 
-      {/* =========================================
-          FOOTER
-          ========================================= */}
+      {/* FOOTER */}
       <footer className="border-t border-zinc-900 pt-16 pb-12 text-center bg-[#050505]">
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-4 mb-10 text-[11px] uppercase tracking-widest text-zinc-500 font-bold px-4">
           <Link href="/dmca" className="hover:text-zinc-300 transition">DMCA / Copyright</Link>
           <Link href="/privacy-policy" className="hover:text-zinc-300 transition">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-700 hover:text-rose-500 transition">Terms of Service</Link>
+          <Link href="/terms" className="text-rose-600 hover:text-rose-500 transition">Terms of Service</Link>
           <Link href="/2257" className="hover:text-zinc-300 transition">18 U.S.C. 2257</Link>
           <Link href="/contact" className="hover:text-zinc-300 transition">Contact Us</Link>
         </div>
 
         <div className="text-xl tracking-widest mb-4">
-          <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+          <span className="font-serif italic text-rose-600 pr-1">Porn</span>
           <span className="font-light text-zinc-600">Cater</span>
         </div>
         <p className="text-zinc-600 text-[10px] uppercase font-semibold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-6">
