@@ -84,7 +84,7 @@ export default async function Home() {
   // Fetch desktop and mobile ads concurrently
   const [topDesktopAd, topMobileAd] = await Promise.all([
     getTopBannerAd("970x70"),
-    getTopBannerAd("300x250"),
+    getTopBannerAd("300x100"),
   ]);
 
   // =========================================================

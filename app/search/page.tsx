@@ -173,7 +173,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
         );
     `,
     getTopBannerAd("970x70"),
-    getTopBannerAd("300x250") // Standardized mobile ad format
+    getTopBannerAd("300x100") // Standardized mobile ad format
   ]);
 
   const totalCount = Number(countResult[0]?.count || 0);

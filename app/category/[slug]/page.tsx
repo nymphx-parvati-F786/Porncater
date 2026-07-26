@@ -165,7 +165,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
         AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery});
     `,
     getTopBannerAd("970x70"),
-    getTopBannerAd("300x250") // 🔥 Fixed mobile ad dimension to 300x250 standard
+    getTopBannerAd("300x100") // 🔥 Fixed mobile ad dimension to 300x250 standard
   ]);
 
   const totalCount = Number(countResult[0]?.count || 0);

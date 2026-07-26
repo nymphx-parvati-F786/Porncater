@@ -8,12 +8,12 @@ export interface AdData {
 }
 
 interface AdBannerProps {
-  dimension?: string; // "970x70" | "300x250" | "300x100" | "160x600"
+  dimension?: string;
   targetStudio?: string;
   className?: string;
   /** 
-   * Only use true for extremely important above-the-fold placements.
-   * Even then we still keep loading="lazy" to protect LCP.
+   * Set to true ONLY for the main above-the-fold banner.
+   * This will make it load with high priority (needed when it is LCP).
    */
   priority?: boolean;
   initialAd?: AdData | null;
@@ -30,7 +30,6 @@ export default function AdBanner({
   const [loading, setLoading] = useState(!initialAd);
   const [imageFailed, setImageFailed] = useState(false);
 
-  // Exact dimensions → instant layout reservation (CLS protection)
   const [wStr, hStr] = dimension.split("x");
   const adWidth = parseInt(wStr, 10) || 300;
   const adHeight = parseInt(hStr, 10) || 250;
@@ -117,11 +116,10 @@ export default function AdBanner({
             alt={targetStudio ? `${targetStudio} Offer` : "Promoted Content"}
             width={adWidth}
             height={adHeight}
-            // 🔥 Critical for Core Web Vitals
-            loading="lazy"           // Never eager on affiliate banners
+            // 🔥 Smart loading based on priority
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
             decoding="async"
-            // We deliberately do NOT use fetchPriority="high"
-            // Affiliate banners should never compete with real LCP elements
             className="w-full h-full object-cover"
             style={{ aspectRatio }}
             onError={() => setImageFailed(true)}

@@ -103,7 +103,7 @@ export default async function LatestPage({
   const [tableStats, topDesktopAd, topMobileAd] = await Promise.all([
     prisma.$queryRaw<{ estimate: number }[]>`SELECT reltuples::bigint AS estimate FROM pg_class WHERE relname = 'Video';`,
     getTopBannerAd("970x70"),
-    getTopBannerAd("300x250") // Standardized mobile size
+    getTopBannerAd("300x100") // Standardized mobile size
   ]);
 
   // Parse estimate safely (raw queries can return BigInts)

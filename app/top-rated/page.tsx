@@ -124,7 +124,7 @@ export default async function TopRatedPage({
   const [estimatedTotal, topDesktopAd, topMobileAd] = await Promise.all([
     countPromise,
     getTopBannerAd("970x70"),
-    getTopBannerAd("300x250") // Standardized mobile size
+    getTopBannerAd("300x100") // Standardized mobile size
   ]);
 
   // Step D: SEO Hard Cap - Never let bots crawl past page 200
