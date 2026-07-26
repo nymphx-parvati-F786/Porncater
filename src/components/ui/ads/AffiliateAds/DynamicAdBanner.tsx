@@ -8,11 +8,15 @@ export interface AdData {
 }
 
 interface AdBannerProps {
-  dimension?: string; // Format: "WxH", e.g., "300x250", "970x70"
+  dimension?: string; // "970x70" | "300x250" | "300x100" | "160x600"
   targetStudio?: string;
   className?: string;
-  priority?: boolean; // Set to true for above-the-fold LCP elements
-  initialAd?: AdData | null; // 🔥 Server-injected ad data for instant LCP
+  /** 
+   * Only use true for extremely important above-the-fold placements.
+   * Even then we still keep loading="lazy" to protect LCP.
+   */
+  priority?: boolean;
+  initialAd?: AdData | null;
 }
 
 export default function AdBanner({
@@ -26,14 +30,13 @@ export default function AdBanner({
   const [loading, setLoading] = useState(!initialAd);
   const [imageFailed, setImageFailed] = useState(false);
 
-  // Parse exact dimensions to reserve container layout instantly and eliminate CLS
+  // Exact dimensions → instant layout reservation (CLS protection)
   const [wStr, hStr] = dimension.split("x");
   const adWidth = parseInt(wStr, 10) || 300;
   const adHeight = parseInt(hStr, 10) || 250;
   const aspectRatio = `${adWidth} / ${adHeight}`;
 
   useEffect(() => {
-    // If ad data was pre-fetched on the server, skip client-side fetching
     if (initialAd) return;
 
     const controller = new AbortController();
@@ -50,7 +53,7 @@ export default function AdBanner({
 
         if (res.ok) {
           const data = await res.json();
-          if (data && data.imageUrl) {
+          if (data?.imageUrl) {
             if (data.imageUrl.startsWith("//")) {
               data.imageUrl = "https:" + data.imageUrl;
             }
@@ -74,17 +77,17 @@ export default function AdBanner({
     <div
       className={`w-full h-full flex flex-col items-center justify-center p-4 text-center rounded-sm ${
         loading
-          ? "animate-pulse bg-zinc-900/40"
-          : "border border-rose-900/40 bg-gradient-to-b from-zinc-900 to-black cursor-pointer"
+          ? "animate-pulse bg-zinc-900/50"
+          : "border border-rose-900/30 bg-gradient-to-b from-zinc-900 to-black"
       }`}
     >
       {!loading && (
         <>
-          <span className="text-rose-500 font-bold uppercase tracking-widest text-sm md:text-base mb-1">
-            Exclusive VIP Access
+          <span className="text-rose-500 font-bold uppercase tracking-widest text-sm mb-1">
+            Exclusive Offer
           </span>
-          <span className="text-zinc-400 text-[10px] md:text-xs uppercase font-medium tracking-wider">
-            Click Here to Claim Your Offer
+          <span className="text-zinc-500 text-[10px] uppercase tracking-wider">
+            Click to unlock
           </span>
         </>
       )}
@@ -93,32 +96,34 @@ export default function AdBanner({
 
   return (
     <div
-      className={`relative block rounded-sm bg-[#0a0a0a] overflow-hidden ${className}`}
+      className={`relative block overflow-hidden rounded-sm bg-[#0a0a0a] ${className}`}
       style={{
         width: "100%",
         maxWidth: `${adWidth}px`,
-        aspectRatio: aspectRatio,
+        aspectRatio,
       }}
     >
       <a
         href={ad?.trackingLink || "#"}
         target="_blank"
         rel="noopener noreferrer nofollow sponsored"
-        className="block w-full h-full relative group active:scale-[0.98] transition-transform"
+        className="block w-full h-full relative"
       >
         {!ad || loading || imageFailed ? (
           renderFallback()
         ) : (
           <img
             src={ad.imageUrl}
-            alt={targetStudio || "Promoted Content"}
+            alt={targetStudio ? `${targetStudio} Offer` : "Promoted Content"}
             width={adWidth}
             height={adHeight}
-            // 🔥 NATIVE LCP OPTIMIZATION: Bypasses client JS and Vercel image proxy
-            fetchPriority={priority ? "high" : "auto"}
-            loading={priority ? "eager" : "lazy"}
-            className="w-full h-auto object-cover rounded-sm"
-            style={{ aspectRatio: aspectRatio }}
+            // 🔥 Critical for Core Web Vitals
+            loading="lazy"           // Never eager on affiliate banners
+            decoding="async"
+            // We deliberately do NOT use fetchPriority="high"
+            // Affiliate banners should never compete with real LCP elements
+            className="w-full h-full object-cover"
+            style={{ aspectRatio }}
             onError={() => setImageFailed(true)}
           />
         )}

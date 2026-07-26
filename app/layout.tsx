@@ -2,34 +2,33 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import ExoClickSticky from "@/src/components/ui/ads/ExoClickAds/ExoClickSticky";
 import ExoClickIM from "@/src/components/ui/ads/ExoClickAds/ExoClickIM";
 import Footer from "@/src/components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
-// 🔥 NEW: Explicit viewport export for Next.js 14/15
 export const viewport: Viewport = {
-  themeColor: "#050505", // Turns the mobile Safari/Chrome address bar pitch black
+  themeColor: "#050505",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
 };
 
-// 🔥 UPGRADED ROOT METADATA
 export const metadata: Metadata = {
-  metadataBase: new URL("https://porncater.com"), // CRITICAL: Resolves all relative URLs for SEO
+  metadataBase: new URL("https://porncater.com"),
   title: {
     default: "PornCater | Free High Quality Porn Videos",
-    template: "%s | PornCater", // Automatically appends your brand to child page titles
+    template: "%s | PornCater",
   },
   description:
     "Watch the best high-quality porn videos on PornCater. Discover trending pornstars, exclusive categories, and daily updated HD content.",
@@ -49,15 +48,14 @@ export const metadata: Metadata = {
     title: "PornCater | Free High Quality Porn Videos",
     description: "Watch the best high-quality adult videos on PornCater.",
   },
-  // 🔥 THE GOOGLE VIDEO PREVIEW HACK
   robots: {
     index: true,
     follow: true,
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1, // Tells Google to show full animated video previews in search results
-      "max-image-preview": "large", // Forces Google to show large hero images
+      "max-video-preview": -1,
+      "max-image-preview": "large",
       "max-snippet": -1,
     },
   },
@@ -74,24 +72,37 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <head>
-        {/* 🔥 EXOCLICK CLIENT HINTS: Boosts ad relevance and CPM payouts */}
+        {/* Client Hints for better ExoClick targeting + CPM */}
         <meta
           httpEquiv="Delegate-CH"
           content="sec-ch-ua https://s.magsrv.com; sec-ch-ua-mobile https://s.magsrv.com; sec-ch-ua-arch https://s.magsrv.com; sec-ch-ua-model https://s.magsrv.com; sec-ch-ua-platform https://s.magsrv.com; sec-ch-ua-platform-version https://s.magsrv.com; sec-ch-ua-bitness https://s.magsrv.com; sec-ch-ua-full-version-list https://s.magsrv.com; sec-ch-ua-full-version https://s.magsrv.com;"
         />
 
-        {/* 🔥 INSTANT NETWORK HANDSHAKES: Reduces connection latency for Ads & CDN */}
-        <link rel="preconnect" href="https://img-s1-cdn.porncater.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://a.magsrv.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://s.magsrv.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://z6v2p9a8.bkcdn.net" crossOrigin="anonymous" />
-        
-        <link rel="dns-prefetch" href="https://img-s1-cdn.porncater.com" />
-        <link rel="dns-prefetch" href="https://a.magsrv.com" />
-        <link rel="dns-prefetch" href="https://s.magsrv.com" />
-        <link rel="dns-prefetch" href="https://z6v2p9a8.bkcdn.net" />
+        {/* 
+          Only the most critical origins (keep ≤ 4 preconnects)
+          This is the sweet spot between speed and ad performance
+        */}
+        <link
+          rel="preconnect"
+          href="https://img-s1-cdn.porncater.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://a.magsrv.com"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preconnect"
+          href="https://s.magsrv.com"
+          crossOrigin="anonymous"
+        />
 
-        {/* JuicyAds Verification Tag */}
+        {/* dns-prefetch for secondary origins */}
+        <link rel="dns-prefetch" href="https://z6v2p9a8.bkcdn.net" />
+        <link rel="dns-prefetch" href="https://img.doppiocdn.com" />
+
+        {/* JuicyAds Verification */}
         <meta
           name="juicyads-verification"
           content="e3101afb907fa706467fa4a2213b3058"
@@ -99,12 +110,11 @@ export default function RootLayout({
       </head>
 
       <body className="min-h-full flex flex-col bg-[#0a0a0a] text-zinc-300">
-        {/* 1. Main Page Content */}
         {children}
 
-        {/* 2. Global Floating & Sticky Ads */}
-        {/* <ExoClickSticky zoneId="5984712" className="z-[9999]" /> */}
-        <ExoClickIM zoneId="5984398" className="z-[9999]" />
+        {/* Global ExoClick Instant Message */}
+        <ExoClickIM zoneId="5984398" />
+
         <Footer />
       </body>
     </html>

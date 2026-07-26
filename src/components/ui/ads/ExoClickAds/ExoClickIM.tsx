@@ -17,32 +17,43 @@ export default function ExoClickIM({
   zoneId = "5984398",
   className = "",
 }: ExoClickIMProps) {
-  // Trigger serve only after ad-provider.js has fully loaded
-  const handleScriptLoad = () => {
-    try {
-      (window.AdProvider = window.AdProvider || []).push({ serve: {} });
-    } catch (err) {
-      console.error("ExoClick IM serve error:", err);
-    }
-  };
-
   return (
     <>
+      {/* Load ExoClick as late as possible without killing fill rate */}
       <Script
-        id={`exoclick-im-script-${zoneId}`}
+        id={`exoclick-im-${zoneId}`}
         strategy="lazyOnload"
         src="https://a.magsrv.com/ad-provider.js"
-        onLoad={handleScriptLoad}
+        onLoad={() => {
+          try {
+            (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+          } catch {
+            // silent fail
+          }
+        }}
       />
-      
-      {/* 🔥 THE FIX: Removed the pointer-events trap and fixed positioning. 
-          ExoClick's JS will automatically position this as a fixed chat bubble 
-          and the close button will now perfectly register clicks. */}
-      <div className={className}>
-        <ins
-          className="eas6a97888e6"
-          data-zoneid={zoneId}
-        />
+
+      {/* 
+        Wrapper that isolates the ad from the main document flow.
+        This significantly reduces CLS caused by ExoClick injecting 
+        the floating chat-style unit.
+      */}
+      <div
+        className={`exo-im-root ${className}`}
+        style={{
+          position: "relative",
+          zIndex: 9999,
+          // Prevent the injected unit from pushing content
+          pointerEvents: "none",
+        }}
+      >
+        <div style={{ pointerEvents: "auto" }}>
+          <ins
+            className="eas6a97888e6"
+            data-zoneid={zoneId}
+            style={{ display: "block" }}
+          />
+        </div>
       </div>
     </>
   );
