@@ -151,7 +151,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
               <Menu size={28} aria-hidden="true" />
             </button>
             <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+              <span className="font-serif italic text-rose-600 pr-1">Porn</span>
               <span className="font-light text-white">Cater</span>
             </Link>
           </div>
@@ -208,7 +208,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
         <div className="fixed inset-0 z-[100000] bg-[#050505] flex flex-col overflow-y-auto animate-in slide-in-from-left-full duration-300">
           <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
             <Link href="/" className="text-3xl tracking-widest cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
-              <span className="font-serif italic text-rose-800 pr-1">Porn</span>
+              <span className="font-serif italic text-rose-600 pr-1">Porn</span>
               <span className="font-light text-white">Cater</span>
             </Link>
             <button
@@ -227,7 +227,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/pornstars" className={getMobileNavClass("/pornstars")}><Sparkles size={20} /> Pornstars</Link>
 
             <div className="mt-8 pt-8 border-t border-white/5">
-              <Link href="/admin/upload" className="flex items-center justify-center gap-2 bg-rose-900/20 text-rose-500 border border-rose-900/50 px-4 py-4 rounded-sm text-sm font-bold uppercase tracking-wider transition-colors w-full">
+              <Link href="/upload" className="flex items-center justify-center gap-2 bg-rose-900/20 text-rose-500 border border-rose-900/50 px-4 py-4 rounded-sm text-sm font-bold uppercase tracking-wider transition-colors w-full">
                 <Video size={18} /> Upload Video
               </Link>
             </div>

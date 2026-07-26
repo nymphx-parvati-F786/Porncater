@@ -4,6 +4,7 @@ import "./globals.css";
 
 import ExoClickSticky from "@/src/components/ui/ads/ExoClickAds/ExoClickSticky";
 import ExoClickIM from "@/src/components/ui/ads/ExoClickAds/ExoClickIM";
+import Footer from "@/src/components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -104,6 +105,7 @@ export default function RootLayout({
         {/* 2. Global Floating & Sticky Ads */}
         {/* <ExoClickSticky zoneId="5984712" className="z-[9999]" /> */}
         <ExoClickIM zoneId="5984398" className="z-[9999]" />
+        <Footer />
       </body>
     </html>
   );

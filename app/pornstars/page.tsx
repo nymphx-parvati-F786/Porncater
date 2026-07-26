@@ -1,50 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { Metadata } from "next";
-import { Share2, Play, Eye, Film, ChevronLeft, ChevronRight, ThumbsUp } from "lucide-react";
+import { Star, ChevronLeft, ChevronRight, PlayCircle } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
-import { notFound } from "next/navigation";
 import SmartHeader from "@/src/components/ui/SmartHeader";
-import SubscribeButton from "@/src/components/ui/SubscribeButton";
-import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
-export const revalidate = 120; // Cache for 2 minutes
+export const revalidate = 120; // Caches the page for 2 minutes
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
+interface DirectoryProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
-  const num = Number(seconds);
-  if (isNaN(num)) return String(seconds);
-  const m = Math.floor(num / 60);
-  const s = num % 60;
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
-};
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
 }
 
 const megaCategories = [
@@ -53,91 +16,43 @@ const megaCategories = [
   "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
 ];
 
-// =========================================================
-// 🚀 PORNSTAR SEO ENGINE: DYNAMIC METADATA
-// =========================================================
-export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
-  const resolvedParams = await params;
-  const resolvedSearchParams = await searchParams;
-  const starSlug = resolvedParams.slug;
-  const page = resolvedSearchParams.page ? String(resolvedSearchParams.page) : "1";
+// Classic Tube A-Z Index
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-  const star = await prisma.pornstar.findUnique({
-    where: { slug: starSlug },
-    select: { name: true, bio: true, avatarUrl: true }
-  });
-
-  if (!star) return { title: 'Pornstar Not Found | PornCater' };
-
-  const canonicalUrl = `https://porncater.com/pornstars/${starSlug}${page !== "1" ? `?page=${page}` : ""}`;
-
-  return {
-    title: `${star.name} Porn Videos & Profile - Page ${page} | PornCater`,
-    description: star.bio
-      ? `${star.name} bio: ${star.bio.substring(0, 120)}... Stream exclusive HD videos.`
-      : `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
-    alternates: {
-      canonical: canonicalUrl,
-    },
-    openGraph: {
-      title: `${star.name} Porn Videos | PornCater`,
-      description: `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
-      url: canonicalUrl,
-      type: 'profile',
-      images: star.avatarUrl ? [{ url: star.avatarUrl }] : [],
-    }
-  };
-}
-
-// =========================================================
-// 🎬 PRIMARY COMPONENT
-// =========================================================
-export default async function PornstarProfile({ params, searchParams }: PageProps) {
-  const resolvedParams = await params;
+export default async function PornstarsDirectory({ searchParams }: DirectoryProps) {
   const resolvedSearchParams = await searchParams;
 
-  const starSlug = resolvedParams.slug;
-  if (!starSlug) return notFound();
-
+  // We keep the searchQuery logic in the backend just in case, but removed the UI for it
+  const searchQuery = (resolvedSearchParams.search as string) || "";
+  const letterQuery = (resolvedSearchParams.letter as string) || "";
   const currentPage = Math.max(1, parseInt(resolvedSearchParams.page as string) || 1);
-  const videosPerPage = 24; // 🔥 Increased density for tube feel
 
-  // 1. Fetch the pornstar bio
-  const star = await prisma.pornstar.findFirst({
-    where: {
-      slug: {
-        equals: decodeURIComponent(starSlug),
-        mode: "insensitive"
-      }
-    }
-  });
+  // Dense wall of models
+  const performersPerPage = 36;
 
-  if (!star) return notFound();
+  let queryCondition: any = {};
+  if (searchQuery) {
+    queryCondition.name = { contains: searchQuery, mode: "insensitive" };
+  } else if (letterQuery) {
+    queryCondition.name = { startsWith: letterQuery, mode: "insensitive" };
+  }
 
-  // 2. Concurrent fetching for Videos, Count, and Server Ads!
-  const [videos, totalVideos, topDesktopAd, topMobileAd] = await Promise.all([
-    prisma.video.findMany({
-      where: {
-        status: "PUBLISHED",
-        pornstars: { some: { id: star.id } }
-      },
-      take: videosPerPage,
-      skip: (currentPage - 1) * videosPerPage,
-      orderBy: { createdAt: "desc" },
-      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true }
-    }),
-    prisma.video.count({
-      where: {
-        status: "PUBLISHED",
-        pornstars: { some: { id: star.id } }
+  const [pornstars, totalPerformers] = await Promise.all([
+    prisma.pornstar.findMany({
+      where: queryCondition,
+      take: performersPerPage,
+      skip: (currentPage - 1) * performersPerPage,
+      orderBy: { views: "desc" },
+      include: {
+        _count: {
+          select: { videos: true }
+        }
       }
     }),
-    getTopBannerAd("970x70"),
-    getTopBannerAd("300x250") // Standardized mobile size
+    prisma.pornstar.count({ where: queryCondition })
   ]);
 
-  const totalPages = Math.ceil(totalVideos / videosPerPage);
-  const canonicalUrl = `https://porncater.com/pornstars/${star.slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
+  const totalPages = Math.ceil(totalPerformers / performersPerPage);
 
   const generatePagination = () => {
     if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
@@ -146,210 +61,96 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
     return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
   };
 
-  // =========================================================
-  // 🚀 SUPER JSON-LD SCHEMA INJECTION
-  // =========================================================
-  const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
-      { "@type": "ListItem", "position": 2, "name": "Pornstars", "item": "https://porncater.com/pornstars/" },
-      { "@type": "ListItem", "position": 3, "name": star.name, "item": `https://porncater.com/pornstars/${star.slug}` }
-    ]
-  };
-
-  const personSchema = {
-    "@context": "https://schema.org",
-    "@type": "Person",
-    "name": star.name,
-    "description": star.bio || `Adult film actress ${star.name} profile and video collection.`,
-    "image": star.avatarUrl,
-    "url": `https://porncater.com/pornstars/${star.slug}`,
-    "interactionStatistic": {
-      "@type": "InteractionCounter",
-      "interactionType": "https://schema.org/WatchAction",
-      "userInteractionCount": star.views || 0
-    }
-  };
-
-  const itemListSchema = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": `${star.name} Porn Videos - Page ${currentPage}`,
-    "url": canonicalUrl,
-    "numberOfItems": videos.length,
-    "itemListElement": videos.map((video, index) => ({
-      "@type": "ListItem",
-      "position": index + 1,
-      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
-      "name": video.title,
-      "image": video.thumbnail
-    }))
-  };
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-200 font-sans selection:bg-rose-600 selection:text-white flex flex-col">
-      {/* Inject SEO Schema Graph */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([breadcrumbSchema, personSchema, itemListSchema]) }} />
 
-      {/* 🔥 THE UNIFIED SMART HEADER */}
       <SmartHeader categories={megaCategories} />
 
       {/* =========================================
-          💰 TOP DYNAMIC AFFILIATE BANNER
+          🎬 RAW TUBE HEADER & A-Z INDEX
           ========================================= */}
-      <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-0 flex justify-center">
-        <AdBanner
-          dimension="970x70"
-          priority={true}
-          initialAd={topDesktopAd}
-          className="hidden md:block w-full max-w-[970px]"
-        />
-        <AdBanner
-          dimension="300x250"
-          priority={true}
-          initialAd={topMobileAd}
-          className="block md:hidden mx-auto"
-        />
-      </div>
+      <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 pt-6 pb-4">
 
-      {/* =========================================
-          🔥 RAW TUBE PROFILE HEADER
-          ========================================= */}
-      <div className="bg-[#111] border-b border-zinc-900 pt-6 pb-6 shadow-md mt-4">
-        <div className="max-w-[1600px] mx-auto px-2 sm:px-4 flex flex-col md:flex-row gap-4 md:gap-6 items-start">
-
-          {/* Portrait Avatar (Matching Directory Style) */}
-          <div className="relative w-28 h-36 sm:w-36 sm:h-48 shrink-0 bg-black border border-zinc-800 overflow-hidden">
-            <Image
-              src={star.avatarUrl || "/thumbnails/default-avatar.png"}
-              alt={star.name}
-              fill
-              sizes="(max-width: 640px) 112px, 144px"
-              className="object-cover object-[50%_20%]"
-            />
-          </div>
-
-          {/* Profile Data Plate */}
-          <div className="flex-1 w-full flex flex-col">
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-zinc-800 pb-3">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold uppercase tracking-widest text-white mb-1">
-                  {star.name}
-                </h1>
-                <p className="text-rose-600 text-[9px] uppercase tracking-widest font-black">
-                  Verified Model
-                </p>
-              </div>
-
-              {/* Action Buttons (Brutalist) */}
-              <div className="flex gap-1.5">
-                <SubscribeButton />
-                <button className="px-3 h-8 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-none text-[10px] font-bold uppercase tracking-widest">
-                  <Share2 size={14} className="mr-1.5" /> Share
-                </button>
-              </div>
-            </div>
-
-            {/* Brutalist Stats Row */}
-            <div className="flex flex-wrap gap-x-6 gap-y-2 mt-3 mb-4 text-[10px] uppercase font-bold tracking-widest text-zinc-500">
-              <div className="flex flex-col">
-                <span className="text-white text-sm font-black">{totalVideos}</span>
-                Videos
-              </div>
-              <div className="flex flex-col border-l border-zinc-800 pl-6">
-                <span className="text-white text-sm font-black">{star.views ? Number(star.views).toLocaleString() : "0"}</span>
-                Total Views
-              </div>
-              <div className="flex flex-col border-l border-zinc-800 pl-6">
-                <span className="text-white text-sm font-black">{star.subscribers || "0"}</span>
-                Subscribers
-              </div>
-            </div>
-
-            {/* Bio & Tags */}
-            {star.bio && (
-              <p className="text-xs text-zinc-400 font-medium leading-relaxed max-w-4xl mb-3 line-clamp-3">
-                {star.bio}
-              </p>
-            )}
-
-            {star.tags && star.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-auto">
-                {star.tags.map((tag: string, i: number) => (
-                  <Link key={i} href={`/category/${tag.toLowerCase()}`} className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:text-white px-2 py-1 text-[9px] font-bold uppercase tracking-widest text-zinc-500 transition-none">
-                    {tag}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* =========================================
-          🔥 DENSE VIDEO GRID
-          ========================================= */}
-      <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 mt-6 flex-grow">
-
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-4">
-          <h2 className="text-lg md:text-xl font-bold uppercase tracking-widest text-white flex items-center gap-2">
-            <Film className="text-rose-600" size={18} />
-            Videos
-          </h2>
-          <span className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
-            Page {currentPage} of {totalPages || 1}
+        {/* Minimal Title Row */}
+        <div className="flex items-center justify-between border-b border-zinc-800 pb-2 mb-3">
+          <h1 className="text-lg md:text-xl font-bold uppercase tracking-widest text-white flex items-center gap-2">
+            <Star className="text-rose-600" size={18} fill="currentColor" />
+            Pornstars
+          </h1>
+          <span className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+            {totalPerformers.toLocaleString()} Models
           </span>
         </div>
 
-        {videos.length > 0 ? (
+        {/* Brutalist A-Z Tube Filtering Bar */}
+        <div className="flex flex-wrap gap-[1px] bg-zinc-800 border border-zinc-800 p-[1px] mb-4">
+          <Link
+            href="/pornstars"
+            className={`flex-1 min-w-[30px] py-1.5 text-center text-[10px] sm:text-xs font-bold uppercase transition-none ${!letterQuery && !searchQuery ? 'bg-rose-700 text-white' : 'bg-zinc-950 text-zinc-400 hover:bg-zinc-800 hover:text-white'}`}
+          >
+            All
+          </Link>
+          {alphabet.map((letter) => (
+            <Link
+              key={letter}
+              href={`/pornstars?letter=${letter}`}
+              className={`flex-1 min-w-[24px] py-1.5 text-center text-[10px] sm:text-xs font-bold transition-none ${letterQuery === letter ? 'bg-rose-700 text-white' : 'bg-[#050505] text-zinc-500 hover:bg-zinc-800 hover:text-white'}`}
+            >
+              {letter}
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* =========================================
+          🔥 DENSE TUBE GRID
+          ========================================= */}
+      <div className="max-w-[1600px] w-full mx-auto px-2 sm:px-4 flex-grow">
+        {pornstars.length > 0 ? (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-1.5 sm:gap-2.5">
-              {videos.map((video) => (
-                <Link
-                  key={video.id}
-                  href={`/video/${video.id}/${video.slug}`}
-                  prefetch={false}
-                  className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
-                >
-                  {/* Raw Image Container */}
-                  <div className="relative w-full aspect-video bg-black overflow-hidden">
-                    <Image
-                      src={video.thumbnail}
-                      alt={video.title}
-                      fill
-                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 16vw"
-                      className="object-cover group-hover:opacity-80 transition-none"
-                    />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-1.5 sm:gap-2.5">
+              {pornstars.map((star, index) => {
+                const globalRank = (currentPage - 1) * performersPerPage + (index + 1);
 
-                    {/* Sharp HD Badge */}
-                    <div className="absolute top-0 left-0 bg-rose-700 text-white text-[9px] font-bold px-1.5 py-0.5 uppercase tracking-wider">
-                      HD
+                return (
+                  <Link
+                    key={star.slug}
+                    href={`/pornstars/${star.slug}`}
+                    className="group flex flex-col bg-[#111] border border-zinc-900 hover:border-rose-700 transition-none"
+                  >
+                    {/* Raw Image Container */}
+                    <div className="relative w-full aspect-[3/4] bg-black overflow-hidden">
+                      <img
+                        src={star.avatarUrl || "/thumbnails/default-avatar.png"}
+                        alt={star.name}
+                        loading="lazy"
+                        className="absolute inset-0 w-full h-full object-cover object-[50%_20%] group-hover:opacity-80 transition-none"
+                      />
+
+                      {/* Sharp Rank Badge (Top Left) */}
+                      <div className="absolute top-0 left-0 bg-rose-700 text-white text-[10px] font-bold px-1.5 py-0.5">
+                        #{globalRank}
+                      </div>
+
+                      {/* Sharp Video Count Badge (Top Right) */}
+                      <div className="absolute top-0 right-0 bg-amber-500 text-black text-[10px] font-black px-1.5 py-0.5 flex items-center gap-1">
+                        <PlayCircle size={10} className="fill-black text-amber-500" />
+                        {star._count?.videos || 0}
+                      </div>
                     </div>
 
-                    {/* Sharp Duration Badge */}
-                    <div className="absolute bottom-0 right-0 bg-black/90 text-white text-[9px] font-bold px-1.5 py-0.5 tracking-wider border-t border-l border-zinc-800">
-                      {formatDuration(video.duration)}
+                    {/* Data Plate - Tight & Minimal */}
+                    <div className="p-2 flex flex-col bg-[#111]">
+                      <h4 className="text-zinc-300 font-bold text-xs truncate group-hover:text-rose-500 transition-none">
+                        {star.name}
+                      </h4>
+                      <div className="text-zinc-600 text-[9px] uppercase tracking-widest font-bold mt-0.5">
+                        {star.views ? Number(star.views).toLocaleString() : '0'} Views
+                      </div>
                     </div>
-                  </div>
-
-                  {/* Data Plate - Tight & Minimal */}
-                  <div className="p-2 flex flex-col flex-grow">
-                    <h3 className="font-bold text-zinc-300 text-xs line-clamp-2 leading-tight group-hover:text-rose-500 transition-none">
-                      {video.title}
-                    </h3>
-                    <div className="flex items-center justify-between mt-auto pt-2 text-zinc-600 text-[9px] uppercase tracking-widest font-bold">
-                      <span className="flex items-center gap-1">
-                        <Eye size={10} /> {video.views ? Number(video.views).toLocaleString() : "0"}
-                      </span>
-                      <span className="flex items-center gap-1 text-emerald-600">
-                        <ThumbsUp size={10} /> 100%
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Pagination Block (Square & Brutalist) */}
@@ -357,7 +158,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
               <div className="mt-8 mb-8 flex items-center justify-center gap-1 select-none">
                 {currentPage > 1 ? (
                   <Link
-                    href={`/pornstars/${star.slug}?page=${currentPage - 1}`}
+                    href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${currentPage - 1}`}
                     className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
                   >
                     <ChevronLeft size={14} /> Prev
@@ -377,9 +178,9 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
                     return (
                       <Link
                         key={pageNum}
-                        href={`/pornstars/${star.slug}?page=${pageNum}`}
+                        href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${pageNum}`}
                         className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${isCurrent
-                            ? "bg-rose-600 text-white border border-rose-600"
+                            ? "bg-rose-700 text-white border border-rose-700"
                             : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
                           }`}
                       >
@@ -391,7 +192,7 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
 
                 {currentPage < totalPages ? (
                   <Link
-                    href={`/pornstars/${star.slug}?page=${currentPage + 1}`}
+                    href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ''}page=${currentPage + 1}`}
                     className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
                   >
                     Next <ChevronRight size={14} />
@@ -406,10 +207,13 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
           </>
         ) : (
           <div className="bg-[#111] border border-zinc-900 py-20 text-center mt-4">
-            <Film className="mx-auto text-zinc-800 mb-3" size={40} />
+            <Star className="mx-auto text-zinc-800 mb-3" size={40} />
             <div className="text-zinc-500 font-bold tracking-widest uppercase text-xs">
-              No videos available for {star.name} yet.
+              No pornstars found matching "{letterQuery}".
             </div>
+            <Link href="/pornstars" className="inline-block mt-4 text-rose-600 hover:text-rose-500 text-[10px] font-bold uppercase tracking-widest">
+              Clear Filter
+            </Link>
           </div>
         )}
       </div>
@@ -418,30 +222,6 @@ export default async function PornstarProfile({ params, searchParams }: PageProp
       <div className="w-full flex justify-center my-1 overflow-hidden">
         <AdRotator />
       </div>
-
-      {/* =========================================
-          FOOTER
-          ========================================= */}
-      <footer className="border-t border-zinc-900 pt-12 pb-8 text-center bg-[#050505] mt-auto">
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-8 text-[10px] uppercase tracking-widest text-zinc-600 font-bold px-4">
-          <Link href="/dmca" className="hover:text-zinc-300 transition-colors">DMCA / Copyright</Link>
-          <Link href="/privacy-policy" className="hover:text-zinc-300 transition-colors">Privacy Policy</Link>
-          <Link href="/terms" className="text-rose-600 hover:text-rose-500 transition-colors">Terms of Service</Link>
-          <Link href="/2257" className="hover:text-zinc-300 transition-colors">18 U.S.C. 2257</Link>
-          <Link href="/contact" className="hover:text-zinc-300 transition-colors">Contact Us</Link>
-        </div>
-
-        <div className="text-lg tracking-widest mb-3">
-          <span className="font-serif italic text-rose-600 pr-1">Porn</span>
-          <span className="font-light text-zinc-700">Cater</span>
-        </div>
-        <p className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-4">
-          All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
-        </p>
-        <p className="text-zinc-800 text-[9px] font-bold uppercase tracking-widest">
-          © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
-        </p>
-      </footer>
     </div>
   );
 }
