@@ -178,7 +178,7 @@ export default async function LatestPage({
         />
         {/* Mobile View: High-Converting Box Banner (300x250) */}
         <AdBanner
-          dimension="300x250"
+          dimension="300x100"
           priority={true}
           initialAd={topMobileAd}
           className="block md:hidden mx-auto"

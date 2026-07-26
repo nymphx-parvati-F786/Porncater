@@ -196,7 +196,7 @@ export default async function TopRatedPage({
         />
         {/* Mobile View: High-Converting Box Banner (300x250) */}
         <AdBanner
-          dimension="300x250"
+          dimension="300x1000"
           priority={true}
           initialAd={topMobileAd}
           className="block md:hidden mx-auto"

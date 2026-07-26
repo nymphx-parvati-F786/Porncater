@@ -137,7 +137,7 @@ export default async function Home() {
             className="hidden md:block w-full max-w-[970px]"
           />
           <AdBanner
-            dimension="300x250" // Updated to standard 300x250 box for mobile
+            dimension="300x100" // Updated to standard 300x250 box for mobile
             priority={true} 
             initialAd={topMobileAd} 
             className="block md:hidden mx-auto"
