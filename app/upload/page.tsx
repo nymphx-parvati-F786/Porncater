@@ -72,10 +72,18 @@ export default function UserUploadPage() {
     star.name.toLowerCase().includes(starSearch.toLowerCase()) && !selectedPornstarIds.includes(star.id.toString())
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
     if (!videoFile || !thumbnailFile) {
       setMessage({ type: "error", text: "Please provide both video and thumbnail files." });
+      return;
+    }
+
+    // 🔥 SECURITY LOCK 1: Force Thumbnail under 4MB to bypass Vercel 4.5MB Limit
+    const MAX_THUMBNAIL_SIZE = 4 * 1024 * 1024; // 4MB
+    if (thumbnailFile.size > MAX_THUMBNAIL_SIZE) {
+      setMessage({ type: "error", text: "Thumbnail image is too large! Please compress it to under 4MB." });
       return;
     }
 
@@ -83,13 +91,14 @@ export default function UserUploadPage() {
     setUploadProgress(0);
     setMessage({ type: "info", text: "Initializing database and securing upload tunnel..." });
 
-    // STEP 1: Send metadata and thumbnail to Next.js API
+    // STEP 1: Send ONLY metadata and the lightweight thumbnail to Next.js API
     const formData = new FormData();
     formData.append("title", title);
     formData.append("duration", duration);
     formData.append("tags", tags);
     formData.append("pornstarIds", JSON.stringify(selectedPornstarIds));
     formData.append("thumbnail", thumbnailFile);
+    // 🚨 DO NOT APPEND THE VIDEO FILE HERE! The video goes directly to Bunny in Step 2.
 
     try {
       const res = await fetch("/api/user/upload-video", {
@@ -143,7 +152,8 @@ export default function UserUploadPage() {
       upload.start();
 
     } catch (error) {
-      setMessage({ type: "error", text: "Network connection lost during initialization." });
+      console.error("Fetch Error:", error);
+      setMessage({ type: "error", text: "Network connection lost during initialization. Please try again." });
       setLoading(false);
     }
   };
