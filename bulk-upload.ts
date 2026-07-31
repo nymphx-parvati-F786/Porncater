@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import 'dotenv/config';
 import { getVideoDurationInSeconds } from 'get-video-duration';
 import csv from 'csv-parser';
+import sharp from 'sharp';
 
 // @ts-ignore
 import ffprobe from 'ffprobe-static';
@@ -76,7 +77,7 @@ if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
 type ProcessResult = 'CLEAN_SUCCESS' | 'RETRY_SUCCESS' | 'FAILED';
 
-// 🔥 BACKUP STAR LIST (Add as many as you want)
+// 🔥 BACKUP STAR LIST
 const EXTRA_KNOWN_STARS = [
   "Mia Khalifa", "Riley Reid", "Lana Rhoades", "Sasha Grey", "Nicole Aniston",
   "Cory Chase", "Brandi Love", "Dani Daniels", "Alexis Texas", "Kendra Lust",
@@ -100,6 +101,29 @@ function formatDuration(totalSeconds: number): string {
   const s = Math.floor(totalSeconds % 60);
   if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+/**
+ * 🔥 LCP-optimized thumbnail processing
+ * Resizes to 640x360 and compresses to high-quality WebP
+ */
+async function optimizeThumbnail(inputPath: string, outputPath: string): Promise<number> {
+  const info = await sharp(inputPath)
+    .resize({
+      width: 640,
+      height: 360,
+      fit: 'cover',
+      position: 'centre',
+      withoutEnlargement: true,
+    })
+    .webp({
+      quality: 80,
+      effort: 6,
+      smartSubsample: true,
+    })
+    .toFile(outputPath);
+
+  return Math.round(info.size / 1024); // return size in KB
 }
 
 async function uploadToBunnyStream(title: string, filePath: string) {
@@ -127,18 +151,25 @@ async function uploadToBunnyStream(title: string, filePath: string) {
 }
 
 async function uploadToBunnyStorage(slug: string, filePath: string) {
-  console.log(`[Bunny Storage] Uploading cover asset for: ${slug}`);
+  console.log(`[Bunny Storage] Uploading optimized cover for: ${slug}`);
   const thumbnailPath = `thumbnails/${slug}-${Date.now()}.webp`;
 
-  const fileStream = fs.createReadStream(filePath);
+  // Using buffer is more reliable for small thumbnail files
+  const fileBuffer = fs.readFileSync(filePath);
+
   const uploadRes = await fetch(`https://storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`, {
     method: 'PUT',
-    headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': 'image/webp' },
-    body: fileStream,
-    duplex: 'half'
-  } as any);
+    headers: {
+      AccessKey: STORAGE_API_KEY,
+      'Content-Type': 'image/webp',
+    },
+    body: fileBuffer,
+  });
 
-  if (!uploadRes.ok) throw new Error(`Bunny Storage API Error (${uploadRes.status})`);
+  if (!uploadRes.ok) {
+    throw new Error(`Bunny Storage API Error (${uploadRes.status})`);
+  }
+
   return `https://${STORAGE_PULLZONE}/${thumbnailPath}`;
 }
 
@@ -170,6 +201,7 @@ async function processVideoUrl(targetUrl: string, masterRosterMap: Map<string, s
 
       const videoPath = path.join(TEMP_DIR, `${slug}.mp4`);
       const thumbPath = path.join(TEMP_DIR, `${slug}.webp`);
+      const optimizedThumbPath = path.join(TEMP_DIR, `${slug}-opt.webp`);
 
       console.log(`[Download] Starting engine. Waiting for aria2c to finish...`);
 
@@ -204,28 +236,40 @@ async function processVideoUrl(targetUrl: string, masterRosterMap: Map<string, s
         console.log(`[Duration Warning] Could not parse local file duration, using fallback.`);
       }
 
-      let finalThumbPath = fs.existsSync(thumbPath) ? thumbPath : videoPath.replace('.mp4', '.webp');
+      // --------------------------------------------------
+      // THUMBNAIL HANDLING + LCP OPTIMIZATION
+      // --------------------------------------------------
+      let sourceThumbPath = fs.existsSync(thumbPath) ? thumbPath : null;
 
-      if (!fs.existsSync(finalThumbPath)) {
+      if (!sourceThumbPath) {
         console.log(`[Thumbnail Engine] Source image missing. Extracting high-res frame...`);
+        const extractedPath = path.join(TEMP_DIR, `${slug}-extracted.webp`);
+
         await new Promise((resolve, reject) => {
           ffmpeg(videoPath)
             .on('end', () => resolve(true))
             .on('error', (err) => reject(err))
             .screenshots({
               timestamps: thumbnailTimestamp,
-              filename: path.basename(finalThumbPath),
+              filename: path.basename(extractedPath),
               folder: TEMP_DIR,
               size: '1280x720'
             });
         });
+
+        sourceThumbPath = extractedPath;
       }
 
-      // 🔥 CONCURRENT UPLOADING: Double the speed!
+      // 🔥 Optimize for LCP (640x360 @ quality 80)
+      console.log(`[Thumbnail Engine] Optimizing thumbnail for LCP...`);
+      const thumbSizeKB = await optimizeThumbnail(sourceThumbPath, optimizedThumbPath);
+      console.log(`[Thumbnail Engine] Optimized size: ${thumbSizeKB} KB`);
+
+      // 🔥 CONCURRENT UPLOADING
       console.log(`[CDN] Initiating dual-upload to Bunny Stream & Storage...`);
       const [videoUrl, thumbnailUrl] = await Promise.all([
         uploadToBunnyStream(title, videoPath),
-        uploadToBunnyStorage(slug, finalThumbPath)
+        uploadToBunnyStorage(slug, optimizedThumbPath)
       ]);
 
       // 🔥 SMART PORNSTAR MAPPER
@@ -246,8 +290,7 @@ async function processVideoUrl(targetUrl: string, masterRosterMap: Map<string, s
       }));
 
       console.log(`[Database] Upserting video and ${pornstarConnections.length} pornstar stubs...`);
-      
-      // 🔥 UPSERT: Prevents crashes if you restart the script on the same URL
+
       await prisma.video.upsert({
         where: { slug },
         update: {
@@ -271,8 +314,13 @@ async function processVideoUrl(targetUrl: string, masterRosterMap: Map<string, s
 
       console.log(`[Success] Pipeline finished for: ${title}`);
 
+      // Cleanup
       if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
-      if (fs.existsSync(finalThumbPath)) fs.unlinkSync(finalThumbPath);
+      if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
+      if (fs.existsSync(optimizedThumbPath)) fs.unlinkSync(optimizedThumbPath);
+      if (sourceThumbPath && fs.existsSync(sourceThumbPath) && sourceThumbPath !== thumbPath) {
+        fs.unlinkSync(sourceThumbPath);
+      }
 
       return attempt === 1 ? 'CLEAN_SUCCESS' : 'RETRY_SUCCESS';
 

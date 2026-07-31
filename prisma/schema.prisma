@@ -21,6 +21,7 @@ enum VideoStatus {
   PUBLISHED
   DMCA_TAKEDOWN
   PRIVATE
+  PENDING
 }
 
 enum RecipientType {

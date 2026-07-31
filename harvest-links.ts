@@ -16,7 +16,7 @@ chromium.use(stealth());
 // Configuration
 const TARGETS_FILE = path.join(__dirname, 'targets.txt');
 const OUTPUT_FILE = path.join(__dirname, 'urls.txt');
-const URL_MATCH_PATTERN = '/videos/';
+const URL_MATCH_PATTERN = 'video';
 
 // 🔥 Your custom absolute log directory
 const LOG_DIR = 'script_logs/harvester_logs'; // Change this to your desired log directory
