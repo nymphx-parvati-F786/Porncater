@@ -6,7 +6,9 @@ import { fileURLToPath } from 'url';
 import 'dotenv/config';
 import { getVideoDurationInSeconds } from 'get-video-duration';
 import csv from 'csv-parser';
+
 import sharp from 'sharp';
+sharp.cache(false); // 🔥 FIX: Prevents Windows from locking image files
 
 // @ts-ignore
 import ffprobe from 'ffprobe-static';
@@ -145,7 +147,7 @@ async function uploadToBunnyStream(title: string, filePath: string) {
     body: fileStream,
     duplex: 'half'
   } as any);
-
+  
   if (!uploadRes.ok) throw new Error('Failed to upload video data to Bunny Stream');
   return `https://${BUNNY_CDN}/${guid}/playlist.m3u8`;
 }
@@ -314,12 +316,16 @@ async function processVideoUrl(targetUrl: string, masterRosterMap: Map<string, s
 
       console.log(`[Success] Pipeline finished for: ${title}`);
 
-      // Cleanup
-      if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
-      if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
-      if (fs.existsSync(optimizedThumbPath)) fs.unlinkSync(optimizedThumbPath);
-      if (sourceThumbPath && fs.existsSync(sourceThumbPath) && sourceThumbPath !== thumbPath) {
-        fs.unlinkSync(sourceThumbPath);
+      // 🔥 FIX: Wrapped Cleanup in Try/Catch to prevent EBUSY lock crashing
+      try {
+        if (fs.existsSync(videoPath)) fs.unlinkSync(videoPath);
+        if (fs.existsSync(thumbPath)) fs.unlinkSync(thumbPath);
+        if (fs.existsSync(optimizedThumbPath)) fs.unlinkSync(optimizedThumbPath);
+        if (sourceThumbPath && fs.existsSync(sourceThumbPath) && sourceThumbPath !== thumbPath) {
+          fs.unlinkSync(sourceThumbPath);
+        }
+      } catch (cleanupError: any) {
+        console.log(`[Cleanup Warning] Ignored file lock on temp file: ${cleanupError.message}`);
       }
 
       return attempt === 1 ? 'CLEAN_SUCCESS' : 'RETRY_SUCCESS';
@@ -372,15 +378,22 @@ async function run() {
   console.log(`🧠 Master Roster loaded with ${masterRosterMap.size} performers.`);
 
   // 2. Read Targets
-  const urlsFilePath = path.join(__dirname, 'urls.txt');
+  const urlsFilePath = path.join(__dirname, 'clean_urls.txt');
   const failedFilePath = path.join(__dirname, 'failed_urls.txt');
 
   if (!fs.existsSync(urlsFilePath)) {
-    console.error(`[Error] urls.txt missing.`);
+    console.error(`[Error] clean_urls.txt missing.`);
     process.exit(1);
   }
 
-  const urlsToScrape = fs.readFileSync(urlsFilePath, 'utf-8').split('\n').map(u => u.trim()).filter(u => u.length > 0);
+  // 🔥 FIX: Strip invisible BOM and UTF-16 null bytes before splitting lines
+  const rawText = fs.readFileSync(urlsFilePath, 'utf-8');
+  const cleanText = rawText
+    .replace(/\0/g, '')        // Strip UTF-16 null bytes
+    .replace(/^\uFEFF/, '')    // Strip invisible BOM character at the start
+    .replace(/\uFFFE/g, '');   // Strip alternative corrupted BOM 
+
+  const urlsToScrape = cleanText.split('\n').map(u => u.trim()).filter(u => u.length > 0);
   console.log(`[Loader] Loaded ${urlsToScrape.length} target records.\n`);
 
   let cleanSucceeded = 0;

@@ -39,47 +39,60 @@ export async function POST(request: NextRequest) {
 
     // Parse the raw MIME email
     const parsed = await simpleParser(Buffer.from(rawEmail));
-    const messageId = parsed.messageId || null;
+    
+    // 🛡️ ARMOR 1: Always guarantee a unique message ID
+    const messageId = parsed.messageId || `inbound-${Date.now()}-${Math.random().toString(36).substring(7)}`;
 
     // Duplicate protection
-    if (messageId) {
-      const existing = await prisma.inboxMessage.findUnique({ where: { messageId } });
-      if (existing) {
-        return NextResponse.json({ success: true, duplicate: true, id: existing.id });
-      }
+    const existing = await prisma.inboxMessage.findFirst({ where: { messageId } });
+    if (existing) {
+      return NextResponse.json({ success: true, duplicate: true, id: existing.id });
+    }
+
+    // 🛡️ ARMOR 2: Enforce VarChar(500) limit so spam subjects don't crash the database
+    const safeSubject = (parsed.subject || "(No Subject)").substring(0, 490);
+
+    // 🛡️ ARMOR 3: Safely serialize headers so Prisma's JSON parser doesn't choke on weird objects
+    let safeHeaders = {};
+    try {
+      safeHeaders = JSON.parse(JSON.stringify(Object.fromEntries(parsed.headers.entries())));
+    } catch (e) {
+      console.warn("Header parsing failed, saving empty headers");
     }
 
     // Save to Database
     const message = await prisma.inboxMessage.create({
       data: {
         messageId,
-        subject: parsed.subject || "(No Subject)",
-        fromName: parsed.from?.value?.[0]?.name || null,
-        fromEmail: parsed.from?.value?.[0]?.address || "unknown@unknown",
-        replyTo: parsed.replyTo?.value?.[0]?.address || null,
+        subject: safeSubject,
+        
+        // 🛡️ ARMOR 4: Protect string lengths on sender data
+        fromName: (parsed.from?.value?.[0]?.name || null)?.substring(0, 190),
+        fromEmail: (parsed.from?.value?.[0]?.address || "unknown@unknown").substring(0, 190),
+        replyTo: (parsed.replyTo?.value?.[0]?.address || null)?.substring(0, 190),
+        
         textBody: parsed.text || null,
         htmlBody: typeof parsed.html === "string" ? parsed.html : null,
         sentAt: parsed.date || null,
         receivedAt: new Date(),
         sizeBytes: Buffer.byteLength(Buffer.from(rawEmail)),
-        headers: Object.fromEntries(parsed.headers.entries()) as any,
+        headers: safeHeaders,
         hasAttachments: Boolean(parsed.attachments && parsed.attachments.length > 0),
-
-        // Relational Data: Recipients
+        
         // Relational Data: Recipients
         recipients: {
           create: [
-            ...extractAddresses(parsed.to).map(r => ({ type: "TO" as const, name: r.name, email: r.email })),
-            ...extractAddresses(parsed.cc).map(r => ({ type: "CC" as const, name: r.name, email: r.email })),
-            ...extractAddresses(parsed.bcc).map(r => ({ type: "BCC" as const, name: r.name, email: r.email })),
+            ...extractAddresses(parsed.to).map(r => ({ type: "TO" as const, name: r.name?.substring(0,190), email: r.email.substring(0,190) })),
+            ...extractAddresses(parsed.cc).map(r => ({ type: "CC" as const, name: r.name?.substring(0,190), email: r.email.substring(0,190) })),
+            ...extractAddresses(parsed.bcc).map(r => ({ type: "BCC" as const, name: r.name?.substring(0,190), email: r.email.substring(0,190) })),
           ],
         },
 
-        // Relational Data: Attachments (Storing metadata, file uploads to Bunny/Supabase can be wired up here later)
+        // Relational Data: Attachments
         attachments: {
           create: (parsed.attachments || []).map(a => ({
-            filename: a.filename || "unknown",
-            mimeType: a.contentType || "application/octet-stream",
+            filename: (a.filename || "unknown").substring(0, 200),
+            mimeType: (a.contentType || "application/octet-stream").substring(0, 100),
             sizeBytes: a.size || 0,
             contentId: a.cid || null,
             isInline: Boolean(a.cid),
@@ -89,9 +102,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true, id: message.id });
-  } catch (error) {
-    console.error("Inbox processing error:", error);
-    return NextResponse.json({ error: "Failed to process email" }, { status: 500 });
+  } catch (error: any) {
+    // 🔥 We log the ACTUAL error to Vercel so you can read it!
+    console.error("🔥 INBOX PROCESSING FATAL ERROR 🔥", error);
+    return NextResponse.json({ error: error.message || "Failed to process email" }, { status: 500 });
   }
 }
 
