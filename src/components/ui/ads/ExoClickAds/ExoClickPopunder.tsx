@@ -1,66 +1,42 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
+import Script from "next/script";
 
 interface ExoClickPopunderProps {
   desktopZoneId: string;
   mobileZoneId: string;
 }
 
-declare global {
-  interface Window {
-    adConfig: any;
-  }
-}
-
 export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoClickPopunderProps) {
-  const scriptInjected = useRef(false);
+  // We use state to ensure we don't accidentally load the desktop ad on mobile during SSR
+  const [activeZone, setActiveZone] = useState<string | null>(null);
 
   useEffect(() => {
-    // Prevent double injection in React strict mode
-    if (scriptInjected.current) return;
-    scriptInjected.current = true;
-
-    // 1. Set the config on the window object
-    const isMobile = window.innerWidth <= 768;
-    const activeZone = isMobile ? mobileZoneId : desktopZoneId;
-
-    window.adConfig = {
-      ads_host: "a.pemsrv.com",
-      syndication_host: "s.pemsrv.com",
-      idzone: parseInt(activeZone, 10),
-      popup_fallback: false,
-      popup_force: false,
-      chrome_enabled: true,
-      new_tab: false,
-      frequency_period: 60, // 1 hour cooldown
-      frequency_count: 1,
-      trigger_method: 1, // 1 = Click anywhere on page
-      trigger_class: "",
-      trigger_delay: 0,
-      capping_enabled: true,
-      tcf_enabled: true,
-      agego_cross_site_enabled: true,
-      only_inline: false
-    };
-
-    // 2. Dynamically create the script element
-    const script = document.createElement("script");
-    script.type = "application/javascript";
-    script.src = "//a.pemsrv.com/popunder1000.js";
-    script.async = true;
-
-    // 3. Append to the document body to force execution
-    document.body.appendChild(script);
-
-    // Cleanup function when the component unmounts
-    return () => {
-      if (document.body.contains(script)) {
-        document.body.removeChild(script);
-      }
-      scriptInjected.current = false;
-    };
+    // 1. Instantly check screen size the moment the component mounts on the client
+    setActiveZone(window.innerWidth <= 768 ? mobileZoneId : desktopZoneId);
   }, [desktopZoneId, mobileZoneId]);
 
-  return null; // This component renders absolutely nothing to the DOM visually
+  // Don't render the script until we know exactly which Zone ID to use
+  if (!activeZone) return null;
+
+  return (
+    <Script
+      id="exoclick-popunder-loader"
+      src="//a.pemsrv.com/popunder1000.js"
+      strategy="afterInteractive"
+      
+      // 🔥 THE SECRET FIX: ExoClick reads these exact data-exo attributes!
+      data-exo-idzone={activeZone}
+      data-exo-trigger_method="1" // 1 = Click anywhere on the page
+      data-exo-frequency_period="60" // 1 Popunder per hour per user
+      data-exo-frequency_count="1"
+      data-exo-ads_host="a.pemsrv.com"
+      data-exo-syndication_host="s.pemsrv.com"
+      data-exo-chrome_enabled="true"
+      data-exo-new_tab="false"
+      data-exo-popup_force="false"
+      data-exo-popup_fallback="false"
+    />
+  );
 }
