@@ -1,27 +1,19 @@
 "use client";
 
 import Script from "next/script";
-import { useEffect } from "react";
 
 interface ExoClickPopunderProps {
   desktopZoneId: string;
   mobileZoneId: string;
 }
 
-// This stops TypeScript from yelling about window.adConfig
-declare global {
-  interface Window {
-    adConfig: any;
-  }
-}
-
 export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoClickPopunderProps) {
-  useEffect(() => {
-    // 1. Detect device to serve the correct Zone ID
-    const isMobile = window.innerWidth <= 768;
-    const activeZone = isMobile ? mobileZoneId : desktopZoneId;
-
-    // 2. Feed the config to the window object so ExoClick's remote script can read it
+  // We write the config as a raw string so Next.js can inject it directly into the HTML
+  // exactly when the page loads, guaranteeing it is ready before ExoClick arrives.
+  const inlineScript = `
+    var isMobile = window.innerWidth <= 768;
+    var activeZone = isMobile ? "${mobileZoneId}" : "${desktopZoneId}";
+    
     window.adConfig = {
       ads_host: "a.pemsrv.com",
       syndication_host: "s.pemsrv.com",
@@ -30,9 +22,9 @@ export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoCli
       popup_force: false,
       chrome_enabled: true,
       new_tab: false,
-      frequency_period: 60, // Only show once per hour to avoid annoying users too much
+      frequency_period: 60, // Shows 1 popunder per hour per user
       frequency_count: 1,
-      trigger_method: 1, // 🔥 1 = Click anywhere on the page!
+      trigger_method: 1, // 1 = Click anywhere on page
       trigger_class: "",
       trigger_delay: 0,
       capping_enabled: true,
@@ -40,14 +32,16 @@ export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoCli
       agego_cross_site_enabled: true,
       only_inline: false
     };
-  }, [desktopZoneId, mobileZoneId]);
+  `;
 
   return (
     <>
-      {/* 
-        🔥 This fetches the 200 lines of ugly ExoClick code remotely!
-        You don't need to paste it in your app. Next.js handles it cleanly.
-      */}
+      {/* 1. Inject the config immediately */}
+      <Script id="exo-popunder-config" strategy="afterInteractive">
+        {inlineScript}
+      </Script>
+
+      {/* 2. Fetch the popunder logic AFTER the config is set */}
       <Script
         id="exoclick-popunder-loader"
         src="//a.pemsrv.com/popunder1000.js"
