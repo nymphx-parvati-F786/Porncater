@@ -21,6 +21,7 @@ import JuicyAdsBanner from "@/src/components/ui/ads/JuicyAds/JuicyAdsBanner";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdultForceBanner from "@/src/components/ui/ads/AdultForceAds/AdultForceBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import ExoClickPopunder from "@/src/components/ui/ads/ExoClickAds/ExoClickPopunder"; // <-- ADD THI
 
 interface PageProps {
   params: Promise<{ id: string; slug: string }>;
@@ -240,6 +241,8 @@ export default async function WatchPage({ params }: PageProps) {
       <SmartHeader categories={megaCategories} />
 
       <main>
+        {/* 🔥 THE INVISIBLE MONEY MAKER 🔥 */}
+        <ExoClickPopunder desktopZoneId="5998588" mobileZoneId="5998592" />
         {/* TOP DYNAMIC AFFILIATE BANNER (Server-Injected for 0ms LCP) */}
         <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
           <AdBanner
