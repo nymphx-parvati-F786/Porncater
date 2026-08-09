@@ -1,19 +1,30 @@
 "use client";
 
-import Script from "next/script";
+import { useEffect, useRef } from "react";
 
 interface ExoClickPopunderProps {
   desktopZoneId: string;
   mobileZoneId: string;
 }
 
+declare global {
+  interface Window {
+    adConfig: any;
+  }
+}
+
 export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoClickPopunderProps) {
-  // We write the config as a raw string so Next.js can inject it directly into the HTML
-  // exactly when the page loads, guaranteeing it is ready before ExoClick arrives.
-  const inlineScript = `
-    var isMobile = window.innerWidth <= 768;
-    var activeZone = isMobile ? "${mobileZoneId}" : "${desktopZoneId}";
-    
+  const scriptInjected = useRef(false);
+
+  useEffect(() => {
+    // Prevent double injection in React strict mode
+    if (scriptInjected.current) return;
+    scriptInjected.current = true;
+
+    // 1. Set the config on the window object
+    const isMobile = window.innerWidth <= 768;
+    const activeZone = isMobile ? mobileZoneId : desktopZoneId;
+
     window.adConfig = {
       ads_host: "a.pemsrv.com",
       syndication_host: "s.pemsrv.com",
@@ -22,7 +33,7 @@ export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoCli
       popup_force: false,
       chrome_enabled: true,
       new_tab: false,
-      frequency_period: 60, // Shows 1 popunder per hour per user
+      frequency_period: 60, // 1 hour cooldown
       frequency_count: 1,
       trigger_method: 1, // 1 = Click anywhere on page
       trigger_class: "",
@@ -32,21 +43,24 @@ export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoCli
       agego_cross_site_enabled: true,
       only_inline: false
     };
-  `;
 
-  return (
-    <>
-      {/* 1. Inject the config immediately */}
-      <Script id="exo-popunder-config" strategy="afterInteractive">
-        {inlineScript}
-      </Script>
+    // 2. Dynamically create the script element
+    const script = document.createElement("script");
+    script.type = "application/javascript";
+    script.src = "//a.pemsrv.com/popunder1000.js";
+    script.async = true;
 
-      {/* 2. Fetch the popunder logic AFTER the config is set */}
-      <Script
-        id="exoclick-popunder-loader"
-        src="//a.pemsrv.com/popunder1000.js"
-        strategy="afterInteractive"
-      />
-    </>
-  );
+    // 3. Append to the document body to force execution
+    document.body.appendChild(script);
+
+    // Cleanup function when the component unmounts
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+      scriptInjected.current = false;
+    };
+  }, [desktopZoneId, mobileZoneId]);
+
+  return null; // This component renders absolutely nothing to the DOM visually
 }
