@@ -2,6 +2,7 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     // 🔥 Remove the custom loader. We are using Next.js default optimization now.
     remotePatterns: [
       { protocol: 'https', hostname: '**.b-cdn.net' },

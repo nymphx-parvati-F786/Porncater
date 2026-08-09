@@ -47,6 +47,8 @@ next-env.d.ts
 
 /local_videos_to_upload
 
+/local_avatars_to_upload
+
 /urls.txt
 /urls(old).txt
 
