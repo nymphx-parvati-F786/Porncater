@@ -1,11 +1,20 @@
-'use client';
+"use client";
 
-import { useRef, useState, useEffect, useCallback } from 'react';
-import Hls from 'hls.js';
+import { useRef, useState, useEffect, useCallback } from "react";
+import Hls from "hls.js";
 import {
-  Play, Pause, Volume2, VolumeX, Maximize, Minimize,
-  SkipBack, SkipForward, Settings, ExternalLink, Repeat
-} from 'lucide-react';
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
+  SkipBack,
+  SkipForward,
+  Settings,
+  ExternalLink,
+  Repeat,
+} from "lucide-react";
 
 interface VideoPlayerProps {
   src: string;
@@ -15,7 +24,12 @@ interface VideoPlayerProps {
   autoNext?: boolean;
 }
 
-export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPlayerProps) {
+export default function VideoPlayer({
+  src,
+  poster,
+  title,
+  vastTagUrl,
+}: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
@@ -35,7 +49,9 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLooping, setIsLooping] = useState(false);
-  const [actionAnim, setActionAnim] = useState<'forward' | 'rewind' | null>(null);
+  const [actionAnim, setActionAnim] = useState<"forward" | "rewind" | null>(
+    null,
+  );
   const [adAttempted, setAdAttempted] = useState(false);
   const [isLoadingAd, setIsLoadingAd] = useState(false);
 
@@ -59,7 +75,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       hlsRef.current = null;
     }
 
-    if (src.includes('.m3u8') && Hls.isSupported()) {
+    if (src.includes(".m3u8") && Hls.isSupported()) {
       const hls = new Hls({
         maxMaxBufferLength: 30,
         startLevel: -1,
@@ -68,7 +84,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       hls.loadSource(src);
       hls.attachMedia(video);
       hlsRef.current = hls;
-    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
     } else {
       video.src = src;
@@ -89,31 +105,39 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     const t = setTimeout(() => controller.abort(), 4500);
 
     fetch(vastTagUrl, { signal: controller.signal })
-      .then(r => r.ok ? r.text() : Promise.reject())
-      .then(text => {
-        const doc = new DOMParser().parseFromString(text, 'text/xml');
-        const media = doc.getElementsByTagName('MediaFile')[0]?.textContent?.trim();
+      .then((r) => (r.ok ? r.text() : Promise.reject()))
+      .then((text) => {
+        const doc = new DOMParser().parseFromString(text, "text/xml");
+        const media = doc
+          .getElementsByTagName("MediaFile")[0]
+          ?.textContent?.trim();
         if (!media) return;
 
-        const click = doc.getElementsByTagName('ClickThrough')[0]?.textContent?.trim() || null;
+        const click =
+          doc.getElementsByTagName("ClickThrough")[0]?.textContent?.trim() ||
+          null;
         const tracking: Record<string, string[]> = { impression: [] };
 
-        Array.from(doc.getElementsByTagName('Tracking')).forEach(node => {
-          const ev = node.getAttribute('event');
+        Array.from(doc.getElementsByTagName("Tracking")).forEach((node) => {
+          const ev = node.getAttribute("event");
           const url = node.textContent?.trim();
           if (ev && url) {
             if (!tracking[ev]) tracking[ev] = [];
             tracking[ev].push(url);
           }
         });
-        Array.from(doc.getElementsByTagName('Impression')).forEach(node => {
+        Array.from(doc.getElementsByTagName("Impression")).forEach((node) => {
           const url = node.textContent?.trim();
           if (url) tracking.impression.push(url);
         });
 
-        setPreloadedAd({ mediaUrl: media, clickThroughUrl: click, trackingUrls: tracking });
+        setPreloadedAd({
+          mediaUrl: media,
+          clickThroughUrl: click,
+          trackingUrls: tracking,
+        });
       })
-      .catch(() => { });
+      .catch(() => {});
 
     return () => {
       clearTimeout(t);
@@ -123,7 +147,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
 
   // ─── VOLUME MEMORY ─────────────────────────────────────
   useEffect(() => {
-    const v = localStorage.getItem('porncater_vol');
+    const v = localStorage.getItem("porncater_vol");
     if (v !== null) {
       const n = parseFloat(v);
       setVolume(n);
@@ -143,72 +167,86 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
 
   useEffect(() => {
     resetControls();
-    return () => { if (controlsTimeout.current) clearTimeout(controlsTimeout.current); };
+    return () => {
+      if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    };
   }, [isPlaying, resetControls]);
 
   useEffect(() => {
     const fn = () => setIsFullscreen(!!document.fullscreenElement);
-    document.addEventListener('fullscreenchange', fn);
-    return () => document.removeEventListener('fullscreenchange', fn);
+    document.addEventListener("fullscreenchange", fn);
+    return () => document.removeEventListener("fullscreenchange", fn);
   }, []);
 
   // ─── KEYBOARD ──────────────────────────────────────────
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (!containerRef.current?.contains(document.activeElement) && document.activeElement !== document.body) return;
+      if (
+        !containerRef.current?.contains(document.activeElement) &&
+        document.activeElement !== document.body
+      )
+        return;
       const v = videoRef.current;
       if (!v || adState.isPlaying) return;
 
       switch (e.key.toLowerCase()) {
-        case ' ':
-        case 'k':
+        case " ":
+        case "k":
           e.preventDefault();
           togglePlay();
           break;
-        case 'arrowleft':
+        case "arrowleft":
           e.preventDefault();
           v.currentTime = Math.max(0, v.currentTime - 5);
-          showAnim('rewind');
+          showAnim("rewind");
           break;
-        case 'arrowright':
+        case "arrowright":
           e.preventDefault();
           v.currentTime = Math.min(v.duration, v.currentTime + 5);
-          showAnim('forward');
+          showAnim("forward");
           break;
-        case 'j':
+        case "j":
           e.preventDefault();
           v.currentTime = Math.max(0, v.currentTime - 10);
-          showAnim('rewind');
+          showAnim("rewind");
           break;
-        case 'l':
+        case "l":
           e.preventDefault();
           v.currentTime = Math.min(v.duration, v.currentTime + 10);
-          showAnim('forward');
+          showAnim("forward");
           break;
-        case 'm':
+        case "m":
           e.preventDefault();
           toggleMute();
           break;
-        case 'f':
+        case "f":
           e.preventDefault();
           toggleFullscreen();
           break;
-        case '0': case '1': case '2': case '3': case '4':
-        case '5': case '6': case '7': case '8': case '9':
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
           e.preventDefault();
           v.currentTime = (parseInt(e.key) / 10) * v.duration;
           break;
       }
       resetControls();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   });
 
   // ─── TRACKING ──────────────────────────────────────────
   const fire = (urls?: string[]) => {
     if (!urls) return;
-    urls.forEach(u => {
+    urls.forEach((u) => {
       if (u && !firedTracking.current.has(u)) {
         firedTracking.current.add(u);
         new Image().src = u;
@@ -232,7 +270,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     video.src = originalSrcRef.current;
     video.load();
     setTimeout(() => {
-      video.play().catch(() => { });
+      video.play().catch(() => {});
       setIsPlaying(true);
     }, 40);
   }, [preloadedAd]);
@@ -267,17 +305,17 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       return;
     }
 
-    video.play().catch(() => { });
+    video.play().catch(() => {});
     setIsPlaying(true);
   }, [isPlaying, adAttempted, preloadedAd]);
 
   // ─── TOUCH ZONES (clean double-tap) ────────────────────
-  const showAnim = (type: 'forward' | 'rewind') => {
+  const showAnim = (type: "forward" | "rewind") => {
     setActionAnim(type);
     setTimeout(() => setActionAnim(null), 320);
   };
 
-  const handleZone = (zone: 'left' | 'center' | 'right') => {
+  const handleZone = (zone: "left" | "center" | "right") => {
     if (adState.isPlaying) return;
     const now = Date.now();
     const DELAY = 280;
@@ -291,12 +329,15 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       const video = videoRef.current;
       if (!video) return;
 
-      if (zone === 'right') {
-        video.currentTime = Math.min(video.currentTime + 10, video.duration || 9999);
-        showAnim('forward');
-      } else if (zone === 'left') {
+      if (zone === "right") {
+        video.currentTime = Math.min(
+          video.currentTime + 10,
+          video.duration || 9999,
+        );
+        showAnim("forward");
+      } else if (zone === "left") {
         video.currentTime = Math.max(video.currentTime - 10, 0);
-        showAnim('rewind');
+        showAnim("rewind");
       } else {
         // center double = fullscreen
         toggleFullscreen();
@@ -307,11 +348,11 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       lastTap.current = now;
       if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
       singleTapTimeout.current = setTimeout(() => {
-        if (zone === 'center') {
+        if (zone === "center") {
           togglePlay();
         } else {
           // left/right single just toggles controls on mobile
-          if (window.innerWidth < 768) setShowControls(s => !s);
+          if (window.innerWidth < 768) setShowControls((s) => !s);
           else togglePlay();
         }
         resetControls();
@@ -329,7 +370,9 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     setCurrentTime(v.currentTime);
 
     if (adState.isPlaying && preloadedAd) {
-      setAdCountdown(Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)));
+      setAdCountdown(
+        Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)),
+      );
       if (p >= 25) fire(preloadedAd.trackingUrls.firstQuartile);
       if (p >= 50) fire(preloadedAd.trackingUrls.midpoint);
       if (p >= 75) fire(preloadedAd.trackingUrls.thirdQuartile);
@@ -362,7 +405,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
     v.volume = n;
     setVolume(n);
     setIsMuted(n === 0);
-    localStorage.setItem('porncater_vol', String(n));
+    localStorage.setItem("porncater_vol", String(n));
   };
 
   const toggleMute = () => {
@@ -372,11 +415,11 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       const n = volume || 1;
       v.volume = n;
       setIsMuted(false);
-      localStorage.setItem('porncater_vol', String(n));
+      localStorage.setItem("porncater_vol", String(n));
     } else {
       v.volume = 0;
       setIsMuted(true);
-      localStorage.setItem('porncater_vol', '0');
+      localStorage.setItem("porncater_vol", "0");
     }
   };
 
@@ -394,23 +437,30 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
   };
 
   const fmt = (t: number) => {
-    if (isNaN(t)) return '0:00';
+    if (isNaN(t)) return "0:00";
     const m = Math.floor(t / 60);
     const s = Math.floor(t % 60);
-    return `${m}:${s < 10 ? '0' : ''}${s}`;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
   };
 
   return (
     <div
       ref={containerRef}
       tabIndex={0}
-      className={`relative bg-black w-full h-full flex items-center justify-center select-none overflow-hidden touch-manipulation outline-none ${!showControls && isPlaying ? 'cursor-none' : 'cursor-default'
-        }`}
+      className={`relative bg-black w-full h-full flex items-center justify-center select-none overflow-hidden touch-manipulation outline-none ${
+        !showControls && isPlaying ? "cursor-none" : "cursor-default"
+      }`}
       onMouseMove={resetControls}
-      onMouseLeave={() => { if (isPlaying) setShowControls(false); }}
+      onMouseLeave={() => {
+        if (isPlaying) setShowControls(false);
+      }}
       onClick={(e) => {
         // only play/pause if click is directly on the video area (not controls)
-        if ((e.target as HTMLElement).closest('[data-controls]')) return;
+        if ((e.target as HTMLElement).closest("[data-controls]")) return;
+
+        // 🔥 ADD THIS LINE: Tell the container to ignore clicks from the giant play button
+        if ((e.target as HTMLElement).closest("[data-play-btn]")) return;
+
         if (!isPlaying && !adState.isPlaying) togglePlay();
       }}
     >
@@ -434,15 +484,15 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
         <>
           <div
             className="absolute inset-y-0 left-0 w-1/3 z-10"
-            onClick={() => handleZone('left')}
+            onClick={() => handleZone("left")}
           />
           <div
             className="absolute inset-y-0 left-1/3 w-1/3 z-10"
-            onClick={() => handleZone('center')}
+            onClick={() => handleZone("center")}
           />
           <div
             className="absolute inset-y-0 right-0 w-1/3 z-10"
-            onClick={() => handleZone('right')}
+            onClick={() => handleZone("right")}
           />
         </>
       )}
@@ -450,11 +500,12 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       {/* ULTRA-MINIMAL SEEK FLASH – pure chevron only */}
       {actionAnim && (
         <div
-          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none text-white text-6xl font-extralight leading-none select-none ${actionAnim === 'forward' ? 'right-[19%]' : 'left-[19%]'
-            }`}
+          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none text-white text-6xl font-extralight leading-none select-none ${
+            actionAnim === "forward" ? "right-[19%]" : "left-[19%]"
+          }`}
           style={{ opacity: 0.9 }}
         >
-          {actionAnim === 'forward' ? '›' : '‹'}
+          {actionAnim === "forward" ? "›" : "‹"}
         </div>
       )}
 
@@ -481,7 +532,10 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
               </div>
             ) : (
               <button
-                onClick={(e) => { e.stopPropagation(); skipAd(); }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  skipAd();
+                }}
                 className="bg-black hover:bg-zinc-900 border-l-2 border-red-600 text-white text-xs font-bold uppercase px-5 py-2.5 flex items-center gap-2"
               >
                 Skip Ad <SkipForward size={13} strokeWidth={2.5} />
@@ -501,19 +555,30 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
       {/* GIANT HARD PLAY BUTTON – only when paused */}
       {!isPlaying && !adState.isPlaying && !isLoadingAd && (
         <button
-          onClick={(e) => { e.stopPropagation(); togglePlay(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePlay();
+          }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[72px] h-12 flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]"
           aria-label="Play"
         >
-          <Play size={28} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+          <Play
+            size={28}
+            fill="currentColor"
+            strokeWidth={0}
+            className="ml-0.5"
+          />
         </button>
       )}
 
       {/* BOTTOM BAR – sharp, minimal, hard */}
       <div
         data-controls
-        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-1.5 px-2 transition-opacity duration-150 ${showControls && !adState.isPlaying && !isLoadingAd ? 'opacity-100' : 'opacity-0 pointer-events-none'
-          }`}
+        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-1.5 px-2 transition-opacity duration-150 ${
+          showControls && !adState.isPlaying && !isLoadingAd
+            ? "opacity-100"
+            : "opacity-0 pointer-events-none"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* PROGRESS – hard thin red */}
@@ -542,7 +607,10 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
         <div className="flex items-center justify-between text-zinc-200">
           {/* LEFT */}
           <div className="flex items-center gap-3 md:gap-5">
-            <button onClick={togglePlay} className="p-0.5 hover:text-red-500 transition-colors">
+            <button
+              onClick={togglePlay}
+              className="p-0.5 hover:text-red-500 transition-colors"
+            >
               {isPlaying ? (
                 <Pause size={20} fill="currentColor" strokeWidth={0} />
               ) : (
@@ -554,7 +622,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
               <button
                 onClick={() => {
                   if (videoRef.current) videoRef.current.currentTime -= 10;
-                  showAnim('rewind');
+                  showAnim("rewind");
                 }}
                 className="hover:text-white"
               >
@@ -563,7 +631,7 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
               <button
                 onClick={() => {
                   if (videoRef.current) videoRef.current.currentTime += 10;
-                  showAnim('forward');
+                  showAnim("forward");
                 }}
                 className="hover:text-white"
               >
@@ -572,7 +640,10 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
             </div>
 
             <div className="flex items-center gap-1.5 group/vol">
-              <button onClick={toggleMute} className="p-0.5 text-zinc-400 hover:text-red-500">
+              <button
+                onClick={toggleMute}
+                className="p-0.5 text-zinc-400 hover:text-red-500"
+              >
                 {isMuted || volume === 0 ? (
                   <VolumeX size={18} strokeWidth={2} />
                 ) : (
@@ -604,33 +675,45 @@ export default function VideoPlayer({ src, poster, title, vastTagUrl }: VideoPla
           {/* RIGHT */}
           <div className="flex items-center gap-3 md:gap-4">
             <button
-              onClick={() => setIsLooping(l => !l)}
-              className={`hidden sm:block p-0.5 ${isLooping ? 'text-red-500' : 'text-zinc-500 hover:text-white'}`}
+              onClick={() => setIsLooping((l) => !l)}
+              className={`hidden sm:block p-0.5 ${isLooping ? "text-red-500" : "text-zinc-500 hover:text-white"}`}
             >
               <Repeat size={16} strokeWidth={2} />
             </button>
 
             <div className="relative group/speed">
               <button className="p-0.5 text-zinc-500 hover:text-white flex items-center">
-                <Settings size={16} strokeWidth={2} className="group-hover/speed:rotate-90 transition-transform duration-200" />
+                <Settings
+                  size={16}
+                  strokeWidth={2}
+                  className="group-hover/speed:rotate-90 transition-transform duration-200"
+                />
               </button>
               <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-800 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-opacity flex flex-col py-1 min-w-[90px] shadow-xl">
-                <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">Speed</div>
-                {[0.5, 1, 1.25, 1.5, 2].map(rate => (
+                <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">
+                  Speed
+                </div>
+                {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
                   <button
                     key={rate}
                     onClick={() => changeSpeed(rate)}
-                    className={`px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${playbackRate === rate ? 'text-red-500' : 'text-zinc-300'
-                      }`}
+                    className={`px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
+                      playbackRate === rate ? "text-red-500" : "text-zinc-300"
+                    }`}
                   >
-                    {rate === 1 ? 'Normal' : `${rate}×`}
-                    {playbackRate === rate && <span className="w-1 h-1 bg-red-500" />}
+                    {rate === 1 ? "Normal" : `${rate}×`}
+                    {playbackRate === rate && (
+                      <span className="w-1 h-1 bg-red-500" />
+                    )}
                   </button>
                 ))}
               </div>
             </div>
 
-            <button onClick={toggleFullscreen} className="p-0.5 text-zinc-400 hover:text-red-500">
+            <button
+              onClick={toggleFullscreen}
+              className="p-0.5 text-zinc-400 hover:text-red-500"
+            >
               {isFullscreen ? (
                 <Minimize size={18} strokeWidth={2} />
               ) : (
