@@ -156,13 +156,14 @@ export default async function WatchPage({ params }: PageProps) {
 
   if (video.status === "DMCA_TAKEDOWN") {
     return (
-      <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans pb-20">
-        <div className="max-w-4xl mx-auto px-6 pt-20 text-center">
-          <ShieldAlert className="text-rose-600 mx-auto mb-6 animate-pulse" size={60} />
-          <h2 className="text-2xl text-white mb-4">Content Disabled Under Copyright Law</h2>
-          <Link href="/" className="bg-rose-700 text-white px-6 py-2.5 rounded-sm">Return Home</Link>
-        </div>
-      </div>
+      // <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans pb-20">
+      //   <div className="max-w-4xl mx-auto px-6 pt-20 text-center">
+      //     <ShieldAlert className="text-rose-600 mx-auto mb-6 animate-pulse" size={60} />
+      //     <h2 className="text-2xl text-white mb-4">Content Disabled Under Copyright Law</h2>
+      //     <Link href="/" className="bg-rose-700 text-white px-6 py-2.5 rounded-sm">Return Home</Link>
+      //   </div>
+      // </div>
+    notFound()
     );
   }
 
