@@ -13,7 +13,8 @@ export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const embedCode = `<iframe src="${SITE_URL}/embed/${videoId}" width="640" height="360" frameborder="0" title="${videoTitle.replace(/"/g, """)}" scrolling="no" allowfullscreen></iframe>`;
+  const safeTitle = videoTitle.replace(/"/g, "'");
+  const embedCode = `<iframe src="${SITE_URL}/embed/${videoId}" width="640" height="360" frameborder="0" title="${safeTitle}" scrolling="no" allowfullscreen></iframe>`;
 
   const handleCopy = async () => {
     try {
