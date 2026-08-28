@@ -34,15 +34,15 @@ export async function generateMetadata({ searchParams }: DirectoryProps): Promis
     : "Pornstars Directory";
 
   const title = currentPage > 1
-    ? `${titleBase} - Page ${currentPage} | PornCater`
-    : `${titleBase} - Free HD Porn Videos | PornCater`;
+    ? `${titleBase} - Page ${currentPage}`
+    : `${titleBase} - Free HD Porn Videos`;
 
   const description = isFiltered
     ? `Browse top ${letter.toUpperCase()} pornstars. Watch free HD porn videos from the hottest adult stars starting with ${letter.toUpperCase()}. Updated daily on PornCater.`
     : `Browse thousands of pornstars. Watch free HD porn videos from the most popular adult stars. Updated daily on PornCater.`;
 
   // Canonical logic
-  let canonical = "https://porncater.com/pornstars";
+  let canonical = "https://www.porncater.com/pornstars";
   const params = new URLSearchParams();
   if (letter) params.set("letter", letter);
   if (currentPage > 1) params.set("page", String(currentPage));
@@ -103,7 +103,7 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
   const totalPages = Math.ceil(totalPerformers / performersPerPage) || 1;
 
   // Canonical for schema
-  let canonicalUrl = "https://porncater.com/pornstars";
+  let canonicalUrl = "https://www.porncater.com/pornstars";
   const params = new URLSearchParams();
   if (letterQuery) params.set("letter", letterQuery);
   if (currentPage > 1) params.set("page", String(currentPage));
@@ -128,13 +128,13 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://porncater.com/",
+        "item": "https://www.porncater.com/",
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Pornstars",
-        "item": "https://porncater.com/pornstars",
+        "item": "https://www.porncater.com/pornstars",
       },
     ],
   };
@@ -145,7 +145,7 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
       "@type": "ListItem",
       "position": 3,
       "name": `${letterQuery.toUpperCase()} Pornstars`,
-      "item": `https://porncater.com/pornstars?letter=${letterQuery}`,
+      "item": `https://www.porncater.com/pornstars?letter=${letterQuery}`,
     });
   }
 
@@ -161,9 +161,9 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
     "itemListElement": pornstars.map((star, index) => ({
       "@type": "ListItem",
       "position": (currentPage - 1) * performersPerPage + index + 1,
-      "url": `https://porncater.com/pornstars/${star.slug}`,
+      "url": `https://www.porncater.com/pornstars/${star.slug}`,
       "name": star.name,
-      "image": star.avatarUrl || "https://porncater.com/thumbnails/default-avatar.png",
+      "image": star.avatarUrl || "https://www.porncater.com/thumbnails/default-avatar.png",
     })),
   };
 
@@ -180,7 +180,7 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
     "isPartOf": {
       "@type": "WebSite",
       "name": "PornCater",
-      "url": "https://porncater.com",
+      "url": "https://www.porncater.com",
     },
     "mainEntity": {
       "@type": "ItemList",

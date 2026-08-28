@@ -266,13 +266,12 @@ export default function VideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    // restore original
-    video.src = originalSrcRef.current;
-    video.load();
+    // HLS.js must re-attach after VAST. Setting video.src here races the
+    // source effect and can kill playback on Chrome/Firefox.
     setTimeout(() => {
       video.play().catch(() => {});
       setIsPlaying(true);
-    }, 40);
+    }, 80);
   }, [preloadedAd]);
 
   const togglePlay = useCallback(async () => {

@@ -12,7 +12,7 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 // 🚀 SEO ENGINE (DMCA METADATA)
 // =========================================================
 export const metadata: Metadata = {
-  title: "DMCA Copyright Policy | PornCater",
+  title: "DMCA Copyright Policy",
   description: "Digital Millennium Copyright Act (DMCA) Notice and Takedown Policy for PornCater. We respect intellectual property rights and strictly adhere to copyright laws.",
   robots: {
     index: true,

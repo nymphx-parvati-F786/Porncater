@@ -1,9 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata, ResolvingMetadata } from "next";
-import { ThumbsUp, Eye, ShieldAlert, Download, Calendar } from "lucide-react";
+import { ThumbsUp, Eye, Calendar } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
+import JsonLd from "@/src/components/json-ld";
+import VideoCard from "@/src/components/ui/VideoCard";
+import { getTopBannerAd } from "@/src/lib/ads";
+import {
+  MEGA_CATEGORIES,
+  SITE_URL,
+  categoryPath,
+  formatIsoDuration,
+  videoAbsUrl,
+} from "@/src/lib/site";
 
 // Core Components
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
@@ -29,83 +39,25 @@ interface PageProps {
 
 export const revalidate = 120; // Revalidate dynamic watch page every 2 minutes
 
-const megaCategories = [
-  "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
-  "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
-  "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
-];
-
-// Helper: Format display duration (MM:SS)
-const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
-  const num = Number(seconds);
-  if (isNaN(num)) return String(seconds);
-  const m = Math.floor(num / 60);
-  const s = num % 60;
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
-};
-
-// 🔥 HELPER: Convert duration string/seconds to Google's required ISO 8601 format (e.g. "PT10M24S")
-function formatIsoDuration(durationStr: string | null | undefined): string {
-  if (!durationStr) return "PT10M00S";
-
-  let totalSeconds = 0;
-  if (typeof durationStr === "string" && durationStr.includes(":")) {
-    const parts = durationStr.split(":").map(Number);
-    if (parts.length === 3) totalSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
-    else if (parts.length === 2) totalSeconds = parts[0] * 60 + parts[1];
-  } else {
-    totalSeconds = parseInt(String(durationStr), 10) || 600;
-  }
-
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  let iso = "PT";
-  if (hours > 0) iso += `${hours}H`;
-  if (minutes > 0) iso += `${minutes}M`;
-  iso += `${seconds}S`;
-
-  return iso;
-}
-
-// 🔥 HELPER: Server-Side Pre-Fetch Banner for 0ms LCP
-async function getTopServerBanner(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true }
-    });
-    if (!banner) return null;
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (e) {
-    return null;
-  }
-}
-
 export async function generateMetadata(
   { params }: PageProps,
-  parent: ResolvingMetadata
+  _parent: ResolvingMetadata
 ): Promise<Metadata> {
   const resolvedParams = await params;
   const videoId = parseInt(resolvedParams.id, 10);
 
-  if (isNaN(videoId)) return { title: "Video Not Found | PornCater" };
+  if (isNaN(videoId)) return { title: "Video Not Found" };
 
   const video = await prisma.video.findUnique({
     where: { id: videoId },
-    select: { title: true, thumbnail: true, category: true, tags: true, status: true, pornstars: { select: { name: true } } }
+    select: { title: true, slug: true, thumbnail: true, category: true, tags: true, status: true, pornstars: { select: { name: true } } }
   });
 
-  if (!video) return { title: "Video Removed | PornCater" };
+  if (!video) return { title: "Video Removed" };
 
   if (video.status === "DMCA_TAKEDOWN") {
     return {
-      title: "Content Unavailable - DMCA Takedown | PornCater",
+      title: "Content Unavailable - DMCA Takedown",
       description: "Access to this video has been disabled in compliance with copyright regulations.",
       robots: { index: false, follow: false, nocache: true },
     };
@@ -115,10 +67,10 @@ export async function generateMetadata(
   const tags = video.tags?.join(', ') || '';
   const seoKeywords = `${starNames}, ${tags}, ${video.category || ''}, ${video.title}, free HD porn, watch sex tube, adult video stream`;
   const seoDescription = `Watch ${video.title}${starNames ? ` starring ${starNames}` : ''} in full HD. Stream exclusive free porn scenes on PornCater.`;
-  const canonicalUrl = `https://porncater.com/video/${videoId}/${resolvedParams.slug}`;
+  const canonicalUrl = videoAbsUrl(videoId, video.slug);
 
   return {
-    title: `${video.title} - Free HD Porn | PornCater`,
+    title: `${video.title} - Free HD Porn`,
     description: seoDescription,
     keywords: seoKeywords,
     alternates: { canonical: canonicalUrl },
@@ -154,17 +106,12 @@ export default async function WatchPage({ params }: PageProps) {
 
   if (!video) notFound();
 
-  if (video.status === "DMCA_TAKEDOWN") {
-    return (
-      // <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans pb-20">
-      //   <div className="max-w-4xl mx-auto px-6 pt-20 text-center">
-      //     <ShieldAlert className="text-rose-600 mx-auto mb-6 animate-pulse" size={60} />
-      //     <h2 className="text-2xl text-white mb-4">Content Disabled Under Copyright Law</h2>
-      //     <Link href="/" className="bg-rose-700 text-white px-6 py-2.5 rounded-sm">Return Home</Link>
-      //   </div>
-      // </div>
-    notFound()
-    );
+  if (video.status !== "PUBLISHED") {
+    notFound();
+  }
+
+  if (video.slug !== resolvedParams.slug) {
+    permanentRedirect(`/video/${video.id}/${video.slug}`);
   }
 
   const starIds = video.pornstars.map(s => s.id);
@@ -194,52 +141,57 @@ export default async function WatchPage({ params }: PageProps) {
       orderBy: { views: "desc" },
       select: { id: true, name: true, avatarUrl: true, views: true, slug: true }
     }),
-    getTopServerBanner("970x70"),
-    getTopServerBanner("300x250")
+    getTopBannerAd("970x70"),
+    getTopBannerAd("300x100")
   ]);
 
   const uploadDateFormatted = new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  const canonicalUrl = `https://porncater.com/video/${video.id}/${resolvedParams.slug}`;
+  const canonicalUrl = videoAbsUrl(video.id, video.slug);
   const isoDuration = formatIsoDuration(video.duration);
+  const starNames = video.pornstars.map((s) => s.name).join(", ");
 
-  // 🔥 PERFECTED GOOGLE RICH RESULT: VideoObject Schema
-  const jsonLdSchema = {
+  const jsonLdSchema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "VideoObject",
-    "name": video.title,
-    "description": `Watch ${video.title} free on PornCater.`,
-    "thumbnailUrl": [video.thumbnail],
-    "uploadDate": new Date(video.createdAt).toISOString(),
-    "duration": isoDuration,
-    "contentUrl": video.videoUrl,
-    "embedUrl": `https://porncater.com/embed/${video.id}`,
-    "isFamilyFriendly": false,
-    "interactionStatistic": {
+    name: video.title,
+    description: `Watch ${video.title}${starNames ? ` starring ${starNames}` : ""} in HD on PornCater.`,
+    thumbnailUrl: [video.thumbnail],
+    uploadDate: new Date(video.createdAt).toISOString(),
+    embedUrl: `${SITE_URL}/embed/${video.id}`,
+    isFamilyFriendly: false,
+    interactionStatistic: {
       "@type": "InteractionCounter",
-      "interactionType": "https://schema.org/WatchAction",
-      "userInteractionCount": video.views || 0
+      interactionType: "https://schema.org/WatchAction",
+      userInteractionCount: video.views || 0,
     },
   };
+  if (isoDuration) jsonLdSchema.duration = isoDuration;
+  if (video.pornstars.length > 0) {
+    jsonLdSchema.actor = video.pornstars.map((star) => ({
+      "@type": "Person",
+      name: star.name,
+      url: `${SITE_URL}/pornstars/${star.slug}`,
+    }));
+  }
 
-  // 🔥 ENHANCED 3-TIER BREADCRUMB SCHEMA
   const categoryName = video.category || (tags[0] ? tags[0] : "Adult");
   const breadcrumbSchema = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
-      { "@type": "ListItem", "position": 2, "name": categoryName, "item": `https://porncater.com/category/${categoryName.toLowerCase()}` },
-      { "@type": "ListItem", "position": 3, "name": video.title, "item": canonicalUrl }
-    ]
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+      { "@type": "ListItem", position: 2, name: categoryName, item: `${SITE_URL}${categoryPath(categoryName)}` },
+      { "@type": "ListItem", position: 3, name: video.title, item: canonicalUrl },
+    ],
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
       {/* Inject Structured Data */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLdSchema, breadcrumbSchema]) }} />
+      <JsonLd data={[jsonLdSchema, breadcrumbSchema]} />
       <ViewTracker videoId={video.id} />
 
-      <SmartHeader categories={megaCategories} />
+      <SmartHeader categories={[...MEGA_CATEGORIES]} />
 
       <main>
         {/* 🔥 THE INVISIBLE MONEY MAKER 🔥 */}
@@ -285,7 +237,7 @@ export default async function WatchPage({ params }: PageProps) {
 
               <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-zinc-800">
                 <div className="flex items-center gap-2.5 text-[11px] md:text-xs text-zinc-400 uppercase tracking-widest font-bold">
-                  <span className="flex items-center gap-1 text-emerald-500"><ThumbsUp size={14} /> 98%</span>
+                  <span className="flex items-center gap-1 text-emerald-500"><ThumbsUp size={14} /> {Number(video.likes || 0).toLocaleString()}</span>
                   <span className="text-zinc-700">•</span>
                   <span className="flex items-center gap-1.5"><Eye size={14} /> {Number(video.views || 0).toLocaleString()}</span>
                   <span className="text-zinc-700">•</span>
@@ -384,22 +336,7 @@ export default async function WatchPage({ params }: PageProps) {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 sm:gap-3">
             {relatedVideos.map((v) => (
-              <Link key={v.id} href={`/video/${v.id}/${v.slug}`} className="group flex flex-col bg-[#0a0a0a] border border-zinc-800 rounded-sm overflow-hidden hover:border-rose-900 transition-colors">
-                <div className="relative aspect-video bg-black">
-                  <Image src={v.thumbnail} alt={v.title} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover group-hover:opacity-80 transition-opacity" />
-                  <div className="absolute bottom-1 right-1 bg-black/80 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm">{formatDuration(v.duration)}</div>
-                  <div className="absolute top-1 left-1 bg-rose-700 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-sm uppercase">HD</div>
-                </div>
-                <div className="p-2 flex flex-col flex-grow">
-                  <h3 className="text-xs text-zinc-300 font-light line-clamp-2 leading-tight group-hover:text-rose-500 transition-colors">
-                    {v.title}
-                  </h3>
-                  <div className="mt-auto pt-2 flex items-center justify-between text-[9px] text-zinc-500 uppercase tracking-widest font-bold">
-                    <span>{Number(v.views || 0).toLocaleString()} views</span>
-                    <span className="text-emerald-500 hidden sm:inline">98%</span>
-                  </div>
-                </div>
-              </Link>
+              <VideoCard key={v.id} video={v} compact />
             ))}
           </div>
         </div>

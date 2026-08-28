@@ -1,20 +1,17 @@
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const pornstarParam = searchParams.get('pornstarId');
-    const tag = searchParams.get('tag');
-    const searchQuery = searchParams.get('q');
+    const pornstarParam = searchParams.get("pornstarId");
+    const tag = searchParams.get("tag");
+    const searchQuery = searchParams.get("q");
 
-    let whereClause: any = {};
+    const whereClause: Record<string, unknown> = { status: "PUBLISHED" };
 
-    // 1. Filter by Pornstar ID
-    if (pornstarParam && pornstarParam !== 'undefined') {
-      const parsedId = parseInt(pornstarParam);
+    if (pornstarParam && pornstarParam !== "undefined") {
+      const parsedId = parseInt(pornstarParam, 10);
       if (!isNaN(parsedId)) {
         whereClause.pornstars = { some: { id: parsedId } };
       } else {
@@ -22,17 +19,14 @@ export async function GET(request: Request) {
       }
     }
 
-    // 2. Filter by Tag/Category
     if (tag) {
       whereClause.tags = { has: tag };
     }
 
-    // 3. Filter by Search Query
     if (searchQuery) {
-      whereClause.title = { contains: searchQuery, mode: 'insensitive' };
+      whereClause.title = { contains: searchQuery, mode: "insensitive" };
     }
 
-    // Fast query setup for feeds and grids
     const videos = await prisma.video.findMany({
       take: 20,
       where: whereClause,
@@ -42,14 +36,14 @@ export async function GET(request: Request) {
         thumbnail: true,
         duration: true,
         views: true,
-        slug: true
+        slug: true,
       },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: "desc" },
     });
 
     return NextResponse.json(videos);
   } catch (error) {
     console.error("Database Error in /api/videos:", error);
-    return NextResponse.json({ error: "Failed to fetch porn videos." }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch videos." }, { status: 500 });
   }
 }

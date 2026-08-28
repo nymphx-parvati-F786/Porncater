@@ -12,7 +12,7 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 // 🚀 SEO ENGINE (PRIVACY METADATA)
 // =========================================================
 export const metadata: Metadata = {
-  title: "Privacy Policy | PornCater",
+  title: "Privacy Policy",
   description: "Privacy Policy and data protection guidelines for PornCater. Learn how we handle, protect, and manage your data on our adult streaming platform.",
   robots: {
     index: true,

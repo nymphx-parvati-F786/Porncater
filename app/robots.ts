@@ -1,23 +1,16 @@
-import { MetadataRoute } from 'next';
+import { MetadataRoute } from "next";
+import { SITE_URL } from "@/src/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      // 🔥 BLOCK CRAWLERS FROM INDEXING THIN CONTENT & ADMIN ROUTES
-      disallow: [
-        '/search?q=*', 
-        '/admin/', 
-        '/api/',
-        '/embed/', // Don't let Google index the headless iframes as standalone pages
-      ],
-    },
-    // 🔥 THE FIX: Use explicit, clean non-www URLs. 
-    // NO trailing slashes. NO old sitemap names.
-    sitemap: [
-      'https://porncater.com/sitemap.xml',
-      'https://porncater.com/sitemap-videos.xml'
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/admin/", "/api/", "/embed/", "/unlock", "/api/unlock"],
+      },
     ],
+    sitemap: [`${SITE_URL}/sitemap.xml`, `${SITE_URL}/sitemap-videos.xml`],
+    host: SITE_URL,
   };
 }

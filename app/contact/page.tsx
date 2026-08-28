@@ -13,10 +13,10 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 // 🚀 SEO METADATA
 // =========================================================
 export const metadata: Metadata = {
-  title: 'Contact Us | PornCater',
+  title: 'Contact Us',
   description: 'Get in touch with the PornCater support team for advertising, technical issues, or general inquiries.',
   alternates: {
-    canonical: 'https://porncater.com/contact',
+    canonical: 'https://www.porncater.com/contact',
   },
 };
 

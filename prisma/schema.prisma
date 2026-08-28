@@ -65,6 +65,7 @@ model Video {
   // 🔥 ADD THIS: Speeds up category filtering & search
   @@index([category(ops: raw("gin_trgm_ops"))], type: Gin)
   @@index([studio])
+  @@index([status])
 }
 
 model Pornstar {
