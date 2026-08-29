@@ -23,7 +23,8 @@ const HOT_ZONE_PERCENTAGE = 0.75;
 // ------------------------------------------------------------------
 // AUTO-LOGGER
 // ------------------------------------------------------------------
-const LOG_DIR = path.join(__dirname, 'script_logs/avatar_logs');
+const ROOT = path.resolve(__dirname, '..');
+const LOG_DIR = path.join(ROOT, 'script_logs', 'avatar_logs');
 if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_');
@@ -58,7 +59,7 @@ const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
 const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
 const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
 
-const TEMP_DIR = path.join(__dirname, 'local_avatars_to_upload');
+const TEMP_DIR = path.join(ROOT, 'local_avatars_to_upload');
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));

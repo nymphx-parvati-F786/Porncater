@@ -6,7 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Menu, Search, Video, MonitorPlay, TrendingUp,
-  Clock, Star, Sparkles, Filter, ChevronDown, X
+  Clock, Star, Sparkles, Filter, ChevronDown, X, Tv
 } from "lucide-react";
 import SearchBar from "@/src/components/ui/SearchBar";
 
@@ -199,6 +199,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/trending" className={getNavClass("/trending")}><TrendingUp size={18} /> Trending</Link>
             <Link href="/latest" className={getNavClass("/latest")}><Clock size={18} /> New Videos</Link>
             <Link href="/top-rated" className={getNavClass("/top-rated")}><Star size={18} /> Top Rated</Link>
+            <Link href="/channels" className={getNavClass("/channels")}><Tv size={18} /> Channels</Link>
             <Link href="/pornstars" className={getNavClass("/pornstars")}><Sparkles size={18} /> Pornstars</Link>
           </div>
         </div>
@@ -224,6 +225,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/trending" className={getMobileNavClass("/trending")}><TrendingUp size={20} /> Trending</Link>
             <Link href="/latest" className={getMobileNavClass("/latest")}><Clock size={20} /> New Videos</Link>
             <Link href="/top-rated" className={getMobileNavClass("/top-rated")}><Star size={20} /> Top Rated</Link>
+            <Link href="/channels" className={getMobileNavClass("/channels")}><Tv size={20} /> Channels</Link>
             <Link href="/pornstars" className={getMobileNavClass("/pornstars")}><Sparkles size={20} /> Pornstars</Link>
 
             <div className="mt-8 pt-8 border-t border-white/5">

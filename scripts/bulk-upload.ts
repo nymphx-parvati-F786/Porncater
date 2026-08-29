@@ -28,7 +28,8 @@ const __dirname = path.dirname(__filename);
 // ------------------------------------------------------------------
 // NATIVE PIPELINE AUTO-LOGGER
 // ------------------------------------------------------------------
-const LOG_DIR = path.join(__dirname, 'script_logs/pipeline_logs');
+const ROOT = path.resolve(__dirname, '..');
+const LOG_DIR = path.join(ROOT, 'script_logs', 'pipeline_logs');
 if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_');
@@ -74,7 +75,9 @@ const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
 const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
 const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
 
-const TEMP_DIR = path.join(__dirname, 'local_videos_to_upload');
+const TEMP_DIR = path.join(ROOT, 'local_videos_to_upload');
+const ARIA_BIN_DIR = path.join(__dirname, 'bin');
+if (fs.existsSync(ARIA_BIN_DIR)) process.env.PATH = `${ARIA_BIN_DIR}${path.delimiter}${process.env.PATH || ''}`;
 if (!fs.existsSync(TEMP_DIR)) fs.mkdirSync(TEMP_DIR);
 
 type ProcessResult = 'CLEAN_SUCCESS' | 'RETRY_SUCCESS' | 'FAILED';
@@ -356,7 +359,7 @@ async function run() {
   } catch (e) {}
 
   // 1. Build the Master Roster
-  const csvFilePath = path.join(process.cwd(), 'Pornstar_rows.csv');
+  const csvFilePath = path.join(__dirname, 'data', 'Pornstar_rows.csv');
   const rawNames: string[] = [];
 
   if (fs.existsSync(csvFilePath)) {
@@ -378,7 +381,7 @@ async function run() {
   console.log(`🧠 Master Roster loaded with ${masterRosterMap.size} performers.`);
 
   // 2. Read Targets
-  const urlsFilePath = path.join(__dirname, 'urls.txt');
+  const urlsFilePath = path.join(__dirname, 'data', 'clean_urls.txt');
   const failedFilePath = path.join(__dirname, 'failed_urls.txt');
 
   if (!fs.existsSync(urlsFilePath)) {

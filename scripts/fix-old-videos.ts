@@ -118,7 +118,7 @@ async function runRetroactiveMapping() {
   }
 
   // 1. Read CSV profiles
-  const csvFilePath = path.resolve(process.cwd(), 'Pornstar_rows.csv');
+  const csvFilePath = path.resolve(__dirname, 'data', 'Pornstar_rows.csv');
   const rawNames: string[] = [];
 
   if (fs.existsSync(csvFilePath)) {

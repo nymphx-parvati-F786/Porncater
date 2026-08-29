@@ -1,34 +1,35 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { ADMIN_COOKIE, verifyAdminSession } from "@/src/lib/admin-session";
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
 
-  // 1. VIP PASS: Let Cloudflare's email webhook through untouched
-  // (Cloudflare has its own x-cf-inbox-secret password to get in)
-  if (pathname === '/api/admin/inbox' && req.method === 'POST') {
+  // Cloudflare email worker authenticates with its own secret header.
+  if (pathname === "/api/admin/inbox" && req.method === "POST") {
     return NextResponse.next();
   }
 
-  // 2. THE GHOST PROTOCOL: Protect all /admin routes
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
-    
-    // Check if the browser has your secret God-Tier cookie
-    const godModeCookie = req.cookies.get('porncater_god_mode');
+  if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
+    const token = req.cookies.get(ADMIN_COOKIE)?.value;
+    const ok = await verifyAdminSession(token);
 
-    // If they DON'T have the cookie, silently redirect them to the homepage!
-    if (!godModeCookie || godModeCookie.value !== 'engaged') {
-      return NextResponse.redirect(new URL('/', req.url));
+    if (!ok) {
+      const denied = NextResponse.redirect(new URL("/", req.url));
+      denied.cookies.delete(ADMIN_COOKIE);
+      denied.cookies.delete("porncater_god_mode");
+      denied.headers.set("Cache-Control", "private, no-store");
+      return denied;
     }
 
-    // If they DO have the cookie, let them in smoothly.
-    return NextResponse.next();
+    const pass = NextResponse.next();
+    pass.headers.set("Cache-Control", "private, no-store");
+    return pass;
   }
 
-  // 3. Let all regular users browse the main porn site freely
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*'],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

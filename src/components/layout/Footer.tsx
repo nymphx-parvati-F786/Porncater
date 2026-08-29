@@ -16,6 +16,9 @@ export default function Footer() {
         <Link href="/2257" className="hover:text-zinc-300 transition-colors">
           18 U.S.C. 2257
         </Link>
+        <Link href="/channels" className="hover:text-zinc-300 transition-colors">
+          Channels
+        </Link>
         <Link href="/contact" className="hover:text-zinc-300 transition-colors">
           Contact Us
         </Link>

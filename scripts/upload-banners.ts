@@ -10,7 +10,8 @@ const __dirname = path.dirname(__filename);
 // ------------------------------------------------------------------
 // NATIVE PIPELINE AUTO-LOGGER
 // ------------------------------------------------------------------
-const LOG_DIR = path.join(__dirname, 'script_logs/banner_logs');
+const ROOT = path.resolve(__dirname, '..');
+const LOG_DIR = path.join(ROOT, 'script_logs', 'banner_logs');
 if (!fs.existsSync(LOG_DIR)) fs.mkdirSync(LOG_DIR, { recursive: true });
 
 const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_');

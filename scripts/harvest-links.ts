@@ -14,12 +14,12 @@ const __dirname = path.dirname(__filename);
 chromium.use(stealth());
 
 // Configuration
-const TARGETS_FILE = path.join(__dirname, 'targets.txt');
-const OUTPUT_FILE = path.join(__dirname, 'urls.txt');
-const URL_MATCH_PATTERN = '/videos/';
+const ROOT = path.resolve(__dirname, '..');
+const TARGETS_FILE = path.join(__dirname, 'data', 'targets.txt');
+const OUTPUT_FILE = path.join(__dirname, 'data', 'urls.txt');
+const URL_MATCH_PATTERN = 'video';
 
-// 🔥 Your custom absolute log directory
-const LOG_DIR = 'script_logs/harvester_logs'; // Change this to your desired log directory
+const LOG_DIR = path.join(ROOT, 'script_logs', 'harvester_logs');
 const LOG_FILE = path.join(LOG_DIR, 'harvest_log.txt');
 
 // Bulletproof check: Create the folder structure if it doesn't exist

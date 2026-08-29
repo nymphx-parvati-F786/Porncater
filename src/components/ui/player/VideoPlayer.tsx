@@ -3,18 +3,17 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import Hls from "hls.js";
 import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Maximize,
-  Minimize,
-  SkipBack,
-  SkipForward,
-  Settings,
-  ExternalLink,
-  Repeat,
-} from "lucide-react";
+  IcoPlay,
+  IcoPause,
+  IcoSkipTen,
+  IcoVolume,
+  IcoExpand,
+  IcoCompress,
+  IcoLoop,
+  IcoPip,
+  IcoOut,
+  IcoSkipAd,
+} from "./icons";
 
 interface VideoPlayerProps {
   src: string;
@@ -22,6 +21,24 @@ interface VideoPlayerProps {
   title?: string;
   vastTagUrl?: string;
   autoNext?: boolean;
+}
+
+type QualityLevel = { index: number; height: number; label: string };
+
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const SEEK_STEP = 10;
+
+function fmt(t: number) {
+  if (!Number.isFinite(t) || t < 0) return "0:00";
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = Math.floor(t % 60);
+  if (h > 0) return `${h}:${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+
+function posKey(src: string) {
+  return `pc_pos_${src.slice(-80)}`;
 }
 
 export default function VideoPlayer({
@@ -32,15 +49,23 @@ export default function VideoPlayer({
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const originalSrcRef = useRef(src);
   const firedTracking = useRef<Set<string>>(new Set());
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const singleTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTap = useRef(0);
+  const lastTapZone = useRef<"left" | "center" | "right" | null>(null);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holding2x = useRef(false);
+  const rateBeforeHold = useRef(1);
+  const ignoreClick = useRef(false);
+  const handlersRef = useRef<Record<string, () => void>>({});
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [buffered, setBuffered] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -49,11 +74,19 @@ export default function VideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLooping, setIsLooping] = useState(false);
-  const [actionAnim, setActionAnim] = useState<"forward" | "rewind" | null>(
-    null,
-  );
+  const [actionAnim, setActionAnim] = useState<"forward" | "rewind" | null>(null);
   const [adAttempted, setAdAttempted] = useState(false);
   const [isLoadingAd, setIsLoadingAd] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hoverX, setHoverX] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [holdBoost, setHoldBoost] = useState(false);
+  const [levels, setLevels] = useState<QualityLevel[]>([]);
+  const [currentLevel, setCurrentLevel] = useState(-1);
+  const [isIos, setIsIos] = useState(false);
+  const [pipSupported, setPipSupported] = useState(false);
+  const [error, setError] = useState(false);
 
   const [preloadedAd, setPreloadedAd] = useState<{
     mediaUrl: string;
@@ -64,7 +97,25 @@ export default function VideoPlayer({
   const [adState, setAdState] = useState({ isPlaying: false, skipOffset: 5 });
   const [adCountdown, setAdCountdown] = useState(5);
 
-  // ─── HLS ───────────────────────────────────────────────
+  useEffect(() => {
+    setIsIos(/iPad|iPhone|iPod/.test(navigator.userAgent));
+    setPipSupported("pictureInPictureEnabled" in document);
+    const savedVol = localStorage.getItem("porncater_vol");
+    if (savedVol !== null) {
+      const n = parseFloat(savedVol);
+      if (Number.isFinite(n)) {
+        setVolume(n);
+        setIsMuted(n === 0);
+        if (videoRef.current) videoRef.current.volume = n;
+      }
+    }
+    const savedRate = localStorage.getItem("porncater_rate");
+    if (savedRate) {
+      const n = parseFloat(savedRate);
+      if (SPEEDS.includes(n)) setPlaybackRate(n);
+    }
+  }, []);
+
   useEffect(() => {
     originalSrcRef.current = src;
     const video = videoRef.current;
@@ -74,15 +125,51 @@ export default function VideoPlayer({
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
+    setLevels([]);
+    setCurrentLevel(-1);
+    setError(false);
 
     if (src.includes(".m3u8") && Hls.isSupported()) {
       const hls = new Hls({
-        maxMaxBufferLength: 30,
-        startLevel: -1,
         enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 60,
+        maxBufferLength: 24,
+        maxMaxBufferLength: 48,
+        maxBufferHole: 0.5,
+        startLevel: -1,
+        capLevelToPlayerSize: true,
+        startFragPrefetch: true,
+        fragLoadingMaxRetry: 4,
+        manifestLoadingMaxRetry: 3,
+        abrEwmaDefaultEstimate: 800000,
       });
       hls.loadSource(src);
       hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
+        const next: QualityLevel[] = data.levels
+          .map((level, index) => ({
+            index,
+            height: level.height || 0,
+            label: level.height ? `${level.height}p` : `${Math.round(level.bitrate / 1000)}k`,
+          }))
+          .filter((l) => l.height || l.label);
+        next.sort((a, b) => b.height - a.height);
+        setLevels(next);
+      });
+      hls.on(Hls.Events.LEVEL_SWITCHED, (_e, data) => {
+        setCurrentLevel(data.level);
+      });
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (!data.fatal) return;
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          hls.startLoad();
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+        } else {
+          setError(true);
+        }
+      });
       hlsRef.current = hls;
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
@@ -90,15 +177,18 @@ export default function VideoPlayer({
       video.src = src;
     }
 
+    video.playbackRate = playbackRate;
+
     return () => {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
     };
+    // playbackRate applied separately; don't rebuild HLS on speed change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, adState.isPlaying]);
 
-  // ─── VAST PREFETCH ─────────────────────────────────────
   useEffect(() => {
     if (!vastTagUrl) return;
     const controller = new AbortController();
@@ -108,14 +198,11 @@ export default function VideoPlayer({
       .then((r) => (r.ok ? r.text() : Promise.reject()))
       .then((text) => {
         const doc = new DOMParser().parseFromString(text, "text/xml");
-        const media = doc
-          .getElementsByTagName("MediaFile")[0]
-          ?.textContent?.trim();
+        const media = doc.getElementsByTagName("MediaFile")[0]?.textContent?.trim();
         if (!media) return;
 
         const click =
-          doc.getElementsByTagName("ClickThrough")[0]?.textContent?.trim() ||
-          null;
+          doc.getElementsByTagName("ClickThrough")[0]?.textContent?.trim() || null;
         const tracking: Record<string, string[]> = { impression: [] };
 
         Array.from(doc.getElementsByTagName("Tracking")).forEach((node) => {
@@ -145,25 +232,13 @@ export default function VideoPlayer({
     };
   }, [vastTagUrl]);
 
-  // ─── VOLUME MEMORY ─────────────────────────────────────
-  useEffect(() => {
-    const v = localStorage.getItem("porncater_vol");
-    if (v !== null) {
-      const n = parseFloat(v);
-      setVolume(n);
-      setIsMuted(n === 0);
-      if (videoRef.current) videoRef.current.volume = n;
-    }
-  }, []);
-
-  // ─── CONTROLS AUTO-HIDE ────────────────────────────────
   const resetControls = useCallback(() => {
     setShowControls(true);
     if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
-    if (isPlaying && !adState.isPlaying) {
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 1800);
+    if (isPlaying && !adState.isPlaying && !settingsOpen) {
+      controlsTimeout.current = setTimeout(() => setShowControls(false), 2400);
     }
-  }, [isPlaying, adState.isPlaying]);
+  }, [isPlaying, adState.isPlaying, settingsOpen]);
 
   useEffect(() => {
     resetControls();
@@ -178,72 +253,6 @@ export default function VideoPlayer({
     return () => document.removeEventListener("fullscreenchange", fn);
   }, []);
 
-  // ─── KEYBOARD ──────────────────────────────────────────
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (
-        !containerRef.current?.contains(document.activeElement) &&
-        document.activeElement !== document.body
-      )
-        return;
-      const v = videoRef.current;
-      if (!v || adState.isPlaying) return;
-
-      switch (e.key.toLowerCase()) {
-        case " ":
-        case "k":
-          e.preventDefault();
-          togglePlay();
-          break;
-        case "arrowleft":
-          e.preventDefault();
-          v.currentTime = Math.max(0, v.currentTime - 5);
-          showAnim("rewind");
-          break;
-        case "arrowright":
-          e.preventDefault();
-          v.currentTime = Math.min(v.duration, v.currentTime + 5);
-          showAnim("forward");
-          break;
-        case "j":
-          e.preventDefault();
-          v.currentTime = Math.max(0, v.currentTime - 10);
-          showAnim("rewind");
-          break;
-        case "l":
-          e.preventDefault();
-          v.currentTime = Math.min(v.duration, v.currentTime + 10);
-          showAnim("forward");
-          break;
-        case "m":
-          e.preventDefault();
-          toggleMute();
-          break;
-        case "f":
-          e.preventDefault();
-          toggleFullscreen();
-          break;
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
-          e.preventDefault();
-          v.currentTime = (parseInt(e.key) / 10) * v.duration;
-          break;
-      }
-      resetControls();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
-
-  // ─── TRACKING ──────────────────────────────────────────
   const fire = (urls?: string[]) => {
     if (!urls) return;
     urls.forEach((u) => {
@@ -254,7 +263,22 @@ export default function VideoPlayer({
     });
   };
 
-  // ─── AD ENGINE ─────────────────────────────────────────
+  const showAnim = (type: "forward" | "rewind") => {
+    setActionAnim(type);
+    setTimeout(() => setActionAnim(null), 420);
+  };
+
+  const seekBy = useCallback((delta: number) => {
+    const v = videoRef.current;
+    if (!v || adState.isPlaying) return;
+    const next = Math.min(Math.max(0, v.currentTime + delta), v.duration || 0);
+    v.currentTime = next;
+    setCurrentTime(next);
+    if (v.duration) setProgress((next / v.duration) * 100);
+    showAnim(delta > 0 ? "forward" : "rewind");
+    resetControls();
+  }, [adState.isPlaying, resetControls]);
+
   const skipAd = useCallback(() => {
     if (preloadedAd) fire(preloadedAd.trackingUrls.skip);
     setAdState({ isPlaying: false, skipOffset: 5 });
@@ -266,13 +290,10 @@ export default function VideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    // restore original
-    video.src = originalSrcRef.current;
-    video.load();
     setTimeout(() => {
       video.play().catch(() => {});
       setIsPlaying(true);
-    }, 40);
+    }, 80);
   }, [preloadedAd]);
 
   const togglePlay = useCallback(async () => {
@@ -285,7 +306,6 @@ export default function VideoPlayer({
       return;
     }
 
-    // zero-latency ad inject
     if (!adAttempted && preloadedAd) {
       setAdAttempted(true);
       setIsLoadingAd(true);
@@ -305,74 +325,230 @@ export default function VideoPlayer({
       return;
     }
 
-    video.play().catch(() => {});
+    video.play().catch(() => setError(true));
     setIsPlaying(true);
   }, [isPlaying, adAttempted, preloadedAd]);
 
-  // ─── TOUCH ZONES (clean double-tap) ────────────────────
-  const showAnim = (type: "forward" | "rewind") => {
-    setActionAnim(type);
-    setTimeout(() => setActionAnim(null), 320);
+  const toggleMute = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isMuted) {
+      const n = volume || 1;
+      v.volume = n;
+      setIsMuted(false);
+      localStorage.setItem("porncater_vol", String(n));
+    } else {
+      v.volume = 0;
+      setIsMuted(true);
+      localStorage.setItem("porncater_vol", "0");
+    }
+  }, [isMuted, volume]);
+
+  const toggleFullscreen = useCallback(() => {
+    const el = containerRef.current;
+    const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+    if (!el || !video) return;
+    if (isIos && video.webkitEnterFullscreen && !document.fullscreenElement) {
+      video.webkitEnterFullscreen();
+      return;
+    }
+    if (!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }, [isIos]);
+
+  const togglePip = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || !document.pictureInPictureEnabled) return;
+    try {
+      if (document.pictureInPictureElement) await document.exitPictureInPicture();
+      else await video.requestPictureInPicture();
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const changeSpeed = useCallback((rate: number) => {
+    if (adState.isPlaying) return;
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+    setPlaybackRate(rate);
+    localStorage.setItem("porncater_rate", String(rate));
+  }, [adState.isPlaying]);
+
+  const changeQuality = useCallback((index: number) => {
+    if (!hlsRef.current) return;
+    hlsRef.current.currentLevel = index;
+    setCurrentLevel(index);
+  }, []);
+
+  handlersRef.current = {
+    togglePlay,
+    toggleMute,
+    toggleFullscreen,
+    seekBack: () => seekBy(-SEEK_STEP),
+    seekFwd: () => seekBy(SEEK_STEP),
   };
 
-  const handleZone = (zone: "left" | "center" | "right") => {
-    if (adState.isPlaying) return;
-    const now = Date.now();
-    const DELAY = 280;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      const v = videoRef.current;
+      if (!v || adState.isPlaying) return;
+      const h = handlersRef.current;
 
-    if (now - lastTap.current < DELAY) {
-      // DOUBLE
+      switch (e.key.toLowerCase()) {
+        case " ":
+        case "k":
+          e.preventDefault();
+          h.togglePlay();
+          break;
+        case "arrowleft":
+          e.preventDefault();
+          h.seekBack();
+          break;
+        case "arrowright":
+          e.preventDefault();
+          h.seekFwd();
+          break;
+        case "j":
+          e.preventDefault();
+          seekBy(-10);
+          break;
+        case "l":
+          e.preventDefault();
+          seekBy(10);
+          break;
+        case "arrowup":
+          e.preventDefault();
+          {
+            const n = Math.min(1, (isMuted ? 0 : volume) + 0.05);
+            v.volume = n;
+            setVolume(n);
+            setIsMuted(n === 0);
+            localStorage.setItem("porncater_vol", String(n));
+          }
+          break;
+        case "arrowdown":
+          e.preventDefault();
+          {
+            const n = Math.max(0, (isMuted ? 0 : volume) - 0.05);
+            v.volume = n;
+            setVolume(n);
+            setIsMuted(n === 0);
+            localStorage.setItem("porncater_vol", String(n));
+          }
+          break;
+        case "m":
+          e.preventDefault();
+          h.toggleMute();
+          break;
+        case "f":
+          e.preventDefault();
+          h.toggleFullscreen();
+          break;
+        case ">":
+        case ".":
+          if (e.shiftKey || e.key === ">") {
+            e.preventDefault();
+            const i = SPEEDS.indexOf(playbackRate);
+            if (i < SPEEDS.length - 1) changeSpeed(SPEEDS[i + 1]);
+          }
+          break;
+        case "<":
+        case ",":
+          if (e.shiftKey || e.key === "<") {
+            e.preventDefault();
+            const i = SPEEDS.indexOf(playbackRate);
+            if (i > 0) changeSpeed(SPEEDS[i - 1]);
+          }
+          break;
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          e.preventDefault();
+          if (v.duration) v.currentTime = (parseInt(e.key, 10) / 10) * v.duration;
+          break;
+      }
+      resetControls();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [
+    adState.isPlaying,
+    seekBy,
+    resetControls,
+    volume,
+    isMuted,
+    playbackRate,
+    changeSpeed,
+  ]);
+
+  const handleZone = (zone: "left" | "center" | "right", pointerType: string) => {
+    if (adState.isPlaying || holding2x.current || ignoreClick.current) return;
+    setSettingsOpen(false);
+    const now = Date.now();
+    const isTouch = pointerType === "touch";
+    const DELAY = isTouch ? 260 : 0;
+
+    if (isTouch && now - lastTap.current < 280 && lastTapZone.current === zone) {
       if (singleTapTimeout.current) {
         clearTimeout(singleTapTimeout.current);
         singleTapTimeout.current = null;
       }
-      const video = videoRef.current;
-      if (!video) return;
-
-      if (zone === "right") {
-        video.currentTime = Math.min(
-          video.currentTime + 10,
-          video.duration || 9999,
-        );
-        showAnim("forward");
-      } else if (zone === "left") {
-        video.currentTime = Math.max(video.currentTime - 10, 0);
-        showAnim("rewind");
-      } else {
-        // center double = fullscreen
-        toggleFullscreen();
-      }
-      resetControls();
-    } else {
-      // potential single – delay it
-      lastTap.current = now;
-      if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
-      singleTapTimeout.current = setTimeout(() => {
-        if (zone === "center") {
-          togglePlay();
-        } else {
-          // left/right single just toggles controls on mobile
-          if (window.innerWidth < 768) setShowControls((s) => !s);
-          else togglePlay();
-        }
-        resetControls();
-        singleTapTimeout.current = null;
-      }, DELAY);
+      if (zone === "right") seekBy(SEEK_STEP);
+      else if (zone === "left") seekBy(-SEEK_STEP);
+      else togglePlay();
+      lastTap.current = 0;
+      lastTapZone.current = null;
+      return;
     }
+
+    lastTap.current = now;
+    lastTapZone.current = zone;
+
+    if (!isTouch) {
+      if (zone === "center") togglePlay();
+      else togglePlay();
+      resetControls();
+      return;
+    }
+
+    if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
+    singleTapTimeout.current = setTimeout(() => {
+      if (zone === "center") togglePlay();
+      else setShowControls((s) => !s);
+      resetControls();
+      singleTapTimeout.current = null;
+    }, DELAY);
   };
 
-  // ─── VIDEO EVENTS ──────────────────────────────────────
   const onTimeUpdate = () => {
     const v = videoRef.current;
     if (!v || !v.duration) return;
     const p = (v.currentTime / v.duration) * 100;
     setProgress(p);
     setCurrentTime(v.currentTime);
+    if (v.buffered.length) {
+      setBuffered((v.buffered.end(v.buffered.length - 1) / v.duration) * 100);
+    }
+
+    if (!adState.isPlaying && v.currentTime > 5) {
+      try {
+        sessionStorage.setItem(posKey(src), String(Math.floor(v.currentTime)));
+      } catch {
+        /* private mode */
+      }
+    }
 
     if (adState.isPlaying && preloadedAd) {
-      setAdCountdown(
-        Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)),
-      );
+      setAdCountdown(Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)));
       if (p >= 25) fire(preloadedAd.trackingUrls.firstQuartile);
       if (p >= 50) fire(preloadedAd.trackingUrls.midpoint);
       if (p >= 75) fire(preloadedAd.trackingUrls.thirdQuartile);
@@ -386,16 +562,39 @@ export default function VideoPlayer({
     } else if (!isLooping) {
       setIsPlaying(false);
       setShowControls(true);
+      try {
+        sessionStorage.removeItem(posKey(src));
+      } catch {
+        /* ignore */
+      }
     }
   };
 
-  const onSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (adState.isPlaying) return;
+  const seekToRatio = (ratio: number) => {
     const v = videoRef.current;
-    if (!v) return;
-    const t = (parseFloat(e.target.value) / 100) * v.duration;
+    if (!v || adState.isPlaying || !v.duration) return;
+    const t = Math.min(Math.max(ratio, 0), 1) * v.duration;
     v.currentTime = t;
-    setProgress(parseFloat(e.target.value));
+    setProgress(ratio * 100);
+    setCurrentTime(t);
+  };
+
+  const onBarPointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (adState.isPlaying) return;
+    const bar = barRef.current;
+    if (!bar) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    seekToRatio(ratio);
+  };
+
+  const onBarMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const bar = barRef.current;
+    if (!bar || !duration) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+    setHoverTime(ratio * duration);
+    setHoverX(ratio * rect.width);
   };
 
   const onVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -408,40 +607,41 @@ export default function VideoPlayer({
     localStorage.setItem("porncater_vol", String(n));
   };
 
-  const toggleMute = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (isMuted) {
-      const n = volume || 1;
-      v.volume = n;
-      setIsMuted(false);
-      localStorage.setItem("porncater_vol", String(n));
-    } else {
-      v.volume = 0;
-      setIsMuted(true);
-      localStorage.setItem("porncater_vol", "0");
+  const onPointerDownHold = (e: React.PointerEvent) => {
+    if (adState.isPlaying || e.button !== 0) return;
+    if (videoRef.current?.paused) return;
+    if ((e.target as HTMLElement).closest("[data-controls]")) return;
+    rateBeforeHold.current = playbackRate;
+    holdTimer.current = setTimeout(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      holding2x.current = true;
+      ignoreClick.current = true;
+      v.playbackRate = 2;
+      setHoldBoost(true);
+    }, 380);
+  };
+
+  const onPointerUpHold = () => {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+    }
+    if (holding2x.current) {
+      const v = videoRef.current;
+      if (v) v.playbackRate = rateBeforeHold.current;
+      holding2x.current = false;
+      setHoldBoost(false);
+      setTimeout(() => {
+        ignoreClick.current = false;
+      }, 50);
     }
   };
 
-  const changeSpeed = (rate: number) => {
-    if (adState.isPlaying) return;
-    if (videoRef.current) videoRef.current.playbackRate = rate;
-    setPlaybackRate(rate);
-  };
-
-  const toggleFullscreen = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    if (!document.fullscreenElement) el.requestFullscreen?.();
-    else document.exitFullscreen?.();
-  };
-
-  const fmt = (t: number) => {
-    if (isNaN(t)) return "0:00";
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60);
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
+  const qualityLabel =
+    currentLevel >= 0
+      ? levels.find((l) => l.index === currentLevel)?.label || "Auto"
+      : "Auto";
 
   return (
     <div
@@ -452,15 +652,15 @@ export default function VideoPlayer({
       }`}
       onMouseMove={resetControls}
       onMouseLeave={() => {
-        if (isPlaying) setShowControls(false);
+        if (isPlaying && !settingsOpen) setShowControls(false);
+        setHoverTime(null);
       }}
+      onPointerDown={onPointerDownHold}
+      onPointerUp={onPointerUpHold}
+      onPointerCancel={onPointerUpHold}
       onClick={(e) => {
-        // only play/pause if click is directly on the video area (not controls)
         if ((e.target as HTMLElement).closest("[data-controls]")) return;
-
-        // 🔥 ADD THIS LINE: Tell the container to ignore clicks from the giant play button
         if ((e.target as HTMLElement).closest("[data-play-btn]")) return;
-
         if (!isPlaying && !adState.isPlaying) togglePlay();
       }}
     >
@@ -474,42 +674,76 @@ export default function VideoPlayer({
         className="w-full h-full object-contain"
         onTimeUpdate={onTimeUpdate}
         onEnded={onEnded}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+        onWaiting={() => setIsBuffering(true)}
+        onPlaying={() => {
+          setIsBuffering(false);
+          setError(false);
+        }}
+        onCanPlay={() => setIsBuffering(false)}
+        onLoadedMetadata={(e) => {
+          const v = e.currentTarget;
+          setDuration(v.duration);
+          v.volume = isMuted ? 0 : volume;
+          v.playbackRate = playbackRate;
+          try {
+            const saved = sessionStorage.getItem(posKey(src));
+            const t = saved ? parseFloat(saved) : 0;
+            if (t > 8 && t < v.duration - 8) v.currentTime = t;
+          } catch {
+            /* ignore */
+          }
+        }}
         onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        onPause={() => {
+          if (!holding2x.current) setIsPlaying(false);
+        }}
+        onError={() => {
+          if (!adState.isPlaying) setError(true);
+        }}
       />
 
-      {/* TOUCH ZONES – only while playing so center play button is never blocked */}
       {isPlaying && !adState.isPlaying && (
         <>
           <div
             className="absolute inset-y-0 left-0 w-1/3 z-10"
-            onClick={() => handleZone("left")}
+            onPointerUp={(e) => handleZone("left", e.pointerType)}
           />
           <div
             className="absolute inset-y-0 left-1/3 w-1/3 z-10"
-            onClick={() => handleZone("center")}
+            onPointerUp={(e) => handleZone("center", e.pointerType)}
           />
           <div
             className="absolute inset-y-0 right-0 w-1/3 z-10"
-            onClick={() => handleZone("right")}
+            onPointerUp={(e) => handleZone("right", e.pointerType)}
           />
         </>
       )}
 
-      {/* ULTRA-MINIMAL SEEK FLASH – pure chevron only */}
       {actionAnim && (
         <div
-          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none text-white text-6xl font-extralight leading-none select-none ${
-            actionAnim === "forward" ? "right-[19%]" : "left-[19%]"
+          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none flex items-center justify-center gap-1 h-12 px-3 bg-black/85 border border-white/15 text-white ${
+            actionAnim === "forward" ? "right-[14%]" : "left-[14%]"
           }`}
-          style={{ opacity: 0.9 }}
         >
-          {actionAnim === "forward" ? "›" : "‹"}
+          <IcoSkipTen dir={actionAnim === "forward" ? "fwd" : "back"} size={26} />
+          <span className="text-[11px] font-bold tabular-nums tracking-tight">10</span>
         </div>
       )}
 
-      {/* AD LAYER */}
+      {holdBoost && (
+        <div className="absolute top-3 right-3 z-20 pointer-events-none bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 border border-red-500">
+          2×
+        </div>
+      )}
+
+      {title && showControls && !adState.isPlaying && (
+        <div className="absolute top-0 inset-x-0 z-20 pointer-events-none bg-gradient-to-b from-black/80 to-transparent px-3 py-2.5">
+          <p className="text-[11px] md:text-xs font-medium text-white/90 truncate tracking-wide">
+            {title}
+          </p>
+        </div>
+      )}
+
       {adState.isPlaying && preloadedAd && (
         <>
           {preloadedAd.clickThroughUrl && (
@@ -521,7 +755,7 @@ export default function VideoPlayer({
               aria-label="Visit Advertisement"
             >
               <span className="bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 flex items-center gap-1.5 border border-red-500">
-                Visit Sponsor <ExternalLink size={11} strokeWidth={2.5} />
+                Visit Sponsor <IcoOut size={12} />
               </span>
             </a>
           )}
@@ -538,187 +772,273 @@ export default function VideoPlayer({
                 }}
                 className="bg-black hover:bg-zinc-900 border-l-2 border-red-600 text-white text-xs font-bold uppercase px-5 py-2.5 flex items-center gap-2"
               >
-                Skip Ad <SkipForward size={13} strokeWidth={2.5} />
+                Skip Ad <IcoSkipAd size={14} />
               </button>
             )}
           </div>
         </>
       )}
 
-      {/* LOADING */}
-      {isLoadingAd && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-          <div className="w-9 h-9 border-2 border-zinc-700 border-t-red-600 animate-spin" />
+      {(isLoadingAd || (isBuffering && isPlaying && !adState.isPlaying)) && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div className="flex items-end gap-[3px] h-6">
+            <span className="w-[3px] h-3 bg-red-600 animate-pulse" />
+            <span className="w-[3px] h-6 bg-red-600 animate-pulse [animation-delay:120ms]" />
+            <span className="w-[3px] h-4 bg-red-600 animate-pulse [animation-delay:240ms]" />
+          </div>
         </div>
       )}
 
-      {/* GIANT HARD PLAY BUTTON – only when paused */}
-      {!isPlaying && !adState.isPlaying && !isLoadingAd && (
+      {error && !adState.isPlaying && (
         <button
+          onClick={() => {
+            setError(false);
+            const v = videoRef.current;
+            if (v) {
+              v.load();
+              v.play().catch(() => {});
+            }
+          }}
+          className="absolute inset-0 z-30 flex items-center justify-center bg-black/70"
+        >
+          <span className="bg-red-700 hover:bg-red-600 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2 border border-red-500">
+            Tap to retry
+          </span>
+        </button>
+      )}
+
+      {!isPlaying && !adState.isPlaying && !isLoadingAd && !error && (
+        <button
+          data-play-btn
           onClick={(e) => {
             e.stopPropagation();
             togglePlay();
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[72px] h-12 flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[88px] h-[52px] flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_0_1px_#000]"
           aria-label="Play"
         >
-          <Play
-            size={28}
-            fill="currentColor"
-            strokeWidth={0}
-            className="ml-0.5"
-          />
+          <IcoPlay size={28} className="ml-1" />
         </button>
       )}
 
-      {/* BOTTOM BAR – sharp, minimal, hard */}
       <div
         data-controls
-        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-1.5 px-2 transition-opacity duration-150 ${
+        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-10 pb-1.5 px-2 transition-opacity duration-100 ${
           showControls && !adState.isPlaying && !isLoadingAd
             ? "opacity-100"
             : "opacity-0 pointer-events-none"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* PROGRESS – hard thin red */}
-        <div className="relative w-full h-1.5 mb-2 group/bar cursor-pointer">
-          <div className="absolute inset-0 bg-zinc-800">
+        <div
+          ref={barRef}
+          className="relative w-full h-3 md:h-2 mb-2 group/bar cursor-pointer"
+          onPointerDown={onBarPointer}
+          onMouseMove={onBarMove}
+          onMouseLeave={() => setHoverTime(null)}
+        >
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 md:h-[3px] group-hover/bar:h-1.5 bg-zinc-800">
+            <div
+              className="absolute top-0 left-0 h-full bg-zinc-600"
+              style={{ width: `${buffered}%` }}
+            />
             <div
               className="absolute top-0 left-0 h-full bg-red-600"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={0.1}
-            value={progress || 0}
-            onChange={onSeek}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-          />
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white border border-black opacity-0 group-hover/bar:opacity-100 pointer-events-none"
-            style={{ left: `calc(${progress}% - 5px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-red-600 pointer-events-none"
+            style={{ left: `calc(${progress}% - 4px)` }}
           />
+          {hoverTime !== null && (
+            <div
+              className="absolute -top-7 -translate-x-1/2 bg-black border border-zinc-700 text-white text-[10px] font-bold tabular-nums px-1.5 py-0.5 pointer-events-none"
+              style={{ left: hoverX }}
+            >
+              {fmt(hoverTime)}
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between text-zinc-200">
-          {/* LEFT */}
-          <div className="flex items-center gap-3 md:gap-5">
+        <div className="flex items-center justify-between gap-2 text-white">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             <button
               onClick={togglePlay}
-              className="p-0.5 hover:text-red-500 transition-colors"
+              className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-white"
+              aria-label={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? (
-                <Pause size={20} fill="currentColor" strokeWidth={0} />
-              ) : (
-                <Play size={20} fill="currentColor" strokeWidth={0} />
-              )}
+              {isPlaying ? <IcoPause size={18} /> : <IcoPlay size={18} className="ml-0.5" />}
             </button>
 
-            <div className="hidden md:flex items-center gap-3 text-zinc-500">
-              <button
-                onClick={() => {
-                  if (videoRef.current) videoRef.current.currentTime -= 10;
-                  showAnim("rewind");
-                }}
-                className="hover:text-white"
-              >
-                <SkipBack size={16} strokeWidth={2} />
-              </button>
-              <button
-                onClick={() => {
-                  if (videoRef.current) videoRef.current.currentTime += 10;
-                  showAnim("forward");
-                }}
-                className="hover:text-white"
-              >
-                <SkipForward size={16} strokeWidth={2} />
-              </button>
-            </div>
+            <button
+              onClick={() => seekBy(-SEEK_STEP)}
+              className="h-9 px-1.5 flex items-center gap-0.5 hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Back 10 seconds"
+            >
+              <IcoSkipTen dir="back" size={22} />
+              <span className="text-[10px] font-bold tabular-nums leading-none">10</span>
+            </button>
+            <button
+              onClick={() => seekBy(SEEK_STEP)}
+              className="h-9 px-1.5 flex items-center gap-0.5 hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Forward 10 seconds"
+            >
+              <span className="text-[10px] font-bold tabular-nums leading-none">10</span>
+              <IcoSkipTen dir="fwd" size={22} />
+            </button>
 
-            <div className="flex items-center gap-1.5 group/vol">
+            {!isIos && (
+              <div className="flex items-center group/vol">
+                <button
+                  onClick={toggleMute}
+                  className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200 hover:text-white"
+                  aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                  <IcoVolume size={16} muted={isMuted || volume === 0} />
+                </button>
+                <div className="w-0 overflow-hidden group-hover/vol:w-[72px] transition-[width] duration-150">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={isMuted ? 0 : volume}
+                    onChange={onVolume}
+                    className="w-[64px] ml-1 h-[3px] bg-zinc-700 appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[3px] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
+                      [&::-moz-range-thumb]:w-[3px] [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
+                  />
+                </div>
+              </div>
+            )}
+            {isIos && (
               <button
                 onClick={toggleMute}
-                className="p-0.5 text-zinc-400 hover:text-red-500"
+                className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200"
+                aria-label={isMuted ? "Unmute" : "Mute"}
               >
-                {isMuted || volume === 0 ? (
-                  <VolumeX size={18} strokeWidth={2} />
-                ) : (
-                  <Volume2 size={18} strokeWidth={2} />
-                )}
+                <IcoVolume size={16} muted={isMuted} />
               </button>
-              <div className="w-0 overflow-hidden group-hover/vol:w-14 transition-all duration-200">
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={isMuted ? 0 : volume}
-                  onChange={onVolume}
-                  className="w-full h-1 bg-zinc-700 appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-1.5 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
-                    [&::-moz-range-thumb]:w-1.5 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
-                />
-              </div>
-            </div>
+            )}
 
-            <span className="text-[11px] font-mono tracking-tight tabular-nums ml-1 select-none">
+            <span className="hidden sm:inline text-[11px] font-mono tabular-nums select-none px-1.5">
               <span className="text-white">{fmt(currentTime)}</span>
               <span className="text-zinc-600 mx-0.5">/</span>
-              <span className="text-zinc-500">{fmt(duration)}</span>
+              <span className="text-zinc-400">{fmt(duration)}</span>
+            </span>
+            <span className="sm:hidden text-[11px] font-mono tabular-nums select-none px-1">
+              {fmt(currentTime)}
             </span>
           </div>
 
-          {/* RIGHT */}
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => setIsLooping((l) => !l)}
-              className={`hidden sm:block p-0.5 ${isLooping ? "text-red-500" : "text-zinc-500 hover:text-white"}`}
+              className={`h-9 w-9 flex items-center justify-center hover:bg-white/10 ${isLooping ? "text-red-500" : "text-zinc-300 hover:text-white"}`}
+              aria-label="Loop"
             >
-              <Repeat size={16} strokeWidth={2} />
+              <IcoLoop size={15} />
             </button>
 
-            <div className="relative group/speed">
-              <button className="p-0.5 text-zinc-500 hover:text-white flex items-center">
-                <Settings
-                  size={16}
-                  strokeWidth={2}
-                  className="group-hover/speed:rotate-90 transition-transform duration-200"
-                />
+            {pipSupported && !isIos && (
+              <button
+                onClick={togglePip}
+                className="hidden sm:flex h-9 w-9 items-center justify-center hover:bg-white/10 text-zinc-300 hover:text-white"
+                aria-label="Picture in picture"
+              >
+                <IcoPip size={15} />
               </button>
-              <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-800 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-opacity flex flex-col py-1 min-w-[90px] shadow-xl">
-                <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">
-                  Speed
-                </div>
-                {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
-                  <button
-                    key={rate}
-                    onClick={() => changeSpeed(rate)}
-                    className={`px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
-                      playbackRate === rate ? "text-red-500" : "text-zinc-300"
-                    }`}
-                  >
-                    {rate === 1 ? "Normal" : `${rate}×`}
-                    {playbackRate === rate && (
-                      <span className="w-1 h-1 bg-red-500" />
-                    )}
-                  </button>
-                ))}
+            )}
+
+            <div className="relative">
+              <button
+                onClick={() => setSettingsOpen((o) => !o)}
+                className={`h-7 mx-0.5 px-1.5 text-[10px] font-bold tabular-nums tracking-wide border ${
+                  settingsOpen || playbackRate !== 1
+                    ? "border-red-600 text-red-500"
+                    : "border-zinc-600 text-zinc-200 hover:border-white hover:text-white"
+                }`}
+                aria-label="Speed"
+              >
+                {playbackRate === 1 ? "1×" : `${playbackRate}×`}
+              </button>
+            </div>
+
+            {levels.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setSettingsOpen((o) => !o)}
+                  className={`h-7 px-1.5 text-[10px] font-bold uppercase tracking-wide border ${
+                    settingsOpen
+                      ? "border-red-600 text-red-500"
+                      : "border-zinc-600 text-zinc-200 hover:border-white hover:text-white"
+                  }`}
+                  aria-label="Quality"
+                >
+                  {qualityLabel}
+                </button>
               </div>
+            )}
+
+            <div className="relative">
+              {settingsOpen && (
+                <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-700 min-w-[128px] py-1 z-50">
+                  <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold">
+                    Speed
+                  </div>
+                  {SPEEDS.map((rate) => (
+                    <button
+                      key={rate}
+                      onClick={() => changeSpeed(rate)}
+                      className={`w-full px-3 py-1.5 text-[11px] text-left font-bold tabular-nums hover:bg-zinc-900 flex items-center justify-between ${
+                        playbackRate === rate ? "text-red-500" : "text-zinc-200"
+                      }`}
+                    >
+                      {rate === 1 ? "1×" : `${rate}×`}
+                      {playbackRate === rate && <span className="w-1.5 h-1.5 bg-red-600" />}
+                    </button>
+                  ))}
+                  {levels.length > 1 && (
+                    <>
+                      <div className="mt-1 border-t border-zinc-800 px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold">
+                        Quality
+                      </div>
+                      <button
+                        onClick={() => changeQuality(-1)}
+                        className={`w-full px-3 py-1.5 text-[11px] text-left font-bold hover:bg-zinc-900 flex items-center justify-between ${
+                          currentLevel === -1 ? "text-red-500" : "text-zinc-200"
+                        }`}
+                      >
+                        Auto
+                        {currentLevel === -1 && <span className="w-1.5 h-1.5 bg-red-600" />}
+                      </button>
+                      {levels.map((level) => (
+                        <button
+                          key={level.index}
+                          onClick={() => changeQuality(level.index)}
+                          className={`w-full px-3 py-1.5 text-[11px] text-left font-bold hover:bg-zinc-900 flex items-center justify-between ${
+                            currentLevel === level.index ? "text-red-500" : "text-zinc-200"
+                          }`}
+                        >
+                          {level.label}
+                          {currentLevel === level.index && (
+                            <span className="w-1.5 h-1.5 bg-red-600" />
+                          )}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
               onClick={toggleFullscreen}
-              className="p-0.5 text-zinc-400 hover:text-red-500"
+              className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Fullscreen"
             >
-              {isFullscreen ? (
-                <Minimize size={18} strokeWidth={2} />
-              ) : (
-                <Maximize size={18} strokeWidth={2} />
-              )}
+              {isFullscreen ? <IcoCompress size={15} /> : <IcoExpand size={15} />}
             </button>
           </div>
         </div>
