@@ -19,27 +19,45 @@ type StudioRow = {
 };
 
 export async function listChannels(): Promise<ChannelCard[]> {
+  try {
+    return await listChannelsUnsafe();
+  } catch (error) {
+    console.error("listChannels failed:", error);
+    return [];
+  }
+}
+
+async function listChannelsUnsafe(): Promise<ChannelCard[]> {
   const rows = await prisma.$queryRaw<StudioRow[]>`
+    WITH studio_stats AS (
+      SELECT
+        LOWER(BTRIM(studio)) AS studio_key,
+        (ARRAY_AGG(studio ORDER BY LENGTH(studio) DESC))[1] AS studio,
+        COUNT(*)::int AS "videoCount",
+        COALESCE(SUM(views), 0) AS "totalViews"
+      FROM "Video"
+      WHERE status = 'PUBLISHED'
+        AND studio IS NOT NULL
+        AND BTRIM(studio) <> ''
+      GROUP BY LOWER(BTRIM(studio))
+    )
     SELECT
-      (ARRAY_AGG(v.studio ORDER BY LENGTH(v.studio) DESC))[1] AS studio,
-      COUNT(*)::int AS "videoCount",
-      COALESCE(SUM(v.views), 0) AS "totalViews",
-      (
-        SELECT v2.thumbnail
-        FROM "Video" v2
-        WHERE v2.status = 'PUBLISHED'
-          AND LOWER(v2.studio) = LOWER(v.studio)
-          AND v2.thumbnail IS NOT NULL
-          AND v2.thumbnail <> ''
-        ORDER BY v2.views DESC
-        LIMIT 1
-      ) AS thumbnail
-    FROM "Video" v
-    WHERE v.status = 'PUBLISHED'
-      AND v.studio IS NOT NULL
-      AND BTRIM(v.studio) <> ''
-    GROUP BY LOWER(v.studio)
-    ORDER BY COUNT(*) DESC
+      s.studio,
+      s."videoCount",
+      s."totalViews",
+      thumb.thumbnail
+    FROM studio_stats s
+    LEFT JOIN LATERAL (
+      SELECT v2.thumbnail
+      FROM "Video" v2
+      WHERE v2.status = 'PUBLISHED'
+        AND LOWER(BTRIM(v2.studio)) = s.studio_key
+        AND v2.thumbnail IS NOT NULL
+        AND v2.thumbnail <> ''
+      ORDER BY v2.views DESC
+      LIMIT 1
+    ) thumb ON true
+    ORDER BY s."videoCount" DESC
   `;
 
   const channels: ChannelCard[] = rows.map((row) => ({
