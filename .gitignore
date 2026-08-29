@@ -55,6 +55,10 @@ next-env.d.ts
 /failed_urls.txt
 /target_urls.txt
 
+/scripts/data/urls.txt
+/scripts/failed_urls.txt
+/scripts/failed_banners.txt
+
 /script_logs
 .vercel
 .env*

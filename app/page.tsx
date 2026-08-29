@@ -1,150 +1,118 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
-import { Flame, Clock, Sparkles, ThumbsUp } from "lucide-react";
+import { Flame, Clock, Sparkles, Tv } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import VideoCard from "@/src/components/ui/VideoCard";
+import JsonLd from "@/src/components/json-ld";
+import { getTopBannerAd } from "@/src/lib/ads";
+import { MEGA_CATEGORIES, SITE_URL, videoAbsUrl } from "@/src/lib/site";
+import { featuredChannels as pickFeatured, listChannels } from "@/src/lib/channels";
+import ChannelCard from "@/src/components/ui/ChannelCard";
 
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "PornCater | Free HD Porn Videos & Sexy Porn Scenes",
-  description: "Watch the best free HD porn videos, featuring top pornstars and exclusive premium porn tube scenes. Updated daily with fresh, high-quality sex tube scenes.",
+  title: {
+    absolute: "PornCater | Free HD Porn Videos & Sexy Porn Scenes",
+  },
+  description:
+    "Watch the best free HD porn videos, featuring top pornstars and exclusive premium porn tube scenes. Updated daily with fresh, high-quality sex tube scenes.",
   keywords: "free porn, HD porn videos, sex tube, adult cinema, pornstars, XXX movies",
-  alternates: { canonical: "https://porncater.com/" },
+  alternates: { canonical: `${SITE_URL}/` },
   openGraph: {
     title: "PornCater | Free HD Porn Videos",
     description: "Stream exclusive HD porn videos and trending porn scenes.",
-    url: "https://porncater.com/",
+    url: `${SITE_URL}/`,
     siteName: "PornCater",
     type: "website",
   },
 };
 
-const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
-  const num = Number(seconds);
-  if (isNaN(num)) return String(seconds);
-  const m = Math.floor(num / 60);
-  const s = num % 60;
-  return `${m}:${s < 10 ? '0' : ''}${s}`;
-};
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER
-async function getTopBannerAd(dimension: string, studio?: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: {
-        dimension: dimension,
-        isActive: true,
-        ...(studio ? { targetStudios: { has: studio } } : {}),
-      },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 export default async function Home() {
-  const [trendingVideos, latestVideos, topPornstars] = await Promise.all([
+  const [trendingVideos, latestVideos, topPornstars, topChannels] = await Promise.all([
     prisma.video.findMany({
+      where: { status: "PUBLISHED" },
       take: 24,
       orderBy: { views: "desc" },
-      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        thumbnail: true,
+        duration: true,
+        views: true,
+        likes: true,
+      },
     }),
     prisma.video.findMany({
+      where: { status: "PUBLISHED" },
       take: 18,
       orderBy: { createdAt: "desc" },
-      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        thumbnail: true,
+        duration: true,
+        views: true,
+        likes: true,
+      },
     }),
     prisma.pornstar.findMany({
       take: 12,
       orderBy: { views: "desc" },
       select: { id: true, slug: true, name: true, avatarUrl: true, views: true },
     }),
+    listChannels(),
   ]);
+  const premiumChannels = pickFeatured(topChannels, 12);
 
-  const megaCategories = [
-    "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
-    "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
-    "Asian", "Ebony", "Latina", "Big Tits", "Cosplay", "Vintage", "VR"
-  ];
-
-  // Fetch desktop and mobile ads concurrently
   const [topDesktopAd, topMobileAd] = await Promise.all([
     getTopBannerAd("970x70"),
     getTopBannerAd("300x100"),
   ]);
 
-  // =========================================================
-  // 🚀 HOME PAGE SEO SCHEMAS
-  // =========================================================
-  
-  // 1. WebSite Schema (Enables the Google Sitelinks Search Box)
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "PornCater",
-    "url": "https://porncater.com/",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://porncater.com/search?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  };
-
-  // 2. ItemList Schema (Tells Google exactly what videos are trending right now)
   const trendingItemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    "name": "Trending Porn Videos",
-    "url": "https://porncater.com/trending",
-    "itemListElement": trendingVideos.map((video, index) => ({
+    name: "Trending Porn Videos",
+    url: `${SITE_URL}/trending`,
+    itemListElement: trendingVideos.map((video, index) => ({
       "@type": "ListItem",
-      "position": index + 1,
-      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
-      "name": video.title,
-      "image": video.thumbnail
-    }))
+      position: index + 1,
+      url: videoAbsUrl(video.id, video.slug),
+      name: video.title,
+      image: video.thumbnail,
+    })),
   };
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-zinc-300 font-sans selection:bg-rose-600 selection:text-white pb-2">
-      {/* Inject SEO Schemas */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify([websiteSchema, trendingItemListSchema]) }} />
+      <JsonLd data={trendingItemListSchema} />
       <h1 className="sr-only">Free HD Porn Videos & Premium Adult Cinema - PornCater</h1>
 
-      <SmartHeader categories={megaCategories} />
+      <SmartHeader categories={[...MEGA_CATEGORIES]} />
 
       <main>
-        {/* TOP DYNAMIC AFFILIATE BANNER */}
         <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">
           <AdBanner
             dimension="970x70"
-            priority={true} 
-            initialAd={topDesktopAd} 
+            priority={true}
+            initialAd={topDesktopAd}
             className="hidden md:block w-full max-w-[970px]"
           />
           <AdBanner
-            dimension="300x100" // Updated to standard 300x250 box for mobile
-            priority={true} 
-            initialAd={topMobileAd} 
+            dimension="300x100"
+            priority={true}
+            initialAd={topMobileAd}
             className="block md:hidden mx-auto"
           />
         </div>
 
-        {/* TRENDING VIDEOS */}
         <section className="max-w-[1600px] mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
             <div className="flex items-center gap-3">
@@ -153,38 +121,21 @@ export default async function Home() {
                 Trending Porn Videos
               </h2>
             </div>
-            <Link href="/trending" className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-4 py-1.5 rounded-sm text-xs font-bold uppercase transition border border-zinc-800">
+            <Link
+              href="/trending"
+              className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-4 py-1.5 rounded-sm text-xs font-bold uppercase transition border border-zinc-800"
+            >
               See All
             </Link>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
             {trendingVideos.map((video) => (
-              <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
-                <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
-                  <Image src={video.thumbnail} alt={video.title} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover" />
-                  <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
-                    HD
-                  </div>
-                  <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
-                    {formatDuration(video.duration)}
-                  </div>
-                </div>
-                <div className="mt-2 flex flex-col flex-grow">
-                  <h3 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75">
-                    {video.title}
-                  </h3>
-                  <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
-                    <span>{Number(video.views || 0).toLocaleString()} views</span>
-                    <span className="flex items-center gap-1 text-emerald-500"><ThumbsUp size={12} /> 98%</span>
-                  </div>
-                </div>
-              </Link>
+              <VideoCard key={video.id} video={video} badge="hd" />
             ))}
           </div>
         </section>
 
-        {/* LATEST VIDEOS */}
         <section className="bg-[#0c0c0c] border-y border-zinc-900/50">
           <div className="max-w-[1600px] mx-auto px-4 py-10">
             <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
@@ -194,39 +145,22 @@ export default async function Home() {
                   Latest Porn Videos
                 </h2>
               </div>
-              <Link href="/latest" className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-4 py-1.5 rounded-sm text-xs font-bold uppercase transition border border-zinc-800">
+              <Link
+                href="/latest"
+                className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 px-4 py-1.5 rounded-sm text-xs font-bold uppercase transition border border-zinc-800"
+              >
                 See All
               </Link>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
               {latestVideos.map((video) => (
-                <Link key={video.id} href={`/video/${video.id}/${video.slug}`} prefetch={false} className="group flex flex-col">
-                  <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
-                    <Image src={video.thumbnail} alt={video.title} fill sizes="(max-width: 640px) 50vw, 20vw" className="object-cover" />
-                    <div className="absolute top-1.5 left-1.5 bg-amber-600/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
-                      NEW
-                    </div>
-                    <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
-                      {formatDuration(video.duration)}
-                    </div>
-                  </div>
-                  <div className="mt-2 flex flex-col flex-grow">
-                    <h3 className="font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75">
-                      {video.title}
-                    </h3>
-                    <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
-                      <span>{Number(video.views || 0).toLocaleString()} views</span>
-                      <span className="flex items-center gap-1"><ThumbsUp size={12} /> 100%</span>
-                    </div>
-                  </div>
-                </Link>
+                <VideoCard key={video.id} video={video} badge="new" />
               ))}
             </div>
           </div>
         </section>
 
-        {/* TOP PORNSTARS */}
         <section className="max-w-[1600px] mx-auto px-4 py-12">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
             <div className="flex items-center gap-3">
@@ -235,16 +169,30 @@ export default async function Home() {
                 Top Pornstars
               </h2>
             </div>
-            <Link href="/pornstars" className="text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest transition">
+            <Link
+              href="/pornstars"
+              className="text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest transition"
+            >
               A-Z Index
             </Link>
           </div>
 
           <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
             {topPornstars.map((star) => (
-              <Link key={star.id} href={`/pornstars/${star.slug}`} prefetch={false} className="group flex items-center gap-3 bg-[#111] hover:bg-zinc-900 border border-zinc-800/80 hover:border-rose-900/50 p-1.5 pr-4 transition-all duration-75 shadow-sm">
+              <Link
+                key={star.id}
+                href={`/pornstars/${star.slug}`}
+                prefetch={false}
+                className="group flex items-center gap-3 bg-[#111] hover:bg-zinc-900 border border-zinc-800/80 hover:border-rose-900/50 p-1.5 pr-4 transition-all duration-75 shadow-sm"
+              >
                 <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden shrink-0 border border-zinc-700/50 group-hover:border-rose-500/50 transition-colors duration-300">
-                  <Image src={star.avatarUrl || "/thumbnails/default-avatar.png"} alt={star.name} fill sizes="48px" className="object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500" />
+                  <Image
+                    src={star.avatarUrl || "/thumbnails/default-avatar.png"}
+                    alt={star.name}
+                    fill
+                    sizes="48px"
+                    className="object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500"
+                  />
                 </div>
                 <div className="flex flex-col overflow-hidden">
                   <span className="text-zinc-200 font-bold text-sm truncate group-hover:text-rose-400 transition-colors">
@@ -259,7 +207,30 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* BEFORE FOOTER DYNAMIC AD ROTATOR */}
+        {premiumChannels.length > 0 && (
+          <section className="max-w-[1600px] mx-auto px-4 py-12">
+            <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
+              <div className="flex items-center gap-3">
+                <Tv className="text-rose-600" size={24} strokeWidth={1.5} />
+                <h2 className="text-2xl font-serif italic text-white tracking-wide">
+                  Premium Channels
+                </h2>
+              </div>
+              <Link
+                href="/channels"
+                className="text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest transition"
+              >
+                All Channels
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              {premiumChannels.map((channel) => (
+                <ChannelCard key={channel.slug} channel={channel} featured />
+              ))}
+            </div>
+          </section>
+        )}
+
         <div className="w-full flex justify-center my-1 overflow-hidden">
           <AdRotator />
         </div>

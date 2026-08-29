@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Flame,
@@ -19,11 +20,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
-import {
-  blackedSuperLeaderboards,
-  blackedLeaderboards,
-} from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
@@ -31,45 +27,20 @@ import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 export const revalidate = 120; // Caches the page for 2 minutes
 
 export const metadata: Metadata = {
-  title: "Trending Porn Videos | PornCater",
+  title: "Trending Porn Videos",
   description:
     "Watch the hottest trending porn videos on PornCater. Discover the most viewed and top-rated sex tube scenes updated right now.",
-  alternates: { canonical: "https://porncater.com/trending" },
+  alternates: { canonical: "https://www.porncater.com/trending" },
 };
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER
-async function getTopBannerAd(dimension: string, studio?: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: {
-        dimension: dimension,
-        isActive: true,
-        ...(studio ? { targetStudios: { has: studio } } : {}),
-      },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 export default async function TrendingPage({
   searchParams,
 }: {
@@ -110,6 +81,7 @@ export default async function TrendingPage({
         thumbnail: true,
         duration: true,
         views: true,
+        likes: true,
       },
     });
     // Map them back into the exact sorted order retrieved from Step A
@@ -186,7 +158,7 @@ export default async function TrendingPage({
   ]);
 
   // Add this inside the component, right before return:
-  const canonicalUrl = `https://porncater.com/trending${currentPage > 1 ? `?page=${currentPage}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/trending${currentPage > 1 ? `?page=${currentPage}` : ""}`;
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -196,13 +168,13 @@ export default async function TrendingPage({
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://porncater.com/",
+        item: "https://www.porncater.com/",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Trending Videos",
-        item: "https://porncater.com/trending",
+        item: "https://www.porncater.com/trending",
       },
     ],
   };
@@ -216,7 +188,7 @@ export default async function TrendingPage({
     itemListElement: videos.map((video, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `https://porncater.com/video/${video.id}/${video.slug}`,
+      url: `https://www.porncater.com/video/${video.id}/${video.slug}`,
       name: video.title,
       image: video.thumbnail,
     })),
@@ -303,7 +275,7 @@ export default async function TrendingPage({
                       {Number(video.views || 0).toLocaleString()} views
                     </span>
                     <span className="flex items-center gap-1 text-emerald-500">
-                      <ThumbsUp size={12} /> 98%
+                      <ThumbsUp size={12} /> {Number(video.likes || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>

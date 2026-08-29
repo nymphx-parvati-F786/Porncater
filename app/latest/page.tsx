@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Clock, ChevronLeft, ChevronRight, ThumbsUp,
@@ -7,7 +8,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
@@ -15,43 +15,20 @@ import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 export const revalidate = 120; // Caches the page for 2 minutes
 
 export const metadata: Metadata = {
-  title: "Latest Free HD Porn Videos | PornCater",
+  title: "Latest Free HD Porn Videos",
   description: "Browse the newest and freshest HD porn videos updated daily. Watch exclusive premium adult cinema and sex tube scenes on PornCater.",
   keywords: "new porn, latest sex videos, free HD porn, fresh porn tube, adult cinema",
-  alternates: { canonical: "https://porncater.com/latest" },
+  alternates: { canonical: "https://www.porncater.com/latest" },
 };
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
   "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
@@ -93,7 +70,7 @@ export default async function LatestPage({
   if (ids.length > 0) {
     const unorderedVideos = await prisma.video.findMany({
       where: { id: { in: ids } },
-      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true },
+      select: { id: true, slug: true, title: true, thumbnail: true, duration: true, views: true, likes: true },
     });
     // Map them back into the exact sorted order retrieved from Step A
     videos = ids.map(id => unorderedVideos.find(v => v.id === id)).filter(Boolean);
@@ -124,7 +101,7 @@ export default async function LatestPage({
   };
 
   const buildPageUrl = (page: number | string) => `/latest?page=${page}&sort=${currentSort}`;
-  const canonicalUrl = `https://porncater.com/latest${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/latest${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
 
   // =========================================================
   // 🚀 SUPER JSON-LD SCHEMA INJECTION
@@ -134,7 +111,7 @@ export default async function LatestPage({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.porncater.com/" },
       { "@type": "ListItem", "position": 2, "name": "Latest Videos", "item": canonicalUrl }
     ]
   };
@@ -148,7 +125,7 @@ export default async function LatestPage({
     "itemListElement": videos.map((video, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "url": `https://www.porncater.com/video/${video.id}/${video.slug}`,
       "name": video.title,
       "image": video.thumbnail
     }))
@@ -266,7 +243,7 @@ export default async function LatestPage({
                   </h3>
                   <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
                     <span>{Number(video.views || 0).toLocaleString()} views</span>
-                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> 100%</span>
+                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> {Number(video.likes || 0).toLocaleString()}</span>
                   </div>
                 </div>
               </Link>

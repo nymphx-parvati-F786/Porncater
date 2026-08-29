@@ -1,12 +1,18 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";           // ← Use your existing prisma instance
-import { RecipientType } from "@prisma/client";  // ← Import the enum
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { RecipientType } from "@prisma/client";
+import { clientIp, rateLimit } from "@/src/lib/rate-limit";
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const limited = rateLimit(`report:${clientIp(req)}`, 6, 60 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json({ error: "Too many reports" }, { status: 429 });
+    }
+
     const resolvedParams = await params;
     const videoId = parseInt(resolvedParams.id);
 

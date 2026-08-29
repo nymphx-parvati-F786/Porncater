@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
 import path from "path";
 import sharp from "sharp";
 
-const prisma = new PrismaClient();
+
 
 // Safer Sharp settings
 sharp.cache(false);

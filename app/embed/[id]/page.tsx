@@ -1,11 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import VideoPlayer from "@/src/components/ui/player/VideoPlayer";
-
+import type { Metadata } from "next";
 
 interface EmbedProps {
   params: Promise<{ id: string }>;
 }
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function EmbedPage({ params }: EmbedProps) {
   const resolvedParams = await params;
@@ -21,7 +25,6 @@ export default async function EmbedPage({ params }: EmbedProps) {
   if (!video) notFound();
 
   return (
-    // Completely overrides the RootLayout's constraints to force a 100vw/100vh raw black box
     <div style={{ margin: 0, padding: 0, width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: 'black' }}>
       <VideoPlayer 
         src={video.videoUrl} 

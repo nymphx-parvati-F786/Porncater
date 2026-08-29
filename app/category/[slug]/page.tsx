@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Prisma } from "@prisma/client";
 import { Metadata } from "next";
 import {
@@ -30,36 +31,13 @@ const formatCategoryTitle = (slug: string) => {
 };
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
   "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
@@ -75,15 +53,15 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
   const slug = resolvedParams.slug;
   const page = resolvedSearchParams.page ? String(resolvedSearchParams.page) : "1";
   const displayTitle = formatCategoryTitle(slug);
-  const canonicalUrl = `https://porncater.com/category/${slug}${page !== "1" ? `?page=${page}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/category/${slug}${page !== "1" ? `?page=${page}` : ""}`;
 
   return {
-    title: `Free ${displayTitle} Porn Videos & HD XXX Clips - Page ${page} | PornCater`,
+    title: `Free ${displayTitle} Porn Videos & HD XXX Clips - Page ${page}`,
     description: `Watch the absolute best free ${displayTitle} porn videos, top amateur scenes, and premium adult cinema. Updated daily on PornCater.`,
     keywords: `${displayTitle} porn, free ${displayTitle} videos, HD sex tube, XXX ${displayTitle} clips, adult movies`,
     alternates: { canonical: canonicalUrl },
     openGraph: {
-      title: `Free ${displayTitle} Porn Videos | PornCater`,
+      title: `Free ${displayTitle} Porn Videos`,
       description: `Stream premium HD ${displayTitle} adult clips and trending scenes.`,
       url: canonicalUrl,
       type: "website",
@@ -181,7 +159,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   };
 
   const buildPageUrl = (page: number | string) => `/category/${slug}?page=${page}&sort=${currentSort}`;
-  const canonicalUrl = `https://porncater.com/category/${slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/category/${slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
 
   // =========================================================
   // 🚀 SUPER JSON-LD SCHEMA INJECTION
@@ -199,8 +177,8 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
-      { "@type": "ListItem", "position": 2, "name": "Categories", "item": "https://porncater.com/category/" },
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.porncater.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Categories", "item": "https://www.porncater.com/category/" },
       { "@type": "ListItem", "position": 3, "name": displayTitle, "item": canonicalUrl }
     ]
   };
@@ -215,7 +193,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     "itemListElement": videos.map((video, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "url": `https://www.porncater.com/video/${video.id}/${video.slug}`,
       "name": video.title,
       "image": video.thumbnail
     }))
@@ -329,7 +307,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                   </h3>
                   <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
                     <span>{Number(video.views || 0).toLocaleString()} views</span>
-                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> 98%</span>
+                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> {Number(video.likes || 0).toLocaleString()}</span>
                   </div>
                 </div>
               </Link>

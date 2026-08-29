@@ -1,17 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
-// Pull directly from the environment variables
 const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
 const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
 const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
-
-// Fail fast: Throw an error immediately if the keys are missing
-if (!STORAGE_ZONE || !STORAGE_API_KEY || !STORAGE_PULLZONE) {
-  throw new Error("Missing Bunny.net environment variables in .env file.");
-}
 
 export async function POST(request: NextRequest) {
   try {

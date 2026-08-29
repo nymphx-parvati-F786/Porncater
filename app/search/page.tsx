@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Prisma } from "@prisma/client";
 import { Metadata } from "next";
 import {
@@ -19,36 +20,13 @@ interface PageProps {
 }
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
   "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",
@@ -64,13 +42,13 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const page = resolvedParams.page ? String(resolvedParams.page) : "1";
 
   if (!q) {
-    return { title: "Search Free HD Porn Videos | PornCater" };
+    return { title: "Search Free HD Porn Videos" };
   }
 
-  const canonicalUrl = `https://porncater.com/search?q=${encodeURIComponent(q)}${page !== "1" ? `&page=${page}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/search?q=${encodeURIComponent(q)}${page !== "1" ? `&page=${page}` : ""}`;
 
   return {
-    title: `"${q}" Porn Videos - Free ${q} XXX Sex Clips Page ${page} | PornCater`,
+    title: `"${q}" Porn Videos - Free ${q} XXX Sex Clips Page ${page}`,
     description: `Watch free ${q} porn videos and HD sex scenes. Streaming the best adult clips matching "${q}" updated daily on PornCater.`,
     keywords: `${q} porn, ${q} sex videos, watch ${q} adult tube, free ${q} clips, HD XXX`,
     alternates: { canonical: canonicalUrl },
@@ -189,7 +167,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
   };
 
   const buildPageUrl = (page: number | string) => `/search?q=${encodeURIComponent(q)}&page=${page}&sort=${currentSort}`;
-  const canonicalUrl = `https://porncater.com/search?q=${encodeURIComponent(q)}${currentPage !== 1 ? `&page=${currentPage}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/search?q=${encodeURIComponent(q)}${currentPage !== 1 ? `&page=${currentPage}` : ""}`;
 
   // =========================================================
   // 🚀 SUPER JSON-LD SCHEMA INJECTION
@@ -206,8 +184,8 @@ export default async function SearchPage({ searchParams }: PageProps) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://porncater.com/" },
-      { "@type": "ListItem", "position": 2, "name": "Search", "item": "https://porncater.com/search" },
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.porncater.com/" },
+      { "@type": "ListItem", "position": 2, "name": "Search", "item": "https://www.porncater.com/search" },
       { "@type": "ListItem", "position": 3, "name": q, "item": canonicalUrl }
     ]
   };
@@ -221,7 +199,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
     "itemListElement": videos.map((video, index) => ({
       "@type": "ListItem",
       "position": index + 1,
-      "url": `https://porncater.com/video/${video.id}/${video.slug}`,
+      "url": `https://www.porncater.com/video/${video.id}/${video.slug}`,
       "name": video.title,
       "image": video.thumbnail
     }))
@@ -338,7 +316,7 @@ export default async function SearchPage({ searchParams }: PageProps) {
                   </h3>
                   <div className="flex items-center justify-between text-zinc-500 text-[11px] mt-auto pt-1.5 font-medium">
                     <span>{Number(video.views || 0).toLocaleString()} views</span>
-                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> 98%</span>
+                    <span className="flex items-center gap-1 text-emerald-500 font-bold"><ThumbsUp size={12} /> {Number(video.likes || 0).toLocaleString()}</span>
                   </div>
                 </div>
               </Link>

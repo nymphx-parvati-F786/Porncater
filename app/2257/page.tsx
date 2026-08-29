@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import SearchBar from "@/src/components/ui/SearchBar";
 import {
   Play, User, Flame, Clock, Sparkles,
   MonitorPlay, Star, ThumbsUp, Filter,
@@ -12,7 +11,7 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 // 🚀 SEO ENGINE (2257 METADATA)
 // =========================================================
 export const metadata: Metadata = {
-  title: "18 U.S.C. 2257 Compliance | PornCater",
+  title: "18 U.S.C. 2257 Compliance",
   description: "18 U.S.C. Section 2257 compliance statement for PornCater. We maintain a strict zero-tolerance policy against illegal content.",
   robots: {
     index: true,
@@ -76,7 +75,7 @@ export default function Compliance2257Page() {
             <section>
               <h3 className="text-lg font-medium text-white mb-3 tracking-wide">3. Zero-Tolerance Policy</h3>
               <p className="mb-4">
-                PornCater maintains a strict, zero-tolerance policy against any visual depictions of minors or non-consensual content. We actively monitor our platform and utilize automated hashing and reporting tools to prevent the upload of illegal material.
+                PornCater maintains a strict, zero-tolerance policy against any visual depictions of minors or non-consensual content. We actively monitor our platform and act on user reports, DMCA notices, and compliance reviews to prevent the upload of illegal material.
               </p>
               <p>
                 If you believe that any material on this website features individuals under the age of 18, or violates any laws, we urge you to report it immediately to our compliance department or utilize our DMCA takedown procedures. Upon notification, any infringing or illegal material will be permanently disabled, and the offending user's account will be terminated and reported to the appropriate law enforcement authorities (including the NCMEC).

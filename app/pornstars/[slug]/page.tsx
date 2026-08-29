@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Share2,
@@ -25,36 +26,13 @@ interface PageProps {
 }
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC",
   "Lesbian",
@@ -97,12 +75,12 @@ export async function generateMetadata({
     select: { name: true, bio: true, avatarUrl: true },
   });
 
-  if (!star) return { title: "Pornstar Not Found | PornCater" };
+  if (!star) return { title: "Pornstar Not Found" };
 
-  const canonicalUrl = `https://porncater.com/pornstars/${starSlug}${page !== "1" ? `?page=${page}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/pornstars/${starSlug}${page !== "1" ? `?page=${page}` : ""}`;
 
   return {
-    title: `${star.name} Porn Videos & Profile - Page ${page} | PornCater`,
+    title: `${star.name} Porn Videos & Profile - Page ${page}`,
     description: star.bio
       ? `${star.name} bio: ${star.bio.substring(0, 120)}... Stream exclusive HD videos.`
       : `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
@@ -110,7 +88,7 @@ export async function generateMetadata({
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${star.name} Porn Videos | PornCater`,
+      title: `${star.name} Porn Videos`,
       description: `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
       url: canonicalUrl,
       type: "profile",
@@ -180,6 +158,7 @@ export default async function PornstarProfile({
         thumbnail: true,
         duration: true,
         views: true,
+        likes: true,
       },
     });
     // Preserve order
@@ -206,7 +185,7 @@ export default async function PornstarProfile({
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalVideos / videosPerPage));
-  const canonicalUrl = `https://porncater.com/pornstars/${star.slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/pornstars/${star.slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
 
   const generatePagination = () => {
     if (totalPages <= 5)
@@ -243,19 +222,19 @@ export default async function PornstarProfile({
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://porncater.com/",
+        item: "https://www.porncater.com/",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Pornstars",
-        item: "https://porncater.com/pornstars/",
+        item: "https://www.porncater.com/pornstars/",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: star.name,
-        item: `https://porncater.com/pornstars/${star.slug}`,
+        item: `https://www.porncater.com/pornstars/${star.slug}`,
       },
     ],
   };
@@ -268,7 +247,7 @@ export default async function PornstarProfile({
       star.bio ||
       `Adult film actress ${star.name} profile and video collection.`,
     image: star.avatarUrl,
-    url: `https://porncater.com/pornstars/${star.slug}`,
+    url: `https://www.porncater.com/pornstars/${star.slug}`,
     interactionStatistic: {
       "@type": "InteractionCounter",
       interactionType: "https://schema.org/WatchAction",
@@ -285,7 +264,7 @@ export default async function PornstarProfile({
     itemListElement: videos.map((video, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `https://porncater.com/video/${video.id}/${video.slug}`,
+      url: `https://www.porncater.com/video/${video.id}/${video.slug}`,
       name: video.title,
       image: video.thumbnail,
     })),
@@ -461,7 +440,7 @@ export default async function PornstarProfile({
                           : "0"}
                       </span>
                       <span className="flex items-center gap-1 text-emerald-600">
-                        <ThumbsUp size={10} /> 100%
+                        <ThumbsUp size={10} /> {Number(video.likes || 0).toLocaleString()}
                       </span>
                     </div>
                   </div>
