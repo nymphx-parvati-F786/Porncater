@@ -3,19 +3,17 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import Hls from "hls.js";
 import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Maximize,
-  Minimize,
-  SkipBack,
-  SkipForward,
-  Settings,
-  ExternalLink,
-  Repeat,
-  PictureInPicture2,
-} from "lucide-react";
+  IcoPlay,
+  IcoPause,
+  IcoSkipTen,
+  IcoVolume,
+  IcoExpand,
+  IcoCompress,
+  IcoLoop,
+  IcoPip,
+  IcoOut,
+  IcoSkipAd,
+} from "./icons";
 
 interface VideoPlayerProps {
   src: string;
@@ -723,18 +721,12 @@ export default function VideoPlayer({
 
       {actionAnim && (
         <div
-          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none flex flex-col items-center justify-center w-[72px] h-[72px] bg-black/80 border border-white/20 text-white ${
-            actionAnim === "forward" ? "right-[16%]" : "left-[16%]"
+          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none flex items-center justify-center gap-1 h-12 px-3 bg-black/85 border border-white/15 text-white ${
+            actionAnim === "forward" ? "right-[14%]" : "left-[14%]"
           }`}
         >
-          {actionAnim === "forward" ? (
-            <SkipForward size={22} strokeWidth={2.5} fill="currentColor" />
-          ) : (
-            <SkipBack size={22} strokeWidth={2.5} fill="currentColor" />
-          )}
-          <span className="text-[10px] font-bold uppercase tracking-widest mt-0.5">
-            {actionAnim === "forward" ? "+10" : "−10"}
-          </span>
+          <IcoSkipTen dir={actionAnim === "forward" ? "fwd" : "back"} size={26} />
+          <span className="text-[11px] font-bold tabular-nums tracking-tight">10</span>
         </div>
       )}
 
@@ -763,7 +755,7 @@ export default function VideoPlayer({
               aria-label="Visit Advertisement"
             >
               <span className="bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 flex items-center gap-1.5 border border-red-500">
-                Visit Sponsor <ExternalLink size={11} strokeWidth={2.5} />
+                Visit Sponsor <IcoOut size={12} />
               </span>
             </a>
           )}
@@ -780,7 +772,7 @@ export default function VideoPlayer({
                 }}
                 className="bg-black hover:bg-zinc-900 border-l-2 border-red-600 text-white text-xs font-bold uppercase px-5 py-2.5 flex items-center gap-2"
               >
-                Skip Ad <SkipForward size={13} strokeWidth={2.5} />
+                Skip Ad <IcoSkipAd size={14} />
               </button>
             )}
           </div>
@@ -789,7 +781,11 @@ export default function VideoPlayer({
 
       {(isLoadingAd || (isBuffering && isPlaying && !adState.isPlaying)) && (
         <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-          <div className="w-9 h-9 border-2 border-zinc-700 border-t-red-600 animate-spin" />
+          <div className="flex items-end gap-[3px] h-6">
+            <span className="w-[3px] h-3 bg-red-600 animate-pulse" />
+            <span className="w-[3px] h-6 bg-red-600 animate-pulse [animation-delay:120ms]" />
+            <span className="w-[3px] h-4 bg-red-600 animate-pulse [animation-delay:240ms]" />
+          </div>
         </div>
       )}
 
@@ -818,10 +814,10 @@ export default function VideoPlayer({
             e.stopPropagation();
             togglePlay();
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[76px] h-[48px] md:w-[84px] md:h-[52px] flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[88px] h-[52px] flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_0_1px_#000]"
           aria-label="Play"
         >
-          <Play size={30} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+          <IcoPlay size={28} className="ml-1" />
         </button>
       )}
 
@@ -852,8 +848,8 @@ export default function VideoPlayer({
             />
           </div>
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white border border-black opacity-0 group-hover/bar:opacity-100 md:opacity-0 md:group-hover/bar:opacity-100 pointer-events-none"
-            style={{ left: `calc(${progress}% - 5px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-red-600 pointer-events-none"
+            style={{ left: `calc(${progress}% - 4px)` }}
           />
           {hoverTime !== null && (
             <div
@@ -865,51 +861,43 @@ export default function VideoPlayer({
           )}
         </div>
 
-        <div className="flex items-center justify-between text-zinc-200">
-          <div className="flex items-center gap-2.5 md:gap-4">
+        <div className="flex items-center justify-between gap-2 text-white">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             <button
               onClick={togglePlay}
-              className="p-1 hover:text-red-500 transition-colors"
+              className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-white"
               aria-label={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? (
-                <Pause size={22} fill="currentColor" strokeWidth={0} />
-              ) : (
-                <Play size={22} fill="currentColor" strokeWidth={0} />
-              )}
+              {isPlaying ? <IcoPause size={18} /> : <IcoPlay size={18} className="ml-0.5" />}
             </button>
 
-            <div className="flex items-center gap-2 text-zinc-400">
-              <button
-                onClick={() => seekBy(-SEEK_STEP)}
-                className="hover:text-white p-1"
-                aria-label="Back 10 seconds"
-              >
-                <SkipBack size={16} strokeWidth={2.5} />
-              </button>
-              <button
-                onClick={() => seekBy(SEEK_STEP)}
-                className="hover:text-white p-1"
-                aria-label="Forward 10 seconds"
-              >
-                <SkipForward size={16} strokeWidth={2.5} />
-              </button>
-            </div>
+            <button
+              onClick={() => seekBy(-SEEK_STEP)}
+              className="h-9 px-1.5 flex items-center gap-0.5 hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Back 10 seconds"
+            >
+              <IcoSkipTen dir="back" size={22} />
+              <span className="text-[10px] font-bold tabular-nums leading-none">10</span>
+            </button>
+            <button
+              onClick={() => seekBy(SEEK_STEP)}
+              className="h-9 px-1.5 flex items-center gap-0.5 hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Forward 10 seconds"
+            >
+              <span className="text-[10px] font-bold tabular-nums leading-none">10</span>
+              <IcoSkipTen dir="fwd" size={22} />
+            </button>
 
             {!isIos && (
-              <div className="flex items-center gap-1.5 group/vol">
+              <div className="flex items-center group/vol">
                 <button
                   onClick={toggleMute}
-                  className="p-1 text-zinc-400 hover:text-red-500"
+                  className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200 hover:text-white"
                   aria-label={isMuted ? "Unmute" : "Mute"}
                 >
-                  {isMuted || volume === 0 ? (
-                    <VolumeX size={18} strokeWidth={2.5} />
-                  ) : (
-                    <Volume2 size={18} strokeWidth={2.5} />
-                  )}
+                  <IcoVolume size={16} muted={isMuted || volume === 0} />
                 </button>
-                <div className="w-0 overflow-hidden group-hover/vol:w-16 md:w-14 md:group-hover/vol:w-16 transition-all duration-150">
+                <div className="w-0 overflow-hidden group-hover/vol:w-[72px] transition-[width] duration-150">
                   <input
                     type="range"
                     min={0}
@@ -917,9 +905,9 @@ export default function VideoPlayer({
                     step={0.05}
                     value={isMuted ? 0 : volume}
                     onChange={onVolume}
-                    className="w-full h-1 bg-zinc-700 appearance-none cursor-pointer
-                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-1.5 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
-                      [&::-moz-range-thumb]:w-1.5 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
+                    className="w-[64px] ml-1 h-[3px] bg-zinc-700 appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[3px] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
+                      [&::-moz-range-thumb]:w-[3px] [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
                   />
                 </div>
               </div>
@@ -927,96 +915,115 @@ export default function VideoPlayer({
             {isIos && (
               <button
                 onClick={toggleMute}
-                className="p-1 text-zinc-400 hover:text-red-500"
+                className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200"
                 aria-label={isMuted ? "Unmute" : "Mute"}
               >
-                {isMuted ? (
-                  <VolumeX size={18} strokeWidth={2.5} />
-                ) : (
-                  <Volume2 size={18} strokeWidth={2.5} />
-                )}
+                <IcoVolume size={16} muted={isMuted} />
               </button>
             )}
 
-            <span className="text-[11px] font-mono tracking-tight tabular-nums select-none">
+            <span className="hidden sm:inline text-[11px] font-mono tabular-nums select-none px-1.5">
               <span className="text-white">{fmt(currentTime)}</span>
               <span className="text-zinc-600 mx-0.5">/</span>
-              <span className="text-zinc-500">{fmt(duration)}</span>
+              <span className="text-zinc-400">{fmt(duration)}</span>
+            </span>
+            <span className="sm:hidden text-[11px] font-mono tabular-nums select-none px-1">
+              {fmt(currentTime)}
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5 md:gap-3">
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => setIsLooping((l) => !l)}
-              className={`p-1 ${isLooping ? "text-red-500" : "text-zinc-500 hover:text-white"}`}
+              className={`h-9 w-9 flex items-center justify-center hover:bg-white/10 ${isLooping ? "text-red-500" : "text-zinc-300 hover:text-white"}`}
               aria-label="Loop"
             >
-              <Repeat size={16} strokeWidth={2.5} />
+              <IcoLoop size={15} />
             </button>
 
             {pipSupported && !isIos && (
               <button
                 onClick={togglePip}
-                className="hidden sm:block p-1 text-zinc-500 hover:text-white"
+                className="hidden sm:flex h-9 w-9 items-center justify-center hover:bg-white/10 text-zinc-300 hover:text-white"
                 aria-label="Picture in picture"
               >
-                <PictureInPicture2 size={16} strokeWidth={2.5} />
+                <IcoPip size={15} />
               </button>
             )}
 
             <div className="relative">
               <button
                 onClick={() => setSettingsOpen((o) => !o)}
-                className={`p-1 flex items-center gap-1 ${settingsOpen ? "text-red-500" : "text-zinc-500 hover:text-white"}`}
-                aria-label="Settings"
+                className={`h-7 mx-0.5 px-1.5 text-[10px] font-bold tabular-nums tracking-wide border ${
+                  settingsOpen || playbackRate !== 1
+                    ? "border-red-600 text-red-500"
+                    : "border-zinc-600 text-zinc-200 hover:border-white hover:text-white"
+                }`}
+                aria-label="Speed"
               >
-                <Settings size={16} strokeWidth={2.5} />
-                <span className="hidden md:inline text-[10px] font-bold uppercase tracking-widest">
-                  {playbackRate === 1 ? qualityLabel : `${playbackRate}×`}
-                </span>
+                {playbackRate === 1 ? "1×" : `${playbackRate}×`}
               </button>
+            </div>
+
+            {levels.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setSettingsOpen((o) => !o)}
+                  className={`h-7 px-1.5 text-[10px] font-bold uppercase tracking-wide border ${
+                    settingsOpen
+                      ? "border-red-600 text-red-500"
+                      : "border-zinc-600 text-zinc-200 hover:border-white hover:text-white"
+                  }`}
+                  aria-label="Quality"
+                >
+                  {qualityLabel}
+                </button>
+              </div>
+            )}
+
+            <div className="relative">
               {settingsOpen && (
-                <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-800 min-w-[132px] shadow-xl py-1">
-                  <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">
+                <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-700 min-w-[128px] py-1 z-50">
+                  <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold">
                     Speed
                   </div>
                   {SPEEDS.map((rate) => (
                     <button
                       key={rate}
                       onClick={() => changeSpeed(rate)}
-                      className={`w-full px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
-                        playbackRate === rate ? "text-red-500" : "text-zinc-300"
+                      className={`w-full px-3 py-1.5 text-[11px] text-left font-bold tabular-nums hover:bg-zinc-900 flex items-center justify-between ${
+                        playbackRate === rate ? "text-red-500" : "text-zinc-200"
                       }`}
                     >
-                      {rate === 1 ? "Normal" : `${rate}×`}
-                      {playbackRate === rate && <span className="w-1.5 h-1.5 bg-red-500" />}
+                      {rate === 1 ? "1×" : `${rate}×`}
+                      {playbackRate === rate && <span className="w-1.5 h-1.5 bg-red-600" />}
                     </button>
                   ))}
                   {levels.length > 1 && (
                     <>
-                      <div className="mt-1 border-t border-zinc-800 px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">
+                      <div className="mt-1 border-t border-zinc-800 px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold">
                         Quality
                       </div>
                       <button
                         onClick={() => changeQuality(-1)}
-                        className={`w-full px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
-                          currentLevel === -1 ? "text-red-500" : "text-zinc-300"
+                        className={`w-full px-3 py-1.5 text-[11px] text-left font-bold hover:bg-zinc-900 flex items-center justify-between ${
+                          currentLevel === -1 ? "text-red-500" : "text-zinc-200"
                         }`}
                       >
                         Auto
-                        {currentLevel === -1 && <span className="w-1.5 h-1.5 bg-red-500" />}
+                        {currentLevel === -1 && <span className="w-1.5 h-1.5 bg-red-600" />}
                       </button>
                       {levels.map((level) => (
                         <button
                           key={level.index}
                           onClick={() => changeQuality(level.index)}
-                          className={`w-full px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
-                            currentLevel === level.index ? "text-red-500" : "text-zinc-300"
+                          className={`w-full px-3 py-1.5 text-[11px] text-left font-bold hover:bg-zinc-900 flex items-center justify-between ${
+                            currentLevel === level.index ? "text-red-500" : "text-zinc-200"
                           }`}
                         >
                           {level.label}
                           {currentLevel === level.index && (
-                            <span className="w-1.5 h-1.5 bg-red-500" />
+                            <span className="w-1.5 h-1.5 bg-red-600" />
                           )}
                         </button>
                       ))}
@@ -1028,14 +1035,10 @@ export default function VideoPlayer({
 
             <button
               onClick={toggleFullscreen}
-              className="p-1 text-zinc-400 hover:text-red-500"
+              className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200 hover:text-white"
               aria-label="Fullscreen"
             >
-              {isFullscreen ? (
-                <Minimize size={18} strokeWidth={2.5} />
-              ) : (
-                <Maximize size={18} strokeWidth={2.5} />
-              )}
+              {isFullscreen ? <IcoCompress size={15} /> : <IcoExpand size={15} />}
             </button>
           </div>
         </div>
