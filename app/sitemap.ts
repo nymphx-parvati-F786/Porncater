@@ -1,6 +1,7 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { SITE_URL, MEGA_CATEGORIES, categoryPath } from "@/src/lib/site";
+import { listChannels } from "@/src/lib/channels";
 
 export const revalidate = 3600;
 
@@ -13,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/latest`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/top-rated`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${SITE_URL}/pornstars`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/channels`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
   ];
 
   const categoryPages: MetadataRoute.Sitemap = MEGA_CATEGORIES.map((cat) => ({
@@ -34,5 +36,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }));
 
-  return [...staticPages, ...categoryPages, ...pornstarPages];
+  const channels = await listChannels();
+  const channelPages: MetadataRoute.Sitemap = channels.map((channel) => ({
+    url: `${SITE_URL}/channels/${channel.slug}`,
+    lastModified: now,
+    changeFrequency: "weekly",
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...categoryPages, ...pornstarPages, ...channelPages];
 }

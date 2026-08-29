@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ThumbsUp } from "lucide-react";
-import { formatDuration, videoPath } from "@/src/lib/site";
+import { formatDuration, isTrailerDuration, videoPath } from "@/src/lib/site";
 
 export type VideoCardData = {
   id: number;
@@ -25,6 +25,7 @@ export default function VideoCard({
   const duration = formatDuration(video.duration);
   const views = Number(video.views || 0);
   const likes = Number(video.likes || 0);
+  const trailer = isTrailerDuration(video.duration);
 
   return (
     <Link
@@ -53,6 +54,11 @@ export default function VideoCard({
             HD
           </div>
         )}
+        {trailer ? (
+          <div className="absolute top-1.5 right-1.5 bg-zinc-950/85 backdrop-blur-sm text-amber-400 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm tracking-wider">
+            Trailer
+          </div>
+        ) : null}
         {duration ? (
           <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
             {duration}
@@ -61,12 +67,20 @@ export default function VideoCard({
       </div>
       <div className={`${compact ? "p-2" : "mt-2"} flex flex-col flex-grow`}>
         <h3
-          className={`${compact ? "text-xs leading-tight" : "text-sm leading-relaxed"} font-light text-zinc-200 line-clamp-2 group-hover:text-rose-600 transition-colors duration-75`}
+          className={
+            compact
+              ? "text-xs text-zinc-300 font-light line-clamp-2 leading-tight group-hover:text-rose-500 transition-colors"
+              : "font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75"
+          }
         >
           {video.title}
         </h3>
         <div
-          className={`flex items-center justify-between text-zinc-500 mt-auto ${compact ? "pt-2 text-[9px] uppercase tracking-widest font-bold" : "pt-1.5 text-[11px] font-medium"}`}
+          className={`flex items-center justify-between text-zinc-500 mt-auto ${
+            compact
+              ? "pt-2 text-[9px] uppercase tracking-widest font-bold"
+              : "pt-1.5 text-[11px] font-medium"
+          }`}
         >
           <span>{views.toLocaleString()} views</span>
           {likes > 0 ? (

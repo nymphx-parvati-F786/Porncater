@@ -50,6 +50,43 @@ export function pornstarPath(slug: string): string {
   return `/pornstars/${slug}`;
 }
 
+export function studioSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export function channelPath(nameOrSlug: string): string {
+  return `/channels/${studioSlug(nameOrSlug)}`;
+}
+
+export function parseDurationSeconds(
+  seconds: number | string | null | undefined,
+): number | null {
+  if (seconds === null || seconds === undefined || seconds === "") return null;
+  const raw = String(seconds).trim();
+  if (!raw) return null;
+  if (raw.includes(":")) {
+    const parts = raw.split(":").map((p) => parseInt(p, 10));
+    if (parts.some((n) => Number.isNaN(n))) return null;
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return null;
+  }
+  const num = Number(raw);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Math.floor(num);
+}
+
+export function isTrailerDuration(
+  seconds: number | string | null | undefined,
+): boolean {
+  const value = parseDurationSeconds(seconds);
+  return value !== null && value > 0 && value < 180;
+}
+
 export function formatDuration(
   seconds: number | string | null | undefined,
 ): string | null {

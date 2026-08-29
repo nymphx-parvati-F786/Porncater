@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
-import { Flame, Clock, Sparkles } from "lucide-react";
+import { Flame, Clock, Sparkles, Tv } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import SmartHeader from "@/src/components/ui/SmartHeader";
@@ -10,6 +10,7 @@ import VideoCard from "@/src/components/ui/VideoCard";
 import JsonLd from "@/src/components/json-ld";
 import { getTopBannerAd } from "@/src/lib/ads";
 import { MEGA_CATEGORIES, SITE_URL, videoAbsUrl } from "@/src/lib/site";
+import { listChannels } from "@/src/lib/channels";
 
 export const revalidate = 60;
 
@@ -31,7 +32,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [trendingVideos, latestVideos, topPornstars] = await Promise.all([
+  const [trendingVideos, latestVideos, topPornstars, topChannels] = await Promise.all([
     prisma.video.findMany({
       where: { status: "PUBLISHED" },
       take: 24,
@@ -65,7 +66,9 @@ export default async function Home() {
       orderBy: { views: "desc" },
       select: { id: true, slug: true, name: true, avatarUrl: true, views: true },
     }),
+    listChannels(),
   ]);
+  const featuredChannels = topChannels.slice(0, 12);
 
   const [topDesktopAd, topMobileAd] = await Promise.all([
     getTopBannerAd("970x70"),
@@ -202,6 +205,54 @@ export default async function Home() {
             ))}
           </div>
         </section>
+
+        {featuredChannels.length > 0 && (
+          <section className="max-w-[1600px] mx-auto px-4 py-12">
+            <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
+              <div className="flex items-center gap-3">
+                <Tv className="text-rose-600" size={24} strokeWidth={1.5} />
+                <h2 className="text-2xl font-serif italic text-white tracking-wide">
+                  Premium Channels
+                </h2>
+              </div>
+              <Link
+                href="/channels"
+                className="text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest transition"
+              >
+                All Channels
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              {featuredChannels.map((channel) => (
+                <Link
+                  key={channel.slug}
+                  href={`/channels/${channel.slug}`}
+                  prefetch={false}
+                  className="group relative aspect-video overflow-hidden bg-zinc-900 shadow-md"
+                >
+                  {channel.thumbnail ? (
+                    <Image
+                      src={channel.thumbnail}
+                      alt={channel.studio}
+                      fill
+                      sizes="20vw"
+                      className="object-cover group-hover:scale-[1.01] transition-transform duration-75"
+                    />
+                  ) : null}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
+                  <div className="absolute bottom-1.5 left-1.5 right-1.5">
+                    <div className="font-serif italic text-white text-sm truncate tracking-wide">
+                      {channel.studio}
+                    </div>
+                    <div className="text-[9px] text-zinc-300 font-bold uppercase tracking-widest">
+                      {channel.videoCount.toLocaleString()} videos
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="w-full flex justify-center my-1 overflow-hidden">
           <AdRotator />

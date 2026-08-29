@@ -11,6 +11,7 @@ import {
   MEGA_CATEGORIES,
   SITE_URL,
   categoryPath,
+  channelPath,
   formatIsoDuration,
   videoAbsUrl,
 } from "@/src/lib/site";
@@ -254,6 +255,14 @@ export default async function WatchPage({ params }: PageProps) {
 
               {/* Meta: Stars & Tags */}
               <div className="pt-3 flex flex-col gap-2">
+                {video.studio ? (
+                  <div className="flex items-center flex-wrap gap-2">
+                    <span className="text-[10px] text-zinc-600 font-bold uppercase">Channel:</span>
+                    <Link href={channelPath(video.studio)} className="text-rose-500 hover:text-rose-400 text-xs font-bold transition">
+                      {video.studio}
+                    </Link>
+                  </div>
+                ) : null}
                 {video.pornstars && video.pornstars.length > 0 && (
                   <div className="flex items-center flex-wrap gap-2">
                     <span className="text-[10px] text-zinc-600 font-bold uppercase">Stars:</span>
