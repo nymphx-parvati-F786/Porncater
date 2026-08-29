@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
-import { Star, ChevronLeft, ChevronRight, PlayCircle } from "lucide-react";
+import { Star, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import Pagination from "@/src/components/ui/Pagination";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
 export const revalidate = 120;
@@ -34,15 +35,15 @@ export async function generateMetadata({ searchParams }: DirectoryProps): Promis
     : "Pornstars Directory";
 
   const title = currentPage > 1
-    ? `${titleBase} - Page ${currentPage} | PornCater`
-    : `${titleBase} - Free HD Porn Videos | PornCater`;
+    ? `${titleBase} - Page ${currentPage}`
+    : `${titleBase} - Free HD Porn Videos`;
 
   const description = isFiltered
     ? `Browse top ${letter.toUpperCase()} pornstars. Watch free HD porn videos from the hottest adult stars starting with ${letter.toUpperCase()}. Updated daily on PornCater.`
     : `Browse thousands of pornstars. Watch free HD porn videos from the most popular adult stars. Updated daily on PornCater.`;
 
   // Canonical logic
-  let canonical = "https://porncater.com/pornstars";
+  let canonical = "https://www.porncater.com/pornstars";
   const params = new URLSearchParams();
   if (letter) params.set("letter", letter);
   if (currentPage > 1) params.set("page", String(currentPage));
@@ -103,21 +104,14 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
   const totalPages = Math.ceil(totalPerformers / performersPerPage) || 1;
 
   // Canonical for schema
-  let canonicalUrl = "https://porncater.com/pornstars";
+  let canonicalUrl = "https://www.porncater.com/pornstars";
   const params = new URLSearchParams();
   if (letterQuery) params.set("letter", letterQuery);
   if (currentPage > 1) params.set("page", String(currentPage));
   const queryString = params.toString();
   if (queryString) canonicalUrl += `?${queryString}`;
 
-  const generatePagination = () => {
-    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
-    if (currentPage >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
-  };
-
-  // =========================================================
+    // =========================================================
   // 🔥 MAXIMUM PORN SEO SCHEMA (Breadcrumb + CollectionPage + ItemList)
   // =========================================================
   const breadcrumbSchema = {
@@ -128,13 +122,13 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
         "@type": "ListItem",
         "position": 1,
         "name": "Home",
-        "item": "https://porncater.com/",
+        "item": "https://www.porncater.com/",
       },
       {
         "@type": "ListItem",
         "position": 2,
         "name": "Pornstars",
-        "item": "https://porncater.com/pornstars",
+        "item": "https://www.porncater.com/pornstars",
       },
     ],
   };
@@ -145,7 +139,7 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
       "@type": "ListItem",
       "position": 3,
       "name": `${letterQuery.toUpperCase()} Pornstars`,
-      "item": `https://porncater.com/pornstars?letter=${letterQuery}`,
+      "item": `https://www.porncater.com/pornstars?letter=${letterQuery}`,
     });
   }
 
@@ -161,9 +155,9 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
     "itemListElement": pornstars.map((star, index) => ({
       "@type": "ListItem",
       "position": (currentPage - 1) * performersPerPage + index + 1,
-      "url": `https://porncater.com/pornstars/${star.slug}`,
+      "url": `https://www.porncater.com/pornstars/${star.slug}`,
       "name": star.name,
-      "image": star.avatarUrl || "https://porncater.com/thumbnails/default-avatar.png",
+      "image": star.avatarUrl || "https://www.porncater.com/thumbnails/default-avatar.png",
     })),
   };
 
@@ -180,7 +174,7 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
     "isPartOf": {
       "@type": "WebSite",
       "name": "PornCater",
-      "url": "https://porncater.com",
+      "url": "https://www.porncater.com",
     },
     "mainEntity": {
       "@type": "ItemList",
@@ -289,66 +283,11 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
                 );
               })}
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="mt-8 mb-8 flex items-center justify-center gap-1 select-none">
-                {currentPage > 1 ? (
-                  <Link
-                    href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ""}page=${currentPage - 1}`}
-                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
-                  >
-                    <ChevronLeft size={14} /> Prev
-                  </Link>
-                ) : (
-                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
-                    <ChevronLeft size={14} /> Prev
-                  </div>
-                )}
-
-                <div className="hidden sm:flex gap-1">
-                  {generatePagination().map((pageNum, index) => {
-                    if (pageNum === "...") {
-                      return (
-                        <span
-                          key={`ellipsis-${index}`}
-                          className="w-8 h-8 flex items-end justify-center pb-1 text-zinc-600 font-bold tracking-widest text-sm"
-                        >
-                          ...
-                        </span>
-                      );
-                    }
-                    const isCurrent = currentPage === pageNum;
-                    return (
-                      <Link
-                        key={pageNum}
-                        href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ""}page=${pageNum}`}
-                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
-                          isCurrent
-                            ? "bg-rose-700 text-white border border-rose-700"
-                            : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-                        }`}
-                      >
-                        {pageNum}
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {currentPage < totalPages ? (
-                  <Link
-                    href={`/pornstars?${letterQuery ? `letter=${letterQuery}&` : ""}page=${currentPage + 1}`}
-                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
-                  >
-                    Next <ChevronRight size={14} />
-                  </Link>
-                ) : (
-                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
-                    Next <ChevronRight size={14} />
-                  </div>
-                )}
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hrefFor={(p) => `/pornstars?${letterQuery ? `letter=${letterQuery}&` : ""}page=${p}`}
+            />
           </>
         ) : (
           <div className="bg-[#111] border border-zinc-900 py-20 text-center mt-4">

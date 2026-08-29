@@ -1,11 +1,12 @@
 // app/sitemap-videos/[id]/route.ts
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { SITE_URL } from "@/src/lib/site";
 
 export const revalidate = 3600;
 
 const CHUNK_SIZE = 5000;
-const BASE_URL = "https://porncater.com";
+const BASE_URL = SITE_URL;
 
 function convertToSeconds(timeStr: string | null | undefined): number {
   if (!timeStr) return 0;

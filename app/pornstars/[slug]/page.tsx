@@ -1,18 +1,18 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Share2,
   Play,
   Eye,
   Film,
-  ChevronLeft,
-  ChevronRight,
   ThumbsUp,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import Pagination from "@/src/components/ui/Pagination";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
@@ -25,36 +25,13 @@ interface PageProps {
 }
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC",
   "Lesbian",
@@ -97,12 +74,12 @@ export async function generateMetadata({
     select: { name: true, bio: true, avatarUrl: true },
   });
 
-  if (!star) return { title: "Pornstar Not Found | PornCater" };
+  if (!star) return { title: "Pornstar Not Found" };
 
-  const canonicalUrl = `https://porncater.com/pornstars/${starSlug}${page !== "1" ? `?page=${page}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/pornstars/${starSlug}${page !== "1" ? `?page=${page}` : ""}`;
 
   return {
-    title: `${star.name} Porn Videos & Profile - Page ${page} | PornCater`,
+    title: `${star.name} Porn Videos & Profile - Page ${page}`,
     description: star.bio
       ? `${star.name} bio: ${star.bio.substring(0, 120)}... Stream exclusive HD videos.`
       : `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
@@ -110,7 +87,7 @@ export async function generateMetadata({
       canonical: canonicalUrl,
     },
     openGraph: {
-      title: `${star.name} Porn Videos | PornCater`,
+      title: `${star.name} Porn Videos`,
       description: `Watch exclusive HD porn videos featuring ${star.name} on PornCater.`,
       url: canonicalUrl,
       type: "profile",
@@ -180,6 +157,7 @@ export default async function PornstarProfile({
         thumbnail: true,
         duration: true,
         views: true,
+        likes: true,
       },
     });
     // Preserve order
@@ -206,31 +184,7 @@ export default async function PornstarProfile({
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalVideos / videosPerPage));
-  const canonicalUrl = `https://porncater.com/pornstars/${star.slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
-
-  const generatePagination = () => {
-    if (totalPages <= 5)
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
-    if (currentPage >= totalPages - 2)
-      return [
-        1,
-        "...",
-        totalPages - 3,
-        totalPages - 2,
-        totalPages - 1,
-        totalPages,
-      ];
-    return [
-      1,
-      "...",
-      currentPage - 1,
-      currentPage,
-      currentPage + 1,
-      "...",
-      totalPages,
-    ];
-  };
+  const canonicalUrl = `https://www.porncater.com/pornstars/${star.slug}${currentPage !== 1 ? `?page=${currentPage}` : ""}`;
 
   // =========================================================
   // 🚀 SUPER JSON-LD SCHEMA INJECTION
@@ -243,19 +197,19 @@ export default async function PornstarProfile({
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://porncater.com/",
+        item: "https://www.porncater.com/",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Pornstars",
-        item: "https://porncater.com/pornstars/",
+        item: "https://www.porncater.com/pornstars/",
       },
       {
         "@type": "ListItem",
         position: 3,
         name: star.name,
-        item: `https://porncater.com/pornstars/${star.slug}`,
+        item: `https://www.porncater.com/pornstars/${star.slug}`,
       },
     ],
   };
@@ -268,7 +222,7 @@ export default async function PornstarProfile({
       star.bio ||
       `Adult film actress ${star.name} profile and video collection.`,
     image: star.avatarUrl,
-    url: `https://porncater.com/pornstars/${star.slug}`,
+    url: `https://www.porncater.com/pornstars/${star.slug}`,
     interactionStatistic: {
       "@type": "InteractionCounter",
       interactionType: "https://schema.org/WatchAction",
@@ -285,7 +239,7 @@ export default async function PornstarProfile({
     itemListElement: videos.map((video, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `https://porncater.com/video/${video.id}/${video.slug}`,
+      url: `https://www.porncater.com/video/${video.id}/${video.slug}`,
       name: video.title,
       image: video.thumbnail,
     })),
@@ -461,73 +415,18 @@ export default async function PornstarProfile({
                           : "0"}
                       </span>
                       <span className="flex items-center gap-1 text-emerald-600">
-                        <ThumbsUp size={10} /> 100%
+                        <ThumbsUp size={10} /> {Number(video.likes || 0).toLocaleString()}
                       </span>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
-
-            {/* Pagination Block */}
-            {totalPages > 1 && (
-              <div className="mt-8 mb-8 flex items-center justify-center gap-1 select-none">
-                {currentPage > 1 ? (
-                  <Link
-                    href={`/pornstars/${star.slug}?page=${currentPage - 1}`}
-                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
-                  >
-                    <ChevronLeft size={14} /> Prev
-                  </Link>
-                ) : (
-                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
-                    <ChevronLeft size={14} /> Prev
-                  </div>
-                )}
-
-                <div className="hidden sm:flex gap-1">
-                  {generatePagination().map((pageNum, index) => {
-                    if (pageNum === "...") {
-                      return (
-                        <span
-                          key={`ellipsis-${index}`}
-                          className="w-8 h-8 flex items-end justify-center pb-1 text-zinc-600 font-bold tracking-widest text-sm"
-                        >
-                          ...
-                        </span>
-                      );
-                    }
-                    const isCurrent = currentPage === pageNum;
-                    return (
-                      <Link
-                        key={pageNum}
-                        href={`/pornstars/${star.slug}?page=${pageNum}`}
-                        className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
-                          isCurrent
-                            ? "bg-rose-600 text-white border border-rose-600"
-                            : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
-                        }`}
-                      >
-                        {pageNum}
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {currentPage < totalPages ? (
-                  <Link
-                    href={`/pornstars/${star.slug}?page=${currentPage + 1}`}
-                    className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
-                  >
-                    Next <ChevronRight size={14} />
-                  </Link>
-                ) : (
-                  <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
-                    Next <ChevronRight size={14} />
-                  </div>
-                )}
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              hrefFor={(p) => `/pornstars/${star.slug}?page=${p}`}
+            />
           </>
         ) : (
           <div className="bg-[#111] border border-zinc-900 py-20 text-center mt-4">

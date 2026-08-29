@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Flame,
-  ChevronLeft,
-  ChevronRight,
   Play,
   User,
   Clock,
@@ -19,56 +18,28 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
-import {
-  blackedSuperLeaderboards,
-  blackedLeaderboards,
-} from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import Pagination from "@/src/components/ui/Pagination";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 
 export const revalidate = 120; // Caches the page for 2 minutes
 
 export const metadata: Metadata = {
-  title: "Trending Porn Videos | PornCater",
+  title: "Trending Porn Videos",
   description:
     "Watch the hottest trending porn videos on PornCater. Discover the most viewed and top-rated sex tube scenes updated right now.",
-  alternates: { canonical: "https://porncater.com/trending" },
+  alternates: { canonical: "https://www.porncater.com/trending" },
 };
 
 const formatDuration = (seconds: number | string | null | undefined) => {
-  if (!seconds) return "10:24";
+  if (!seconds) return "";
   const num = Number(seconds);
   if (isNaN(num)) return String(seconds);
   const m = Math.floor(num / 60);
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER
-async function getTopBannerAd(dimension: string, studio?: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: {
-        dimension: dimension,
-        isActive: true,
-        ...(studio ? { targetStudios: { has: studio } } : {}),
-      },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
 
 export default async function TrendingPage({
   searchParams,
@@ -110,6 +81,7 @@ export default async function TrendingPage({
         thumbnail: true,
         duration: true,
         views: true,
+        likes: true,
       },
     });
     // Map them back into the exact sorted order retrieved from Step A
@@ -131,30 +103,6 @@ export default async function TrendingPage({
   const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
 
   // =========================================================================
-
-  const generatePagination = () => {
-    if (totalPages <= 5)
-      return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
-    if (currentPage >= totalPages - 2)
-      return [
-        1,
-        "...",
-        totalPages - 3,
-        totalPages - 2,
-        totalPages - 1,
-        totalPages,
-      ];
-    return [
-      1,
-      "...",
-      currentPage - 1,
-      currentPage,
-      currentPage + 1,
-      "...",
-      totalPages,
-    ];
-  };
 
   const megaCategories = [
     "BBC",
@@ -186,7 +134,7 @@ export default async function TrendingPage({
   ]);
 
   // Add this inside the component, right before return:
-  const canonicalUrl = `https://porncater.com/trending${currentPage > 1 ? `?page=${currentPage}` : ""}`;
+  const canonicalUrl = `https://www.porncater.com/trending${currentPage > 1 ? `?page=${currentPage}` : ""}`;
 
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -196,13 +144,13 @@ export default async function TrendingPage({
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://porncater.com/",
+        item: "https://www.porncater.com/",
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Trending Videos",
-        item: "https://porncater.com/trending",
+        item: "https://www.porncater.com/trending",
       },
     ],
   };
@@ -216,7 +164,7 @@ export default async function TrendingPage({
     itemListElement: videos.map((video, index) => ({
       "@type": "ListItem",
       position: index + 1,
-      url: `https://porncater.com/video/${video.id}/${video.slug}`,
+      url: `https://www.porncater.com/video/${video.id}/${video.slug}`,
       name: video.title,
       image: video.thumbnail,
     })),
@@ -303,7 +251,7 @@ export default async function TrendingPage({
                       {Number(video.views || 0).toLocaleString()} views
                     </span>
                     <span className="flex items-center gap-1 text-emerald-500">
-                      <ThumbsUp size={12} /> 98%
+                      <ThumbsUp size={12} /> {Number(video.likes || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
@@ -317,69 +265,11 @@ export default async function TrendingPage({
             </div>
           )}
         </div>
-
-        {/* ========================================================= */}
-        {/* PAGINATION CONTROLS                                       */}
-        {/* ========================================================= */}
-        {totalPages > 1 && (
-          <div className="mt-12 pt-8 flex items-center justify-center gap-2">
-            {/* Previous Page Button */}
-            {currentPage > 1 ? (
-              <Link
-                href={`/trending?page=${currentPage - 1}`}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
-              >
-                <ChevronLeft size={16} />
-              </Link>
-            ) : (
-              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm mr-2 cursor-not-allowed">
-                <ChevronLeft size={16} />
-              </div>
-            )}
-
-            {/* The Page Numbers */}
-            {generatePagination().map((pageNum, index) => {
-              if (pageNum === "...") {
-                return (
-                  <span
-                    key={`ellipsis-${index}`}
-                    className="px-2 text-zinc-600"
-                  >
-                    ...
-                  </span>
-                );
-              }
-
-              return (
-                <Link
-                  key={pageNum}
-                  href={`/trending?page=${pageNum}`}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${
-                    currentPage === pageNum
-                      ? "border-rose-800 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(190,18,60,0.2)]"
-                      : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                  }`}
-                >
-                  {pageNum}
-                </Link>
-              );
-            })}
-
-            {/* Next Page Button */}
-            {currentPage < totalPages ? (
-              <Link
-                href={`/trending?page=${currentPage + 1}`}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
-              >
-                <ChevronRight size={16} />
-              </Link>
-            ) : (
-              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm ml-2 cursor-not-allowed">
-                <ChevronRight size={16} />
-              </div>
-            )}
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hrefFor={(p) => `/trending?page=${p}`}
+        />
       </section>
 
       {/* 3. 🔥 BFORE FOOTER AD BANNER 900x250 */}

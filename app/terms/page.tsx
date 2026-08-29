@@ -1,13 +1,12 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import SearchBar from "@/src/components/ui/SearchBar";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 
 // =========================================================
 // 🚀 SEO ENGINE (TOS METADATA)
 // =========================================================
 export const metadata: Metadata = {
-  title: "Terms of Service | PornCater",
+  title: "Terms of Service",
   description: "Terms of Service and user agreement for PornCater. Read our rules, user conduct guidelines, and legal disclaimers.",
   robots: {
     index: true,

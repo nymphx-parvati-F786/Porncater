@@ -378,7 +378,7 @@ async function run() {
   console.log(`🧠 Master Roster loaded with ${masterRosterMap.size} performers.`);
 
   // 2. Read Targets
-  const urlsFilePath = path.join(__dirname, 'clean_urls.txt');
+  const urlsFilePath = path.join(__dirname, 'urls.txt');
   const failedFilePath = path.join(__dirname, 'failed_urls.txt');
 
   if (!fs.existsSync(urlsFilePath)) {

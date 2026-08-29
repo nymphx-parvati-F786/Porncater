@@ -1,0 +1,1535 @@
+app\api\admin\add-pornstar\route.ts -:
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+// Pull directly from the environment variables
+const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
+const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
+const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
+
+// Fail fast: Throw an error immediately if the keys are missing
+if (!STORAGE_ZONE || !STORAGE_API_KEY || !STORAGE_PULLZONE) {
+  throw new Error("Missing Bunny.net environment variables in .env file.");
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+
+    const name = formData.get("name") as string;
+    const bio = formData.get("bio") as string;
+    const tagsString = formData.get("tags") as string; // Will come as a comma-separated string
+    const avatarFile = formData.get("avatar") as File | null;
+    const coverFile = formData.get("cover") as File | null;
+
+    if (!name) {
+      return NextResponse.json({ error: "Performer name is required." }, { status: 400 });
+    }
+
+    // 1. Generate SEO-friendly slug
+    const slug = name
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)+/g, "");
+
+    // 2. Check for duplicate slug to prevent Prisma crash
+    const existingStar = await prisma.pornstar.findUnique({
+      where: { slug },
+    });
+
+    if (existingStar) {
+      return NextResponse.json({ error: "A performer with this exact name already exists." }, { status: 409 });
+    }
+
+    let finalAvatarUrl = null;
+    let finalCoverUrl = null;
+
+    // 3. Upload Avatar to Bunny.net Storage (if provided)
+    if (avatarFile) {
+      const avatarPath = `thumbnails/pornstars/${slug}-${Date.now()}.jpg`;
+      const uploadRes = await fetch(
+        `https://storage.bunnycdn.com/${STORAGE_ZONE}/${avatarPath}`,
+        {
+          method: "PUT",
+          headers: {
+            AccessKey: STORAGE_API_KEY,
+            "Content-Type": avatarFile.type,
+          },
+          body: avatarFile,
+        }
+      );
+
+      if (!uploadRes.ok) throw new Error("Failed to upload avatar to edge storage.");
+      finalAvatarUrl = `https://${STORAGE_PULLZONE}/${avatarPath}`;
+    }
+
+    // 4. Upload Cover Image to Bunny.net Storage (if provided)
+    
+    if (coverFile) {
+      console.log("step working");
+      
+      const coverPath = `thumbnails/${slug}-${Date.now()}.jpg`;
+      const uploadRes = await fetch(
+        `https://storage.bunnycdn.com/${STORAGE_ZONE}/${coverPath}`,
+        {
+          method: "PUT",
+          headers: {
+            AccessKey: STORAGE_API_KEY,
+            "Content-Type": coverFile.type,
+          },
+          body: coverFile,
+        }
+      );
+
+      if (!uploadRes.ok) throw new Error("Failed to upload cover image to edge storage.");
+      finalCoverUrl = `https://${STORAGE_PULLZONE}/${coverPath}`;
+    }
+
+    // 5. Parse Tags
+    // Convert "Petite, Anal, Brunette" into an actual array for Prisma
+    const tagsArray = tagsString 
+      ? tagsString.split(',').map(t => t.trim()).filter(Boolean) 
+      : [];
+
+    // 6. Save to Supabase via Prisma
+    const newPornstar = await prisma.pornstar.create({
+      data: {
+        name,
+        slug,
+        avatarUrl: finalAvatarUrl,
+        coverImage: finalCoverUrl,
+        bio: bio || null,
+        tags: tagsArray,
+      },
+    });
+
+    return NextResponse.json({ success: true, pornstar: newPornstar }, { status: 201 });
+  } catch (error: any) {
+    console.error("🔥 Error adding pornstar:", error);
+    return NextResponse.json({ error: "Upload failed", details: error.message }, { status: 500 });
+  }
+}
+
+// Keep the GET request identical to before so your homepage feed works seamlessly
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const limit = searchParams.get("limit");
+
+    const pornstars = await prisma.pornstar.findMany({
+      orderBy: { views: "desc" },
+      ...(limit ? { take: parseInt(limit) } : {}),
+    });
+
+    return NextResponse.json(pornstars, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\admin\campaigns\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET() {
+  try {
+    const campaigns = await prisma.campaign.findMany({
+      where: { isActive: true },
+      include: {
+        sponsor: { select: { name: true } }
+      },
+      orderBy: { name: 'asc' }
+    });
+    
+    return NextResponse.json(campaigns);
+  } catch (error) {
+    console.error("Failed to fetch campaigns:", error);
+    return NextResponse.json({ error: "Failed to load campaigns" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\admin\inbox\route.ts -:
+import { NextRequest, NextResponse } from "next/server";
+import { simpleParser } from "mailparser";
+import { prisma } from "@/lib/prisma";
+
+export const runtime = "nodejs";
+
+// Helper to safely extract emails from mailparser's strict types
+// Helper to safely extract emails from mailparser's strict types
+const extractAddresses = (
+  addressField: any
+): Array<{ name: string | null; email: string }> => {
+  if (!addressField) return [];
+
+  // Handle both single objects and arrays safely
+  const values = Array.isArray(addressField)
+    ? addressField.flatMap((f: any) => f.value || [])
+    : addressField.value || [];
+
+  return values.map((v: any) => ({
+    name: v.name || null,
+    email: v.address || "unknown",
+  }));
+};
+
+// ==========================================
+// POST: RECEIVE EMAILS FROM CLOUDFLARE
+// ==========================================
+export async function POST(request: NextRequest) {
+  try {
+    const secret = request.headers.get("x-cf-inbox-secret");
+    if (!secret || secret !== process.env.EMAIL_WORKER_SECRET) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const rawEmail = await request.arrayBuffer();
+    if (!rawEmail || rawEmail.byteLength === 0) {
+      return NextResponse.json({ error: "Empty payload" }, { status: 400 });
+    }
+
+    // Parse the raw MIME email
+    const parsed = await simpleParser(Buffer.from(rawEmail));
+    
+    // 🛡️ ARMOR 1: Always guarantee a unique message ID
+    const messageId = parsed.messageId || `inbound-${Date.now()}-${Math.random().toString(36).substring(7)}`;
+
+    // Duplicate protection
+    const existing = await prisma.inboxMessage.findFirst({ where: { messageId } });
+    if (existing) {
+      return NextResponse.json({ success: true, duplicate: true, id: existing.id });
+    }
+
+    // 🛡️ ARMOR 2: Enforce VarChar(500) limit so spam subjects don't crash the database
+    const safeSubject = (parsed.subject || "(No Subject)").substring(0, 490);
+
+    // 🛡️ ARMOR 3: Safely serialize headers so Prisma's JSON parser doesn't choke on weird objects
+    let safeHeaders = {};
+    try {
+      safeHeaders = JSON.parse(JSON.stringify(Object.fromEntries(parsed.headers.entries())));
+    } catch (e) {
+      console.warn("Header parsing failed, saving empty headers");
+    }
+
+    // Save to Database
+    const message = await prisma.inboxMessage.create({
+      data: {
+        messageId,
+        subject: safeSubject,
+        
+        // 🛡️ ARMOR 4: Protect string lengths on sender data
+        fromName: (parsed.from?.value?.[0]?.name || null)?.substring(0, 190),
+        fromEmail: (parsed.from?.value?.[0]?.address || "unknown@unknown").substring(0, 190),
+        replyTo: (parsed.replyTo?.value?.[0]?.address || null)?.substring(0, 190),
+        
+        textBody: parsed.text || null,
+        htmlBody: typeof parsed.html === "string" ? parsed.html : null,
+        sentAt: parsed.date || null,
+        receivedAt: new Date(),
+        sizeBytes: Buffer.byteLength(Buffer.from(rawEmail)),
+        headers: safeHeaders,
+        hasAttachments: Boolean(parsed.attachments && parsed.attachments.length > 0),
+        
+        // Relational Data: Recipients
+        recipients: {
+          create: [
+            ...extractAddresses(parsed.to).map(r => ({ type: "TO" as const, name: r.name?.substring(0,190), email: r.email.substring(0,190) })),
+            ...extractAddresses(parsed.cc).map(r => ({ type: "CC" as const, name: r.name?.substring(0,190), email: r.email.substring(0,190) })),
+            ...extractAddresses(parsed.bcc).map(r => ({ type: "BCC" as const, name: r.name?.substring(0,190), email: r.email.substring(0,190) })),
+          ],
+        },
+
+        // Relational Data: Attachments
+        attachments: {
+          create: (parsed.attachments || []).map(a => ({
+            filename: (a.filename || "unknown").substring(0, 200),
+            mimeType: (a.contentType || "application/octet-stream").substring(0, 100),
+            sizeBytes: a.size || 0,
+            contentId: a.cid || null,
+            isInline: Boolean(a.cid),
+          })),
+        },
+      },
+    });
+
+    return NextResponse.json({ success: true, id: message.id });
+  } catch (error: any) {
+    // 🔥 We log the ACTUAL error to Vercel so you can read it!
+    console.error("🔥 INBOX PROCESSING FATAL ERROR 🔥", error);
+    return NextResponse.json({ error: error.message || "Failed to process email" }, { status: 500 });
+  }
+}
+
+// ==========================================
+// GET: FETCH EMAILS FOR THE UI (WITH FOLDERS)
+// ==========================================
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const folder = searchParams.get("folder") || "inbox";
+    const adminEmail = "admin@porncater.com"; // MUST match the email you use in Resend!
+
+    let whereClause: any = {};
+
+    if (folder === "trash") {
+      whereClause = { isTrashed: true };
+    } else if (folder === "starred") {
+      whereClause = { isTrashed: false, isStarred: true };
+    } else if (folder === "sent") {
+      whereClause = { isTrashed: false, fromEmail: adminEmail };
+    } else {
+      // Inbox: Not trashed, and not sent by you
+      whereClause = { isTrashed: false, fromEmail: { not: adminEmail } };
+    }
+
+    const messages = await prisma.inboxMessage.findMany({
+      where: whereClause,
+      orderBy: { receivedAt: "desc" },
+      select: {
+        id: true,
+        subject: true,
+        fromName: true,
+        fromEmail: true,
+        textBody: true,
+        isRead: true,
+        isStarred: true, // Need this for the UI!
+        receivedAt: true,
+        hasAttachments: true,
+      },
+      take: 50,
+    });
+
+    return NextResponse.json(messages);
+  } catch (error) {
+    console.error("Failed to fetch inbox:", error);
+    return NextResponse.json({ error: "Failed to fetch emails" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\admin\inbox\send\route.ts -:
+import { NextRequest, NextResponse } from "next/server";
+import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function POST(request: NextRequest) {
+  try {
+    const { to, subject, textBody } = await request.json();
+
+    // 1. Send the email out to the real world
+    const { data, error } = await resend.emails.send({
+      from: 'Porncater Admin <admin@porncater.com>', // MUST match your verified domain
+      to: [to],
+      subject: subject,
+      text: textBody,
+    });
+
+    if (error) {
+      console.error("Resend Error:", error);
+      return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // 2. Save it to your Prisma DB so it shows up in your Sent folder
+    const savedMessage = await prisma.inboxMessage.create({
+      data: {
+        messageId: data?.id || `outbound-${Date.now()}`,
+        subject: subject,
+        fromName: "Porncater Admin",
+        fromEmail: "admin@porncater.com",
+        textBody: textBody,
+        receivedAt: new Date(), // Using this as 'sent' time
+        isRead: true, // You wrote it, so it's read
+        hasAttachments: false,
+        recipients: {
+          create: [{ type: "TO", email: to, name: to }]
+        }
+      }
+    });
+
+    return NextResponse.json({ success: true, message: savedMessage });
+  } catch (error) {
+    console.error("Failed to send email:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\admin\inbox\[id]\route.ts -:
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+// PATCH: Update a specific email (e.g., Mark as Read, Move to Trash, Star)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Await the params first (Next.js 15+ requirement)
+    const { id } = await params;
+    const numericId = parseInt(id);
+    
+    const body = await request.json();
+
+    // Only allow updating these specific fields for security
+    const allowedUpdates = {
+      ...(typeof body.isRead === "boolean" && { isRead: body.isRead }),
+      ...(typeof body.isTrashed === "boolean" && { isTrashed: body.isTrashed }),
+      ...(typeof body.isStarred === "boolean" && { isStarred: body.isStarred }),
+    };
+
+    const updatedMessage = await prisma.inboxMessage.update({
+      where: { id: numericId },
+      data: allowedUpdates,
+    });
+
+    return NextResponse.json({ success: true, message: updatedMessage });
+  } catch (error) {
+    console.error("Failed to update message:", error);
+    return NextResponse.json({ error: "Failed to update message" }, { status: 500 });
+  }
+}
+
+// GET: Fetch a single email's full details (like the HTML body)
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    // Await the params first (Next.js 15+ requirement)
+    const { id } = await params;
+    const numericId = parseInt(id);
+    
+    const message = await prisma.inboxMessage.findUnique({
+      where: { id: numericId },
+      include: {
+        recipients: true,
+        attachments: true,
+      }
+    });
+
+    if (!message) {
+      return NextResponse.json({ error: "Message not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(message);
+  } catch (error) {
+    console.error("Failed to fetch message:", error);
+    return NextResponse.json({ error: "Failed to fetch message" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\admin\videos\[id]\dmca\route.ts -:
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> } // Updated for Next.js 15+
+) {
+  try {
+    // =========================================================
+    // 🛡️ CRITICAL SECURITY CHECK
+    // =========================================================
+    // Example: Checking an Authorization header. 
+    // You MUST implement whatever admin auth you are using for your /admin/upload page here.
+    // If you don't, trolls can hit this API and take down your videos.
+    /*
+    const authHeader = request.headers.get("authorization");
+    if (authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    */
+
+    const resolvedParams = await params;
+    const videoId = parseInt(resolvedParams.id);
+
+    if (isNaN(videoId)) {
+      return NextResponse.json({ error: "Invalid Video ID" }, { status: 400 });
+    }
+    
+    const body = await request.json();
+    const { claimantName } = body;
+
+    const video = await prisma.video.update({
+      where: { id: videoId },
+      data: {
+        status: "DMCA_TAKEDOWN",
+        // Using the exact schema field you created
+        dmcaNotes: claimantName ? `Takedown requested by: ${claimantName}` : "DMCA Takedown",
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: "Video taken down securely", 
+      video 
+    });
+    
+  } catch (error) {
+    console.error("DMCA Takedown Error:", error);
+    return NextResponse.json({ error: "Failed to process DMCA takedown" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\ads\route.ts -:
+import { NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+// 🔥 Force this route to be completely dynamic (no caching)
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const dimension = searchParams.get("dimension");
+    const studio = searchParams.get("studio");
+    const category = searchParams.get("category");
+
+    if (!dimension) {
+      return NextResponse.json(
+        { error: "Dimension parameter is required" },
+        { status: 400 }
+      );
+    }
+
+    // 1. Fetch matching active banners
+    let banners = await prisma.banner.findMany({
+      where: {
+        dimension,
+        isActive: true,
+        campaign: {
+          isActive: true,
+          sponsor: { isActive: true },
+        },
+        ...(studio
+          ? {
+              OR: [
+                { targetStudios: { has: studio } },
+                { targetStudios: { isEmpty: true } },
+              ],
+            }
+          : {}),
+      },
+      include: {
+        campaign: {
+          select: { baseLink: true, name: true },
+        },
+      },
+    });
+
+    // Fallback if nothing matched
+    if (banners.length === 0) {
+      banners = await prisma.banner.findMany({
+        where: {
+          dimension,
+          isActive: true,
+        },
+        include: {
+          campaign: { select: { baseLink: true, name: true } },
+        },
+      });
+    }
+
+    if (banners.length === 0) {
+      return NextResponse.json(
+        { error: "No active banners found for this slot" },
+        { status: 404 }
+      );
+    }
+
+    // 2. Weighted random selection
+    const selected = selectWeightedBanner(banners);
+
+    // Add tracking subid
+    const trackingLinkWithSubId = `${selected.trackingLink}?subid=site_${selected.dimension}_${studio || "general"}`;
+
+    return NextResponse.json(
+      {
+        id: selected.id,
+        imageUrl: selected.imageUrl,
+        trackingLink: trackingLinkWithSubId,
+        dimension: selected.dimension,
+        campaignName: selected.campaign?.name || null,
+        weight: selected.weight,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store, max-age=0",
+        },
+      }
+    );
+  } catch (error: any) {
+    console.error("Ad Server Error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// Cleaner & more efficient weighted random
+function selectWeightedBanner(banners: any[]) {
+  const totalWeight = banners.reduce(
+    (sum, b) => sum + (b.weight || 10),
+    0
+  );
+
+  let random = Math.random() * totalWeight;
+
+  for (const banner of banners) {
+    const weight = banner.weight || 10;
+    if (random < weight) {
+      return banner;
+    }
+    random -= weight;
+  }
+
+  // Fallback (should almost never happen)
+  return banners[banners.length - 1];
+}
+
+================================================================================
+
+app\api\pornstars\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+// 1. Add the request parameter to read the incoming URL
+export async function GET(request: Request) {
+  try {
+    // 2. Parse the URL to look for the ?limit= param
+    const { searchParams } = new URL(request.url);
+    const limitParam = searchParams.get('limit');
+
+    // 3. If a limit exists, use it. Otherwise, default to 50 for the main directory.
+    const takeCount = limitParam ? parseInt(limitParam) : 50;
+
+    const pornstars = await prisma.pornstar.findMany({
+      take: takeCount, // 4. Tell Prisma exactly how many to fetch
+      orderBy: { views: 'desc' },
+
+      // Tell Prisma to dynamically count the joined videos
+      include: {
+        _count: {
+          select: { videos: true }
+        }
+      }
+    });
+
+    // Map the data so the frontend receives the 'videoCount' property it expects
+    const formattedPornstars = pornstars.map((star: any) => ({...star,videoCount: star._count?.videos || 0 }));
+
+    return NextResponse.json(formattedPornstars);
+  } catch (error) {
+    console.error("Database Error in /api/pornstars:", error);
+    return NextResponse.json({ error: "Failed to fetch pornstars" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\pornstars\[id]\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const starId = parseInt(resolvedParams.id);
+
+    if (isNaN(starId)) {
+      return NextResponse.json({ error: 'Invalid pornstar ID' }, { status: 400 });
+    }
+
+    const pornstar = await prisma.pornstar.findUnique({
+      where: {
+        id: starId,
+      },
+      // Include the count of their total porn videos for the UI stats bar
+      include: {
+        _count: {
+          select: { videos: true }
+        }
+      }
+    });
+
+    if (!pornstar) {
+      return NextResponse.json(
+        { error: 'Pornstar not found in database' },
+        { status: 404 }
+      );
+    }
+
+    // Format the response so the frontend gets exactly what it expects
+    const formattedStar = {
+      ...pornstar,
+      videoCount: pornstar._count.videos
+    };
+
+    return NextResponse.json(formattedStar);
+  } catch (error) {
+    console.error("Database Error in /api/pornstars/[id]:", error);
+    return NextResponse.json(
+      { error: 'Failed to fetch pornstar profile' },
+      { status: 500 }
+    );
+  }
+}
+
+
+================================================================================
+
+app\api\search\suggest\route.ts -:
+import { prisma } from "@/lib/prisma"; // 🔥 FIX 1: Uses your singleton client, preventing Supabase connection pool crash
+import { NextResponse } from "next/server";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const q = searchParams.get("q")?.trim();
+
+  // If query is less than 2 characters, bypass DB entirely
+  if (!q || q.length < 2) {
+    return NextResponse.json({ videos: [], pornstars: [] });
+  }
+
+  try {
+    // 🔥 FIX 2: Parallel Raw Trigram queries hit the GIN index and order by mathematical similarity
+    const [videos, pornstars] = await Promise.all([
+      // Grab top 5 matching videos ordered by similarity & popularity
+      prisma.$queryRaw<Array<{ id: number; slug: string; title: string; thumbnail: string; duration: string }>>`
+        SELECT id, slug, title, thumbnail, duration 
+        FROM "Video"
+        WHERE status = 'PUBLISHED' 
+          AND (title % ${q} OR title ILIKE ${'%' + q + '%'})
+        ORDER BY similarity(title, ${q}) DESC, views DESC
+        LIMIT 5;
+      `,
+      // Grab top 3 matching pornstars ordered by similarity & views
+      prisma.$queryRaw<Array<{ id: number; slug: string; name: string; avatarUrl: string | null }>>`
+        SELECT id, slug, name, "avatarUrl" 
+        FROM "Pornstar"
+        WHERE name % ${q} OR name ILIKE ${'%' + q + '%'}
+        ORDER BY similarity(name, ${q}) DESC, views DESC
+        LIMIT 3;
+      `
+    ]);
+
+    return NextResponse.json({ videos, pornstars });
+  } catch (error) {
+    console.error("Autocomplete Trigram API Error:", error);
+    return NextResponse.json({ error: "Failed to fetch suggestions" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\unlock\route.ts -:
+import { NextRequest, NextResponse } from "next/server";
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const key = searchParams.get("key");
+
+  // Check if the secret key matches your environment variable
+  if (key === process.env.ADMIN_SECRET_KEY) {
+    // 1. Create a response that redirects you straight to your sexy inbox
+    const response = NextResponse.redirect(new URL("/admin/inbox", request.url));
+
+    // 2. Plant the invisible God-Tier cookie in your browser (lasts for 7 days)
+    response.cookies.set("porncater_god_mode", "engaged", {
+      httpOnly: true, // Javascript can't read it (immune to XSS attacks)
+      secure: process.env.NODE_ENV === "production", // Only over HTTPS
+      sameSite: "strict",
+      maxAge: 60 * 60 * 24 * 7, // 7 days of seamless access
+    });
+
+    return response;
+  }
+
+  // If some random person tries to guess the URL but gets the key wrong?
+  // Instantly redirect them to the homepage.
+  return NextResponse.redirect(new URL("/", request.url));
+}
+
+================================================================================
+
+app\api\user\upload-video\route.ts -:
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import crypto from 'crypto';
+
+const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID as string;
+const STREAM_GENERAL_FULL_SCENES_COLLECTION_ID = process.env.STREAM_GENERAL_FULL_SCENES_COLLECTION_ID as string;
+const BUNNY_API_KEY = process.env.BUNNY_API_KEY as string;
+const BUNNY_CDN = process.env.BUNNY_CDN as string;
+const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
+const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
+const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
+
+// Helper to sanitize text into a URL-friendly slug
+const generateSlug = (text: string) => {
+  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+};
+
+// Generates the secure cryptographic signature required by BunnyCDN for Direct TUS Uploads
+function generateSignature(libraryId: string, apiKey: string, expirationTime: number, videoId: string) {
+  const dataToSign = libraryId + apiKey + expirationTime + videoId;
+  const hash = crypto.createHash('sha256');
+  hash.update(dataToSign);
+  return hash.digest('hex');
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+
+    const title = formData.get('title') as string;
+    const duration = formData.get('duration') as string;
+    const tagsString = formData.get('tags') as string;
+    const pornstarIdsString = formData.get('pornstarIds') as string;
+    const thumbnailFile = formData.get('thumbnail') as File;
+
+    if (!title || !duration || !thumbnailFile) {
+      return NextResponse.json({ error: 'Missing required metadata or thumbnail' }, { status: 400 });
+    }
+
+    const slug = generateSlug(title) + '-' + Math.floor(Math.random() * 10000); // Ensures unique slug for UGC
+    
+    const tagsArray = tagsString ? tagsString.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0) : [];
+    const category = tagsArray.length > 0 ? tagsArray[0] : "Amateur";
+
+    let pornstarIds: number[] = [];
+    try { pornstarIds = JSON.parse(pornstarIdsString).map(Number).filter((id: number) => !isNaN(id)); } catch (e) {}
+
+    // ==========================================
+    // 1. Create BLANK Video Shell in BunnyCDN
+    // ==========================================
+    const createVideoRes = await fetch(
+      `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
+      {
+        method: 'POST',
+        headers: { AccessKey: BUNNY_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, collectionId: STREAM_GENERAL_FULL_SCENES_COLLECTION_ID }),
+      }
+    );
+
+    if (!createVideoRes.ok) return NextResponse.json({ error: 'Failed to create Bunny CDN entry' }, { status: 500 });
+    const { guid } = await createVideoRes.json();
+
+    // ==========================================
+    // 2. Upload Thumbnail to Bunny Storage
+    // ==========================================
+    const thumbExt = thumbnailFile.name.split('.').pop() || 'jpg';
+    const thumbnailPath = `thumbnails/ugc-${slug}-${Date.now()}.${thumbExt}`;
+
+    const uploadThumbnail = await fetch(
+      `https://storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`,
+      {
+        method: 'PUT',
+        headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': thumbnailFile.type },
+        body: thumbnailFile,
+      }
+    );
+
+    if (!uploadThumbnail.ok) return NextResponse.json({ error: 'Thumbnail upload failed' }, { status: 500 });
+
+    // ==========================================
+    // 3. Save to Prisma Database (AS PENDING!)
+    // ==========================================
+    const videoUrl = `https://${BUNNY_CDN}/${guid}/playlist.m3u8`;
+    const thumbnailUrl = `https://${STORAGE_PULLZONE}/${thumbnailPath}`;
+
+    const newVideo = await prisma.video.create({
+      data: {
+        title, 
+        slug, 
+        videoUrl, 
+        thumbnail: thumbnailUrl, 
+        duration, 
+        category, 
+        tags: tagsArray, 
+        status: "PENDING", // 🔥 SECURE: Requires admin approval to go live
+        views: 0, // UGC starts at 0 views
+        ...(pornstarIds.length > 0 && { pornstars: { connect: pornstarIds.map(id => ({ id })) } })
+      },
+    });
+
+    // ==========================================
+    // 4. Generate TUS Credentials for the Client
+    // ==========================================
+    const expirationTime = Math.floor(Date.now() / 1000) + 3600; // 1 hour valid upload window
+    const signature = generateSignature(BUNNY_LIBRARY_ID, BUNNY_API_KEY, expirationTime, guid);
+
+    return NextResponse.json({ 
+      success: true, 
+      video: newVideo,
+      tusAuth: {
+        libraryId: BUNNY_LIBRARY_ID,
+        videoId: guid,
+        signature,
+        expirationTime
+      }
+    });
+
+  } catch (error: any) {
+    console.error('UGC Upload Error:', error);
+    return NextResponse.json({ error: 'Server processing failed', details: error.message }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\videos\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const pornstarParam = searchParams.get('pornstarId');
+    const tag = searchParams.get('tag');
+    const searchQuery = searchParams.get('q');
+
+    let whereClause: any = {};
+
+    // 1. Filter by Pornstar ID
+    if (pornstarParam && pornstarParam !== 'undefined') {
+      const parsedId = parseInt(pornstarParam);
+      if (!isNaN(parsedId)) {
+        whereClause.pornstars = { some: { id: parsedId } };
+      } else {
+        whereClause.pornstars = { some: { slug: pornstarParam } };
+      }
+    }
+
+    // 2. Filter by Tag/Category
+    if (tag) {
+      whereClause.tags = { has: tag };
+    }
+
+    // 3. Filter by Search Query
+    if (searchQuery) {
+      whereClause.title = { contains: searchQuery, mode: 'insensitive' };
+    }
+
+    // Fast query setup for feeds and grids
+    const videos = await prisma.video.findMany({
+      take: 20,
+      where: whereClause,
+      select: {
+        id: true,
+        title: true,
+        thumbnail: true,
+        duration: true,
+        views: true,
+        slug: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return NextResponse.json(videos);
+  } catch (error) {
+    console.error("Database Error in /api/videos:", error);
+    return NextResponse.json({ error: "Failed to fetch porn videos." }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\videos\trending\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const filter = searchParams.get('filter') || 'hot'; // 'hot', 'adored', 'all-time'
+
+    // Fetch the recent active catalog
+    const videos = await prisma.video.findMany({
+      take: 100, // Limit the pool to the 100 most relevant videos to save memory
+      include: {
+        pornstars: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+
+    let sortedVideos = [...videos];
+
+    // THE SMART SORTING LOGIC
+    if (filter === 'all-time') {
+      // Standard sort by total raw views
+      sortedVideos.sort((a, b) => (b.views || 0) - (a.views || 0));
+      
+    } else if (filter === 'adored') {
+      // Sort purely by user likes/adored clicks
+      sortedVideos.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      
+    } else {
+      // 'HOT RIGHT NOW' ALGORITHM
+      // Score = (Likes * 10) + Views. 
+      // In a production app with diverse dates, you would also divide this score by the days since upload to prioritize newer content!
+      sortedVideos.sort((a, b) => {
+        const scoreA = ((a.likes || 0) * 10) + (a.views || 0);
+        const scoreB = ((b.likes || 0) * 10) + (b.views || 0);
+        return scoreB - scoreA;
+      });
+    }
+
+    // Return the top 20 results for the leaderboard
+    return NextResponse.json(sortedVideos.slice(0, 20));
+    
+  } catch (error) {
+    console.error("Database Error in /api/videos/trending:", error);
+    return NextResponse.json({ error: "Failed to calculate trending data." }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\videos\[id]\like\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const videoId = parseInt(resolvedParams.id);
+    
+    // Parse the request body to see if the user is liking or unliking
+    const body = await request.json();
+    const isLiking = body.isLiking;
+
+    if (isNaN(videoId)) {
+      return NextResponse.json({ error: 'Invalid video ID format' }, { status: 400 });
+    }
+
+    // Use Prisma's atomic increment/decrement to prevent race conditions
+    const updatedVideo = await prisma.video.update({
+      where: { id: videoId },
+      data: {
+        likes: {
+          [isLiking ? 'increment' : 'decrement']: 1,
+        },
+      },
+      select: {
+        id: true,
+        likes: true,
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      likes: updatedVideo.likes 
+    });
+  } catch (error) {
+    console.error("Failed to update likes:", error);
+    return NextResponse.json(
+      { error: 'Failed to update like metric' },
+      { status: 500 }
+    );
+  }
+}
+
+================================================================================
+
+app\api\videos\[id]\related\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const currentVideoId = parseInt(resolvedParams.id);
+
+    if (isNaN(currentVideoId)) {
+      return NextResponse.json({ error: 'Invalid video ID' }, { status: 400 });
+    }
+
+    // 1. Fetch the current video's DNA (Tags and Performers)
+    const currentVideo = await prisma.video.findUnique({
+      where: { id: currentVideoId },
+      include: { pornstars: { select: { id: true } } }
+    });
+
+    if (!currentVideo) {
+      return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+    }
+
+    const starIds = currentVideo.pornstars.map(star => star.id);
+    const tags = currentVideo.tags || [];
+
+    // 2. The Rabbit Hole Algorithm
+    // Find videos that share EITHER the same pornstars OR the same tags
+    const relatedVideos = await prisma.video.findMany({
+      where: {
+        // MUST NOT be the video they are already watching
+        id: { not: currentVideoId },
+        
+        // MUST match at least one of these conditions
+        OR: [
+          ...(starIds.length > 0 ? [{ pornstars: { some: { id: { in: starIds } } } }] : []),
+          ...(tags.length > 0 ? [{ tags: { hasSome: tags } }] : [])
+        ]
+      },
+      // Grab 10 recommendations to fill a beautiful grid
+      take: 10,
+      
+      // Sort by views to ensure we are recommending proven, high-converting scenes
+      orderBy: { views: 'desc' },
+      
+      include: {
+        pornstars: {
+          select: { id: true, name: true }
+        }
+      }
+    });
+
+    // 3. Fallback: If no direct matches (e.g., brand new site), just return the hottest videos
+    if (relatedVideos.length === 0) {
+      const fallbackVideos = await prisma.video.findMany({
+        where: { id: { not: currentVideoId } },
+        take: 10,
+        orderBy: { views: 'desc' }
+      });
+      return NextResponse.json(fallbackVideos);
+    }
+
+    return NextResponse.json(relatedVideos);
+
+  } catch (error) {
+    console.error("Database Error in /api/videos/[id]/related:", error);
+    return NextResponse.json({ error: "Failed to fetch related content." }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\videos\[id]\report\route.ts -:
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";           // ← Use your existing prisma instance
+import { RecipientType } from "@prisma/client";  // ← Import the enum
+
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const videoId = parseInt(resolvedParams.id);
+
+    if (isNaN(videoId)) {
+      return NextResponse.json({ error: "Invalid video ID" }, { status: 400 });
+    }
+
+    const body = await req.json();
+    const { reason, description, email } = body;
+
+    if (!reason) {
+      return NextResponse.json({ error: "Reason is required" }, { status: 400 });
+    }
+
+    // Create report inside InboxMessage (properly structured)
+    await prisma.inboxMessage.create({
+      data: {
+        fromEmail: email || "anonymous@porncater.com",
+        fromName: "Video Report",
+        subject: `URGENT REPORT: Video #${videoId} - ${reason}`,
+        textBody: `Video ID: ${videoId}\nReason: ${reason}\n\nDescription: ${description || "No description provided."}`,
+        
+        // Create recipient properly using relation
+        recipients: {
+          create: {
+            type: RecipientType.TO,
+            email: "compliance@porncater.com",
+            name: "Compliance Team",
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      message: "Report submitted successfully." 
+    });
+
+  } catch (error) {
+    console.error("[Report API Error]:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+================================================================================
+
+app\api\videos\[id]\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const videoId = parseInt(resolvedParams.id);
+
+    if (isNaN(videoId)) {
+      return NextResponse.json({ error: 'Invalid video ID format' }, { status: 400 });
+    }
+
+    const video = await prisma.video.findUnique({
+      where: {
+        id: videoId,
+      },
+      include: {
+        // OPTIMIZATION: Only fetch the specific pornstar data needed for the Watch Page UI
+        // This keeps the API response tiny and lightning fast.
+        pornstars: {
+          select: {
+            id: true,
+            name: true,
+            avatarUrl: true,
+            slug: true
+          }
+        },
+      },
+    });
+
+    if (!video) {
+      return NextResponse.json(
+        { error: 'Porn video not found or removed' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(video);
+  } catch (error) {
+    console.error("Database Error in /api/videos/[id]:", error);
+    return NextResponse.json(
+      { error: 'Failed to fetch porn video from database' },
+      { status: 500 }
+    );
+  }
+}
+
+================================================================================
+
+app\api\videos\[id]\view\route.ts -:
+import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const resolvedParams = await params;
+    const videoId = parseInt(resolvedParams.id);
+
+    if (isNaN(videoId)) {
+      return NextResponse.json({ error: 'Invalid video ID format' }, { status: 400 });
+    }
+
+    // ATOMIC INCREMENT: Updates the number directly in the database row 
+    // without reading it first, preventing race conditions.
+    const updatedVideo = await prisma.video.update({
+      where: { id: videoId },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+      select: {
+        id: true,
+        views: true,
+      },
+    });
+
+    return NextResponse.json({ 
+      success: true, 
+      views: updatedVideo.views 
+    });
+  } catch (error) {
+    console.error("Failed to increment views:", error);
+    return NextResponse.json(
+      { error: 'Failed to log view tracking metric' },
+      { status: 500 }
+    );
+  }
+}
+
+================================================================================
+
+prisma\schema.prisma -:
+generator client {
+  provider        = "prisma-client-js"
+  binaryTargets   = ["native", "debian-openssl-3.0.x"]
+  // 🔥 ADVANCED SPEED: Enable Postgres extensions
+  previewFeatures = ["postgresqlExtensions"] 
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  // 🔥 ADVANCED SPEED: Load the Trigram extension for lightning-fast text search
+  extensions = [pg_trgm] 
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum VideoStatus {
+  PUBLISHED
+  DMCA_TAKEDOWN
+  PRIVATE
+  PENDING
+}
+
+enum RecipientType {
+  TO
+  CC
+  BCC
+}
+
+// ==========================================
+// CORE MEDIA PLATFORM
+// ==========================================
+
+model Video {
+  id          Int         @id @default(autoincrement())
+  title       String      @db.VarChar(500)
+  slug        String      @unique
+  videoUrl    String
+  thumbnail   String
+  duration    String
+  views       Int         @default(0)
+  likes       Int         @default(0)      // Enables the "Adore" button
+  
+  category    String?                    // Primary category (e.g., "Hardcore")
+  tags        String[]                   // Enables specific tags: ["Anal", "POV", "HD"]
+  studio      String?                    // 🔥 AD TARGETING: The channel/network (e.g., "Vixen")
+  
+  // Many-to-Many: Now a single video can feature 1, 2, or 10 Pornstars
+  pornstars   Pornstar[]
+
+  // DMCA HANDLING
+  status      VideoStatus @default(PUBLISHED)
+  dmcaNotes   String?     @db.Text 
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // === INDEXES FOR MAXIMUM SPEED ===
+  @@index([views(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin)
+  // 🔥 ADD THIS: Speeds up category filtering & search
+  @@index([category(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([studio])
+}
+
+model Pornstar {
+  id          Int        @id @default(autoincrement())
+  name        String
+  slug        String     @unique
+  avatarUrl   String?    // The square profile picture
+  coverImage  String?    // The wide, cinematic banner image
+  bio         String?    @db.Text
+  
+  // Cached Stats for fast loading on the Directory page
+  views       Int        @default(0)     // Total accumulated views
+  subscribers Int        @default(0)     // The "Subscribe" button count
+  tags        String[]                   // Performer traits: ["Brunette", "Petite"]
+  
+  // Implicit Many-to-Many relation with Videos
+  videos      Video[]    
+  
+  // 🔥 AD TARGETING: Banners that are explicitly targeted at this specific performer
+  targetedBanners Banner[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([views(sort: Desc)])
+  // 🔥 ADD THIS: Makes the A-Z index and search instant
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+}
+
+// ==========================================
+// ENTERPRISE AD SERVER NETWORK
+// ==========================================
+
+model Sponsor {
+  id          String     @id @default(uuid())
+  name        String     @unique // e.g., "Mad Cheddar", "Reality Kings", "Blacked"
+  isActive    Boolean    @default(true)
+  
+  campaigns   Campaign[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Campaign {
+  id          String     @id @default(uuid())
+  sponsorId   String
+  sponsor     Sponsor    @relation(fields: [sponsorId], references: [id], onDelete: Cascade)
+  
+  name        String     // e.g., "RevShare Default", "Halloween Promo"
+  baseLink    String     // e.g., "https://join.blacked.com/track/MjUzMy..."
+  isActive    Boolean    @default(true)
+  
+  banners     Banner[]
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Banner {
+  id          String     @id @default(uuid())
+  campaignId  String
+  campaign    Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  
+  dimension   String     // e.g., "970x70", "300x250"
+  imageUrl    String     // e.g., "https://img-s1-cdn.porncater.com/media/b970x70-a1b2.webp"
+  weight      Int        @default(10) // Higher number = shows up more often
+  isActive    Boolean    @default(true)
+
+  // 🔥 ADVANCED HYPER-TARGETING 🔥
+  targetStudios    String[]   // e.g., ["Vixen", "Tushy"]. If empty, shows globally.
+  targetCategories String[]   // e.g., ["VR", "Anal"]. If empty, shows globally.
+  targetStars      Pornstar[] // Link directly to performers (Many-to-Many)
+
+  // 🔥 ADDED THIS: Each specific image gets its exact, unique tracking link
+  trackingLink String
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([dimension])
+  @@index([isActive])
+}
+
+// ==========================================
+// CUSTOM EMAIL INBOX
+// ==========================================
+
+model InboxMessage {
+  id               Int       @id @default(autoincrement())
+
+  // ===== IDENTIFIERS =====
+  messageId        String?   @unique
+  threadId         String?
+
+  // ===== SUBJECT =====
+  subject          String    @default("(No Subject)")
+
+  // ===== SENDER =====
+  fromName         String?
+  fromEmail        String
+
+  // ===== REPLY =====
+  replyTo          String?
+
+  // ===== CONTENT =====
+  textBody         String?   @db.Text
+  htmlBody         String?   @db.Text
+
+  // ===== METADATA =====
+  sentAt           DateTime?
+  receivedAt       DateTime  @default(now())
+  sizeBytes        Int?
+  headers          Json?
+  hasAttachments   Boolean   @default(false)
+
+  // ===== STATUS =====
+  isRead           Boolean   @default(false)
+  isStarred        Boolean   @default(false)
+  isTrashed        Boolean   @default(false)
+
+  // ===== RELATIONS =====
+  recipients       InboxRecipient[]
+  attachments      InboxAttachment[]
+
+  @@index([receivedAt(sort: Desc)])
+  @@index([fromEmail])
+  @@index([subject])
+  @@index([isRead])
+  @@index([isTrashed])
+}
+
+model InboxRecipient {
+  id          Int           @id @default(autoincrement())
+  type        RecipientType
+  name        String?
+  email       String
+  messageId   Int
+  message     InboxMessage  @relation(fields:[messageId], references:[id], onDelete: Cascade)
+
+  @@index([email])
+}
+
+model InboxAttachment {
+  id          Int           @id @default(autoincrement())
+  filename    String
+  mimeType    String
+  sizeBytes   Int
+  storagePath String?
+  contentId   String?
+  isInline    Boolean       @default(false)
+  messageId   Int
+  message     InboxMessage  @relation(fields:[messageId], references:[id], onDelete: Cascade)
+}
+
+================================================================================
+

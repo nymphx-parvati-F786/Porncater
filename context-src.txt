@@ -1,0 +1,2428 @@
+src\components\layout\Footer.tsx -:
+import Link from "next/link";
+
+export default function Footer() {
+  return (
+    <footer className="border-t border-zinc-900 pt-12 pb-8 text-center bg-[#050505] mt-auto w-full">
+      <div className="flex flex-wrap justify-center gap-x-6 gap-y-3 mb-8 text-[10px] uppercase tracking-widest text-zinc-600 font-bold px-4">
+        <Link href="/dmca" className="hover:text-zinc-300 transition-colors">
+          DMCA / Copyright
+        </Link>
+        <Link href="/privacy-policy" className="hover:text-zinc-300 transition-colors">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="text-rose-600 hover:text-rose-500 transition-colors">
+          Terms of Service
+        </Link>
+        <Link href="/2257" className="hover:text-zinc-300 transition-colors">
+          18 U.S.C. 2257
+        </Link>
+        <Link href="/contact" className="hover:text-zinc-300 transition-colors">
+          Contact Us
+        </Link>
+      </div>
+
+      <div className="text-lg tracking-widest mb-3">
+        <span className="font-serif italic text-rose-600 pr-1">Porn</span>
+        <span className="font-light text-zinc-700">Cater</span>
+      </div>
+      
+      <p className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest max-w-3xl mx-auto px-6 leading-relaxed mb-4">
+        All models appearing on this website were 18 years or older at the time of production. PornCater has a zero-tolerance policy against illegal pornography.
+      </p>
+
+      <p className="text-zinc-800 text-[9px] font-bold uppercase tracking-widest">
+        © {new Date().getFullYear()} PornCater.com • Free Sex Tube • 18+ Only
+      </p>
+    </footer>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\AdRotator\AdRotator.tsx -:
+"use client";
+
+import { useState, useEffect } from "react";
+import ExoClickBanner from "@/src/components/ui/ads/ExoClickAds/ExoClickBanner";
+import JuicyAdsBanner from "@/src/components/ui/ads/JuicyAds/JuicyAdsBanner";
+import AdultForceBanner from "@/src/components/ui/ads/AdultForceAds/AdultForceBanner";
+
+type AdProvider = "adultforce" | "exoclick" | "juicyads";
+
+interface AdRotatorProps {
+  className?: string;
+}
+
+export default function AdRotator({ className = "" }: AdRotatorProps) {
+  const [provider, setProvider] = useState<AdProvider | null>(null);
+
+  useEffect(() => {
+    const providers: AdProvider[] = ["adultforce", "exoclick", "juicyads"];
+    setProvider(providers[Math.floor(Math.random() * providers.length)]);
+  }, []);
+
+  // 🔥 THE VAULT: This wrapper locks the maximum possible height needed for mobile (262px for Juicy) 
+  // and desktop (270px for Juicy). The DOM paints this empty space instantly. No jumping.
+  return (
+    <div 
+      className={`w-full flex justify-center items-center overflow-hidden h-[262px] md:h-[270px] ${className}`}
+    >
+      {!provider && (
+        <div className="animate-pulse bg-zinc-900/20 rounded-sm w-[300px] h-[250px] md:w-[728px] md:h-[90px]" />
+      )}
+
+      {provider === "adultforce" && (
+        <>
+          <AdultForceBanner spotId="10001815" width={900} height={250} className="hidden md:flex border border-zinc-800/80 rounded-sm" />
+          <AdultForceBanner spotId="10002483" width={300} height={100} className="flex md:hidden mx-auto border border-zinc-800/80 rounded-sm" />
+        </>
+      )}
+
+      {provider === "exoclick" && (
+        <>
+          <ExoClickBanner dimension="300x250" zoneId="5984388" className="flex md:hidden mx-auto" />
+          {/* Notice: We changed the 728x90 here to 900x250 so it matches the reserved space better */}
+          <ExoClickBanner dimension="900x250" zoneId="5984828" className="hidden md:flex shadow-xl mx-auto" />
+        </>
+      )}
+
+      {provider === "juicyads" && (
+        <>
+          <JuicyAdsBanner zoneId="1122799" preset="300x262" className="flex lg:hidden mx-auto" />
+          <JuicyAdsBanner zoneId="1122840" preset="908x270" className="hidden lg:flex mx-auto shadow-lg" />
+        </>
+      )}
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\AdultForceAds\AdultForceBanner.tsx -:
+"use client";
+
+import { useState, useEffect } from "react";
+
+interface AdultForceBannerProps {
+  spotId: string;        // e.g., "10002481"
+  affiliateId?: string;  // e.g., "abhigyaansharma17"
+  width?: number;        // e.g., 728
+  height?: number;       // e.g., 90
+  className?: string;
+}
+
+export default function AdultForceBanner({
+  spotId,
+  affiliateId = "abhigyaansharma17",
+  width = 728,
+  height = 90,
+  className = "",
+}: AdultForceBannerProps) {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [iframeSrc, setIframeSrc] = useState("");
+
+  useEffect(() => {
+    // Protocol safety for local dev vs production
+    const protocol = window.location.protocol === "http:" ? "http:" : "https:";
+    setIframeSrc(`${protocol}//a.adtng.com/get/${spotId}?ata=${affiliateId}`);
+  }, [spotId, affiliateId]);
+
+  return (
+    <div
+      className={`relative flex items-center justify-center overflow-hidden rounded-sm bg-[#0a0a0a] border border-zinc-900/50 ${className}`}
+      // 🔥 STRICT LOCK: We force exact dimensions and aspect-ratio. 
+      style={{
+        width: `${width}px`,
+        height: `${height}px`,
+        maxWidth: "100%",
+        aspectRatio: `${width} / ${height}`
+      }}
+    >
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-zinc-900/30 animate-pulse flex items-center justify-center z-0">
+          <span className="text-zinc-700 text-[9px] uppercase font-bold tracking-widest">Sponsored Offer</span>
+        </div>
+      )}
+
+      {/* AdultForce Iframe */}
+      {iframeSrc && (
+        <iframe
+          title={`Advertisement Offer ${spotId}`} // Essential for GSC / Lighthouse accessibility
+          name={`spot_id_${spotId}`}
+          src={iframeSrc}
+          width={width}
+          height={height}
+          scrolling="no"
+          frameBorder="0"
+          //   allowTransparency={true}
+          loading="lazy" // Defers loading until scrolled into viewport
+          onLoad={() => setIsLoaded(true)}
+          className={`z-10 transition-opacity duration-500 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+          style={{ backgroundColor: "transparent" }}
+        />
+      )}
+
+      {/* Native Sponsored Tag */}
+      {/* <span className="absolute top-1 right-1 bg-black/80 text-zinc-500 text-[8px] uppercase tracking-widest px-1.5 py-0.5 rounded-[2px] border border-zinc-800 z-20 pointer-events-none">
+        Ad
+      </span> */}
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\AffiliateAds\DynamicAdBanner.tsx -:
+"use client";
+
+import { useState, useEffect } from "react";
+
+export interface AdData {
+  imageUrl: string;
+  trackingLink: string;
+}
+
+interface AdBannerProps {
+  dimension?: string;
+  targetStudio?: string;
+  className?: string;
+  /** 
+   * Set to true ONLY for the main above-the-fold banner.
+   * This will make it load with high priority (needed when it is LCP).
+   */
+  priority?: boolean;
+  initialAd?: AdData | null;
+}
+
+export default function AdBanner({
+  dimension = "300x250",
+  targetStudio,
+  className = "",
+  priority = false,
+  initialAd = null,
+}: AdBannerProps) {
+  const [ad, setAd] = useState<AdData | null>(initialAd);
+  const [loading, setLoading] = useState(!initialAd);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  const [wStr, hStr] = dimension.split("x");
+  const adWidth = parseInt(wStr, 10) || 300;
+  const adHeight = parseInt(hStr, 10) || 250;
+  const aspectRatio = `${adWidth} / ${adHeight}`;
+
+  useEffect(() => {
+    if (initialAd) return;
+
+    const controller = new AbortController();
+
+    const fetchAd = async () => {
+      try {
+        const url = new URL(`/api/ads`, window.location.origin);
+        url.searchParams.set("dimension", dimension);
+        if (targetStudio) {
+          url.searchParams.set("studio", targetStudio);
+        }
+
+        const res = await fetch(url.toString(), { signal: controller.signal });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.imageUrl) {
+            if (data.imageUrl.startsWith("//")) {
+              data.imageUrl = "https:" + data.imageUrl;
+            }
+            setAd(data);
+          }
+        }
+      } catch (error: any) {
+        if (error.name !== "AbortError") {
+          console.error("Ad fetch error:", error);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAd();
+    return () => controller.abort();
+  }, [dimension, targetStudio, initialAd]);
+
+  const renderFallback = () => (
+    <div
+      className={`w-full h-full flex flex-col items-center justify-center p-4 text-center rounded-sm ${
+        loading
+          ? "animate-pulse bg-zinc-900/50"
+          : "border border-rose-900/30 bg-gradient-to-b from-zinc-900 to-black"
+      }`}
+    >
+      {!loading && (
+        <>
+          <span className="text-rose-500 font-bold uppercase tracking-widest text-sm mb-1">
+            Exclusive Offer
+          </span>
+          <span className="text-zinc-500 text-[10px] uppercase tracking-wider">
+            Click to unlock
+          </span>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div
+      className={`relative block overflow-hidden rounded-sm bg-[#0a0a0a] ${className}`}
+      style={{
+        width: "100%",
+        maxWidth: `${adWidth}px`,
+        aspectRatio,
+      }}
+    >
+      <a
+        href={ad?.trackingLink || "#"}
+        target="_blank"
+        rel="noopener noreferrer nofollow sponsored"
+        className="block w-full h-full relative"
+      >
+        {!ad || loading || imageFailed ? (
+          renderFallback()
+        ) : (
+          <img
+            src={ad.imageUrl}
+            alt={targetStudio ? `${targetStudio} Offer` : "Promoted Content"}
+            width={adWidth}
+            height={adHeight}
+            // 🔥 Smart loading based on priority
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "auto"}
+            decoding="async"
+            className="w-full h-full object-cover"
+            style={{ aspectRatio }}
+            onError={() => setImageFailed(true)}
+          />
+        )}
+      </a>
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\ExoClickAds\ExoClickBanner.tsx -:
+"use client";
+
+import Script from "next/script";
+import { useEffect } from "react";
+
+declare global {
+  interface Window {
+    AdProvider: any[];
+  }
+}
+
+const DIMENSION_PRESETS: Record<string, { width: string; height: string }> = {
+  "300x250": { width: "300px", height: "250px" },
+  "728x90":  { width: "728px", height: "90px" },
+  "160x600": { width: "160px", height: "600px" },
+  "900x250": { width: "900px", height: "250px" },
+  "300x500": { width: "300px", height: "500px" },
+};
+
+interface ExoClickBannerProps {
+  zoneId: string;
+  dimension?: "300x250" | "728x90" | "160x600" | "900x250" | "300x500";
+  width?: string;
+  height?: string;
+  className?: string;
+}
+
+export default function ExoClickBanner({
+  zoneId,
+  dimension = "300x250",
+  width,
+  height,
+  className = "",
+}: ExoClickBannerProps) {
+  const preset = DIMENSION_PRESETS[dimension] || DIMENSION_PRESETS["300x250"];
+  const finalWidth = width || preset.width;
+  const finalHeight = height || preset.height;
+
+  // 🔥 THE SPA FIX: useEffect runs on every single route change, 
+  // guaranteeing the ad requests a fresh impression when they click a new video.
+  useEffect(() => {
+    try {
+      (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+    } catch (err) {
+      console.error("ExoClick serve trigger error:", err);
+    }
+  }, [zoneId]);
+
+  return (
+    <div
+      className={`relative flex items-center justify-center overflow-hidden max-w-full ${className}`}
+      style={{ width: finalWidth, height: finalHeight }}
+    >
+      {/* Skeleton Loader for CLS */}
+      <div className="absolute inset-0 bg-zinc-900/20 animate-pulse -z-10 rounded-sm" />
+
+      {/* 🔥 STATIC ID FIX: Tells Next.js to only inject this engine ONCE globally */}
+      <Script
+        id="exoclick-magsrv-provider-global"
+        strategy="lazyOnload"
+        src="https://a.magsrv.com/ad-provider.js"
+      />
+
+      <ins
+        className="eas6a97888e2 z-10 block"
+        data-zoneid={zoneId}
+      />
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\ExoClickAds\ExoClickIM.tsx -:
+"use client";
+
+import { useEffect } from "react";
+import Script from "next/script";
+
+declare global {
+  interface Window {
+    AdProvider: any[];
+  }
+}
+
+interface ExoClickIMProps {
+  zoneId?: string;
+  className?: string;
+}
+
+export default function ExoClickIM({
+  zoneId = "5984398",
+  className = "",
+}: ExoClickIMProps) {
+
+  // 🔥 THE FIX: This ensures the ad fires every time the user navigates to a new page,
+  // even if the ad-provider.js script is already cached by Next.js!
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.AdProvider = window.AdProvider || [];
+      // We wrap it in a try-catch so ad-blockers don't crash your React tree
+      try {
+        window.AdProvider.push({ serve: {} });
+      } catch (error) {
+        // silent fail for ad blockers
+      }
+    }
+  }, [zoneId]);
+
+  return (
+    <div className={`exo-im-wrapper ${className}`}>
+      {/* 
+        afterInteractive ensures it loads fast enough to make you money, 
+        but after your critical LCP images load 
+      */}
+      <Script
+        id="exoclick-ad-provider"
+        strategy="afterInteractive"
+        src="https://a.magsrv.com/ad-provider.js"
+      />
+
+      {/* 
+        The actual injection point. 
+        No absolute positioning or pointer-events are needed here because 
+        ExoClick's script will automatically turn this into a fixed bottom-right chat bubble.
+      */}
+      <ins
+        className="eas6a97888e6"
+        data-zoneid={zoneId}
+        style={{ display: "none" }} // Hide the anchor tag itself so it takes up 0px height in DOM
+      />
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\ExoClickAds\ExoClickPopunder.tsx -:
+"use client";
+
+import { useEffect, useRef } from "react";
+
+interface ExoClickPopunderProps {
+  desktopZoneId: string;
+  mobileZoneId: string;
+}
+
+export default function ExoClickPopunder({ desktopZoneId, mobileZoneId }: ExoClickPopunderProps) {
+  const injected = useRef(false);
+
+  useEffect(() => {
+    // Prevent double injection in React strict mode
+    if (injected.current) return;
+    injected.current = true;
+
+    const isMobile = window.innerWidth <= 768;
+    const activeZone = isMobile ? mobileZoneId : desktopZoneId;
+
+    // 🔥 This physically injects the script exactly how ExoClick does it internally
+    const script = document.createElement("script");
+    script.type = "application/javascript";
+    script.async = true;
+    script.src = "//a.pemsrv.com/popunder1000.js";
+    
+    // 🚨 CRITICAL: ExoClick hardcodes this ID. Do not change it!
+    script.id = "popmagicldr"; 
+
+    // Inject all the required rules into the script tag
+    script.setAttribute("data-exo-idzone", activeZone);
+    script.setAttribute("data-exo-trigger_method", "1"); // 1 = Click anywhere on the page
+    script.setAttribute("data-exo-frequency_period", "60"); // 1 popunder per hour
+    script.setAttribute("data-exo-frequency_count", "1");
+    script.setAttribute("data-exo-popup_fallback", "false");
+    script.setAttribute("data-exo-popup_force", "false");
+    script.setAttribute("data-exo-chrome_enabled", "true");
+    script.setAttribute("data-exo-new_tab", "false");
+
+    document.body.appendChild(script);
+
+    // Cleanup on unmount
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+      injected.current = false;
+    };
+  }, [desktopZoneId, mobileZoneId]);
+
+  return null;
+}
+
+================================================================================
+
+src\components\ui\ads\ExoClickAds\ExoClickSticky.tsx -:
+"use client";
+
+import Script from "next/script";
+
+declare global {
+  interface Window {
+    AdProvider: any[];
+  }
+}
+
+interface ExoClickStickyProps {
+  zoneId?: string;
+  className?: string;
+}
+
+export default function ExoClickSticky({
+  zoneId = "5984712", // Your new Sticky Zone ID
+  className = "",
+}: ExoClickStickyProps) {
+
+  // 🔥 Pro-Move: Only push the ad request AFTER the script finishes downloading
+  const handleScriptLoad = () => {
+    try {
+      (window.AdProvider = window.AdProvider || []).push({ serve: {} });
+    } catch (err) {
+      console.error("ExoClick Sticky serve error:", err);
+    }
+  };
+
+  return (
+    <>
+      <Script
+        id={`exoclick-sticky-script-${zoneId}`}
+        strategy="lazyOnload"
+        src="https://a.magsrv.com/ad-provider.js"
+        onLoad={handleScriptLoad}
+      />
+      {/* 🔥 Fixed to the bottom center, immune to layout shifts */}
+      <div className={`fixed bottom-0 left-1/2 -translate-x-1/2 z-[9999] pointer-events-none ${className}`}>
+        <ins
+          className="eas6a97888e17 block pointer-events-auto"
+          data-zoneid={zoneId}
+        />
+      </div>
+    </>
+  );
+}
+
+================================================================================
+
+src\components\ui\ads\JuicyAds\JuicyAdsBanner.tsx -:
+"use client";
+
+import Script from "next/script";
+import { useEffect } from "react";
+
+declare global {
+  interface Window {
+    adsbyjuicy: any[];
+  }
+}
+
+// Common JuicyAds dimension presets
+const JUICY_PRESETS: Record<string, { width: number; height: number }> = {
+  "300x262": { width: 300, height: 262 }, // Standard Rectangle
+  "728x102": { width: 728, height: 102 }, // Leaderboard
+  "908x270": { width: 908, height: 270 }, // Billboard / Big Banner
+  "160x612": { width: 160, height: 612 }, // Skyscraper
+};
+
+interface JuicyAdsBannerProps {
+  zoneId: string;
+  preset?: "300x262" | "728x102" | "908x270" | "160x612";
+  width?: number;
+  height?: number;
+  className?: string;
+}
+
+export default function JuicyAdsBanner({
+  zoneId,
+  preset = "300x262",
+  width,
+  height,
+  className = "",
+}: JuicyAdsBannerProps) {
+  const selectedPreset = JUICY_PRESETS[preset] || JUICY_PRESETS["300x262"];
+  const finalWidth = width || selectedPreset.width;
+  const finalHeight = height || selectedPreset.height;
+
+  // Push adzone to queue on mount or zoneId change
+  useEffect(() => {
+    try {
+      window.adsbyjuicy = window.adsbyjuicy || [];
+      window.adsbyjuicy.push({ adzone: parseInt(zoneId, 10) });
+    } catch (err) {
+      console.error("JuicyAds queue error:", err);
+    }
+  }, [zoneId]);
+
+  return (
+    <div
+      className={`relative flex items-center justify-center overflow-hidden max-w-full ${className}`}
+      style={{ width: finalWidth, height: finalHeight }}
+    >
+      {/* 1. Reserved Space Skeleton (Prevents Cumulative Layout Shift) */}
+      <div className="absolute inset-0 bg-zinc-900/20 animate-pulse -z-10 rounded-sm" />
+
+      {/* 2. Single-instance Script Loader */}
+      <Script
+        id="juicyads-provider"
+        strategy="lazyOnload"
+        src="https://poweredby.jads.co/js/jads.js"
+        data-cfasync="false"
+      />
+
+      {/* 3. Target Container */}
+      <ins
+        id={zoneId.toString()}
+        data-width={finalWidth}
+        data-height={finalHeight}
+        className="z-10 block"
+      />
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\player\VideoPlayer.tsx -:
+"use client";
+
+import { useRef, useState, useEffect, useCallback } from "react";
+import Hls from "hls.js";
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
+  SkipBack,
+  SkipForward,
+  Settings,
+  ExternalLink,
+  Repeat,
+} from "lucide-react";
+
+interface VideoPlayerProps {
+  src: string;
+  poster?: string;
+  title?: string;
+  vastTagUrl?: string;
+  autoNext?: boolean;
+}
+
+export default function VideoPlayer({
+  src,
+  poster,
+  title,
+  vastTagUrl,
+}: VideoPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hlsRef = useRef<Hls | null>(null);
+  const originalSrcRef = useRef(src);
+  const firedTracking = useRef<Set<string>>(new Set());
+  const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const singleTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTap = useRef(0);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [isLooping, setIsLooping] = useState(false);
+  const [actionAnim, setActionAnim] = useState<"forward" | "rewind" | null>(
+    null,
+  );
+  const [adAttempted, setAdAttempted] = useState(false);
+  const [isLoadingAd, setIsLoadingAd] = useState(false);
+
+  const [preloadedAd, setPreloadedAd] = useState<{
+    mediaUrl: string;
+    clickThroughUrl: string | null;
+    trackingUrls: Record<string, string[]>;
+  } | null>(null);
+
+  const [adState, setAdState] = useState({ isPlaying: false, skipOffset: 5 });
+  const [adCountdown, setAdCountdown] = useState(5);
+
+  // ─── HLS ───────────────────────────────────────────────
+  useEffect(() => {
+    originalSrcRef.current = src;
+    const video = videoRef.current;
+    if (!video || adState.isPlaying || !src) return;
+
+    if (hlsRef.current) {
+      hlsRef.current.destroy();
+      hlsRef.current = null;
+    }
+
+    if (src.includes(".m3u8") && Hls.isSupported()) {
+      const hls = new Hls({
+        maxMaxBufferLength: 30,
+        startLevel: -1,
+        enableWorker: true,
+      });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hlsRef.current = hls;
+    } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+    } else {
+      video.src = src;
+    }
+
+    return () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+  }, [src, adState.isPlaying]);
+
+  // ─── VAST PREFETCH ─────────────────────────────────────
+  useEffect(() => {
+    if (!vastTagUrl) return;
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 4500);
+
+    fetch(vastTagUrl, { signal: controller.signal })
+      .then((r) => (r.ok ? r.text() : Promise.reject()))
+      .then((text) => {
+        const doc = new DOMParser().parseFromString(text, "text/xml");
+        const media = doc
+          .getElementsByTagName("MediaFile")[0]
+          ?.textContent?.trim();
+        if (!media) return;
+
+        const click =
+          doc.getElementsByTagName("ClickThrough")[0]?.textContent?.trim() ||
+          null;
+        const tracking: Record<string, string[]> = { impression: [] };
+
+        Array.from(doc.getElementsByTagName("Tracking")).forEach((node) => {
+          const ev = node.getAttribute("event");
+          const url = node.textContent?.trim();
+          if (ev && url) {
+            if (!tracking[ev]) tracking[ev] = [];
+            tracking[ev].push(url);
+          }
+        });
+        Array.from(doc.getElementsByTagName("Impression")).forEach((node) => {
+          const url = node.textContent?.trim();
+          if (url) tracking.impression.push(url);
+        });
+
+        setPreloadedAd({
+          mediaUrl: media,
+          clickThroughUrl: click,
+          trackingUrls: tracking,
+        });
+      })
+      .catch(() => {});
+
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
+  }, [vastTagUrl]);
+
+  // ─── VOLUME MEMORY ─────────────────────────────────────
+  useEffect(() => {
+    const v = localStorage.getItem("porncater_vol");
+    if (v !== null) {
+      const n = parseFloat(v);
+      setVolume(n);
+      setIsMuted(n === 0);
+      if (videoRef.current) videoRef.current.volume = n;
+    }
+  }, []);
+
+  // ─── CONTROLS AUTO-HIDE ────────────────────────────────
+  const resetControls = useCallback(() => {
+    setShowControls(true);
+    if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    if (isPlaying && !adState.isPlaying) {
+      controlsTimeout.current = setTimeout(() => setShowControls(false), 1800);
+    }
+  }, [isPlaying, adState.isPlaying]);
+
+  useEffect(() => {
+    resetControls();
+    return () => {
+      if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
+    };
+  }, [isPlaying, resetControls]);
+
+  useEffect(() => {
+    const fn = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", fn);
+    return () => document.removeEventListener("fullscreenchange", fn);
+  }, []);
+
+  // ─── KEYBOARD ──────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (
+        !containerRef.current?.contains(document.activeElement) &&
+        document.activeElement !== document.body
+      )
+        return;
+      const v = videoRef.current;
+      if (!v || adState.isPlaying) return;
+
+      switch (e.key.toLowerCase()) {
+        case " ":
+        case "k":
+          e.preventDefault();
+          togglePlay();
+          break;
+        case "arrowleft":
+          e.preventDefault();
+          v.currentTime = Math.max(0, v.currentTime - 5);
+          showAnim("rewind");
+          break;
+        case "arrowright":
+          e.preventDefault();
+          v.currentTime = Math.min(v.duration, v.currentTime + 5);
+          showAnim("forward");
+          break;
+        case "j":
+          e.preventDefault();
+          v.currentTime = Math.max(0, v.currentTime - 10);
+          showAnim("rewind");
+          break;
+        case "l":
+          e.preventDefault();
+          v.currentTime = Math.min(v.duration, v.currentTime + 10);
+          showAnim("forward");
+          break;
+        case "m":
+          e.preventDefault();
+          toggleMute();
+          break;
+        case "f":
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          e.preventDefault();
+          v.currentTime = (parseInt(e.key) / 10) * v.duration;
+          break;
+      }
+      resetControls();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  // ─── TRACKING ──────────────────────────────────────────
+  const fire = (urls?: string[]) => {
+    if (!urls) return;
+    urls.forEach((u) => {
+      if (u && !firedTracking.current.has(u)) {
+        firedTracking.current.add(u);
+        new Image().src = u;
+      }
+    });
+  };
+
+  // ─── AD ENGINE ─────────────────────────────────────────
+  const skipAd = useCallback(() => {
+    if (preloadedAd) fire(preloadedAd.trackingUrls.skip);
+    setAdState({ isPlaying: false, skipOffset: 5 });
+    setIsLoadingAd(false);
+    setIsPlaying(false);
+    setProgress(0);
+    setCurrentTime(0);
+
+    const video = videoRef.current;
+    if (!video) return;
+
+    // restore original
+    video.src = originalSrcRef.current;
+    video.load();
+    setTimeout(() => {
+      video.play().catch(() => {});
+      setIsPlaying(true);
+    }, 40);
+  }, [preloadedAd]);
+
+  const togglePlay = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isPlaying) {
+      video.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    // zero-latency ad inject
+    if (!adAttempted && preloadedAd) {
+      setAdAttempted(true);
+      setIsLoadingAd(true);
+      setAdState({ isPlaying: true, skipOffset: 5 });
+      video.src = preloadedAd.mediaUrl;
+      video.load();
+      try {
+        await video.play();
+        setIsPlaying(true);
+        setIsLoadingAd(false);
+        fire(preloadedAd.trackingUrls.impression);
+        fire(preloadedAd.trackingUrls.start);
+      } catch {
+        setIsLoadingAd(false);
+        setAdState({ isPlaying: false, skipOffset: 5 });
+      }
+      return;
+    }
+
+    video.play().catch(() => {});
+    setIsPlaying(true);
+  }, [isPlaying, adAttempted, preloadedAd]);
+
+  // ─── TOUCH ZONES (clean double-tap) ────────────────────
+  const showAnim = (type: "forward" | "rewind") => {
+    setActionAnim(type);
+    setTimeout(() => setActionAnim(null), 320);
+  };
+
+  const handleZone = (zone: "left" | "center" | "right") => {
+    if (adState.isPlaying) return;
+    const now = Date.now();
+    const DELAY = 280;
+
+    if (now - lastTap.current < DELAY) {
+      // DOUBLE
+      if (singleTapTimeout.current) {
+        clearTimeout(singleTapTimeout.current);
+        singleTapTimeout.current = null;
+      }
+      const video = videoRef.current;
+      if (!video) return;
+
+      if (zone === "right") {
+        video.currentTime = Math.min(
+          video.currentTime + 10,
+          video.duration || 9999,
+        );
+        showAnim("forward");
+      } else if (zone === "left") {
+        video.currentTime = Math.max(video.currentTime - 10, 0);
+        showAnim("rewind");
+      } else {
+        // center double = fullscreen
+        toggleFullscreen();
+      }
+      resetControls();
+    } else {
+      // potential single – delay it
+      lastTap.current = now;
+      if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
+      singleTapTimeout.current = setTimeout(() => {
+        if (zone === "center") {
+          togglePlay();
+        } else {
+          // left/right single just toggles controls on mobile
+          if (window.innerWidth < 768) setShowControls((s) => !s);
+          else togglePlay();
+        }
+        resetControls();
+        singleTapTimeout.current = null;
+      }, DELAY);
+    }
+  };
+
+  // ─── VIDEO EVENTS ──────────────────────────────────────
+  const onTimeUpdate = () => {
+    const v = videoRef.current;
+    if (!v || !v.duration) return;
+    const p = (v.currentTime / v.duration) * 100;
+    setProgress(p);
+    setCurrentTime(v.currentTime);
+
+    if (adState.isPlaying && preloadedAd) {
+      setAdCountdown(
+        Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)),
+      );
+      if (p >= 25) fire(preloadedAd.trackingUrls.firstQuartile);
+      if (p >= 50) fire(preloadedAd.trackingUrls.midpoint);
+      if (p >= 75) fire(preloadedAd.trackingUrls.thirdQuartile);
+    }
+  };
+
+  const onEnded = () => {
+    if (adState.isPlaying && preloadedAd) {
+      fire(preloadedAd.trackingUrls.complete);
+      skipAd();
+    } else if (!isLooping) {
+      setIsPlaying(false);
+      setShowControls(true);
+    }
+  };
+
+  const onSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (adState.isPlaying) return;
+    const v = videoRef.current;
+    if (!v) return;
+    const t = (parseFloat(e.target.value) / 100) * v.duration;
+    v.currentTime = t;
+    setProgress(parseFloat(e.target.value));
+  };
+
+  const onVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = videoRef.current;
+    if (!v) return;
+    const n = parseFloat(e.target.value);
+    v.volume = n;
+    setVolume(n);
+    setIsMuted(n === 0);
+    localStorage.setItem("porncater_vol", String(n));
+  };
+
+  const toggleMute = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isMuted) {
+      const n = volume || 1;
+      v.volume = n;
+      setIsMuted(false);
+      localStorage.setItem("porncater_vol", String(n));
+    } else {
+      v.volume = 0;
+      setIsMuted(true);
+      localStorage.setItem("porncater_vol", "0");
+    }
+  };
+
+  const changeSpeed = (rate: number) => {
+    if (adState.isPlaying) return;
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+    setPlaybackRate(rate);
+  };
+
+  const toggleFullscreen = () => {
+    const el = containerRef.current;
+    if (!el) return;
+    if (!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  };
+
+  const fmt = (t: number) => {
+    if (isNaN(t)) return "0:00";
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60);
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      tabIndex={0}
+      className={`relative bg-black w-full h-full flex items-center justify-center select-none overflow-hidden touch-manipulation outline-none ${
+        !showControls && isPlaying ? "cursor-none" : "cursor-default"
+      }`}
+      onMouseMove={resetControls}
+      onMouseLeave={() => {
+        if (isPlaying) setShowControls(false);
+      }}
+      onClick={(e) => {
+        // only play/pause if click is directly on the video area (not controls)
+        if ((e.target as HTMLElement).closest("[data-controls]")) return;
+
+        // 🔥 ADD THIS LINE: Tell the container to ignore clicks from the giant play button
+        if ((e.target as HTMLElement).closest("[data-play-btn]")) return;
+
+        if (!isPlaying && !adState.isPlaying) togglePlay();
+      }}
+    >
+      <video
+        ref={videoRef}
+        poster={adState.isPlaying ? undefined : poster}
+        title={title}
+        loop={!adState.isPlaying && isLooping}
+        preload="metadata"
+        playsInline
+        className="w-full h-full object-contain"
+        onTimeUpdate={onTimeUpdate}
+        onEnded={onEnded}
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      />
+
+      {/* TOUCH ZONES – only while playing so center play button is never blocked */}
+      {isPlaying && !adState.isPlaying && (
+        <>
+          <div
+            className="absolute inset-y-0 left-0 w-1/3 z-10"
+            onClick={() => handleZone("left")}
+          />
+          <div
+            className="absolute inset-y-0 left-1/3 w-1/3 z-10"
+            onClick={() => handleZone("center")}
+          />
+          <div
+            className="absolute inset-y-0 right-0 w-1/3 z-10"
+            onClick={() => handleZone("right")}
+          />
+        </>
+      )}
+
+      {/* ULTRA-MINIMAL SEEK FLASH – pure chevron only */}
+      {actionAnim && (
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none text-white text-6xl font-extralight leading-none select-none ${
+            actionAnim === "forward" ? "right-[19%]" : "left-[19%]"
+          }`}
+          style={{ opacity: 0.9 }}
+        >
+          {actionAnim === "forward" ? "›" : "‹"}
+        </div>
+      )}
+
+      {/* AD LAYER */}
+      {adState.isPlaying && preloadedAd && (
+        <>
+          {preloadedAd.clickThroughUrl && (
+            <a
+              href={preloadedAd.clickThroughUrl}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="absolute inset-0 z-20 flex items-start justify-end p-3"
+              aria-label="Visit Advertisement"
+            >
+              <span className="bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 flex items-center gap-1.5 border border-red-500">
+                Visit Sponsor <ExternalLink size={11} strokeWidth={2.5} />
+              </span>
+            </a>
+          )}
+          <div className="absolute bottom-16 right-0 z-30">
+            {adCountdown > 0 ? (
+              <div className="bg-black border-l-2 border-zinc-600 text-zinc-400 text-[10px] font-bold uppercase tracking-widest px-4 py-2.5">
+                Skip in <span className="text-white">{adCountdown}</span>
+              </div>
+            ) : (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  skipAd();
+                }}
+                className="bg-black hover:bg-zinc-900 border-l-2 border-red-600 text-white text-xs font-bold uppercase px-5 py-2.5 flex items-center gap-2"
+              >
+                Skip Ad <SkipForward size={13} strokeWidth={2.5} />
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* LOADING */}
+      {isLoadingAd && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
+          <div className="w-9 h-9 border-2 border-zinc-700 border-t-red-600 animate-spin" />
+        </div>
+      )}
+
+      {/* GIANT HARD PLAY BUTTON – only when paused */}
+      {!isPlaying && !adState.isPlaying && !isLoadingAd && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            togglePlay();
+          }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[72px] h-12 flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]"
+          aria-label="Play"
+        >
+          <Play
+            size={28}
+            fill="currentColor"
+            strokeWidth={0}
+            className="ml-0.5"
+          />
+        </button>
+      )}
+
+      {/* BOTTOM BAR – sharp, minimal, hard */}
+      <div
+        data-controls
+        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-1.5 px-2 transition-opacity duration-150 ${
+          showControls && !adState.isPlaying && !isLoadingAd
+            ? "opacity-100"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* PROGRESS – hard thin red */}
+        <div className="relative w-full h-1.5 mb-2 group/bar cursor-pointer">
+          <div className="absolute inset-0 bg-zinc-800">
+            <div
+              className="absolute top-0 left-0 h-full bg-red-600"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={0.1}
+            value={progress || 0}
+            onChange={onSeek}
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+          />
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white border border-black opacity-0 group-hover/bar:opacity-100 pointer-events-none"
+            style={{ left: `calc(${progress}% - 5px)` }}
+          />
+        </div>
+
+        <div className="flex items-center justify-between text-zinc-200">
+          {/* LEFT */}
+          <div className="flex items-center gap-3 md:gap-5">
+            <button
+              onClick={togglePlay}
+              className="p-0.5 hover:text-red-500 transition-colors"
+            >
+              {isPlaying ? (
+                <Pause size={20} fill="currentColor" strokeWidth={0} />
+              ) : (
+                <Play size={20} fill="currentColor" strokeWidth={0} />
+              )}
+            </button>
+
+            <div className="hidden md:flex items-center gap-3 text-zinc-500">
+              <button
+                onClick={() => {
+                  if (videoRef.current) videoRef.current.currentTime -= 10;
+                  showAnim("rewind");
+                }}
+                className="hover:text-white"
+              >
+                <SkipBack size={16} strokeWidth={2} />
+              </button>
+              <button
+                onClick={() => {
+                  if (videoRef.current) videoRef.current.currentTime += 10;
+                  showAnim("forward");
+                }}
+                className="hover:text-white"
+              >
+                <SkipForward size={16} strokeWidth={2} />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5 group/vol">
+              <button
+                onClick={toggleMute}
+                className="p-0.5 text-zinc-400 hover:text-red-500"
+              >
+                {isMuted || volume === 0 ? (
+                  <VolumeX size={18} strokeWidth={2} />
+                ) : (
+                  <Volume2 size={18} strokeWidth={2} />
+                )}
+              </button>
+              <div className="w-0 overflow-hidden group-hover/vol:w-14 transition-all duration-200">
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={isMuted ? 0 : volume}
+                  onChange={onVolume}
+                  className="w-full h-1 bg-zinc-700 appearance-none cursor-pointer
+                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-1.5 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
+                    [&::-moz-range-thumb]:w-1.5 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
+                />
+              </div>
+            </div>
+
+            <span className="text-[11px] font-mono tracking-tight tabular-nums ml-1 select-none">
+              <span className="text-white">{fmt(currentTime)}</span>
+              <span className="text-zinc-600 mx-0.5">/</span>
+              <span className="text-zinc-500">{fmt(duration)}</span>
+            </span>
+          </div>
+
+          {/* RIGHT */}
+          <div className="flex items-center gap-3 md:gap-4">
+            <button
+              onClick={() => setIsLooping((l) => !l)}
+              className={`hidden sm:block p-0.5 ${isLooping ? "text-red-500" : "text-zinc-500 hover:text-white"}`}
+            >
+              <Repeat size={16} strokeWidth={2} />
+            </button>
+
+            <div className="relative group/speed">
+              <button className="p-0.5 text-zinc-500 hover:text-white flex items-center">
+                <Settings
+                  size={16}
+                  strokeWidth={2}
+                  className="group-hover/speed:rotate-90 transition-transform duration-200"
+                />
+              </button>
+              <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-800 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-opacity flex flex-col py-1 min-w-[90px] shadow-xl">
+                <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">
+                  Speed
+                </div>
+                {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
+                  <button
+                    key={rate}
+                    onClick={() => changeSpeed(rate)}
+                    className={`px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
+                      playbackRate === rate ? "text-red-500" : "text-zinc-300"
+                    }`}
+                  >
+                    {rate === 1 ? "Normal" : `${rate}×`}
+                    {playbackRate === rate && (
+                      <span className="w-1 h-1 bg-red-500" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={toggleFullscreen}
+              className="p-0.5 text-zinc-400 hover:text-red-500"
+            >
+              {isFullscreen ? (
+                <Minimize size={18} strokeWidth={2} />
+              ) : (
+                <Maximize size={18} strokeWidth={2} />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+================================================================================
+
+src\components\ui\PornstarSearchFilter.tsx -:
+"use client";
+
+import { Search, TrendingUp, Filter } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTransition } from "react";
+
+export default function PornstarSearchFilter({ initialQuery }: { initialQuery: string }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
+
+  const handleSearch = (value: string) => {
+    const params = new URLSearchParams(searchParams?.toString());
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+    // Reset page on search execution
+    params.delete("page"); 
+
+    startTransition(() => {
+      router.push(`/pornstars?${params.toString()}`);
+    });
+  };
+
+  return (
+    <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div className="relative group w-full sm:w-96">
+        <input
+          type="text"
+          placeholder="Search pornstars..."
+          defaultValue={initialQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full bg-zinc-900/30 border-b border-zinc-800 focus:border-rose-800 focus:bg-zinc-900/50 outline-none py-3 px-2 pl-8 text-sm text-zinc-200 transition-all placeholder-zinc-700"
+        />
+        <Search className={`absolute left-0 top-3 text-zinc-600 group-focus-within:text-rose-800 transition ${isPending ? "animate-pulse text-rose-700" : ""}`} size={18} />
+      </div>
+
+      <div className="flex gap-4 w-full sm:w-auto">
+        <button className="flex items-center gap-2 border border-zinc-800 hover:border-rose-800 bg-zinc-900/30 px-5 py-2.5 text-[10px] tracking-widest uppercase text-zinc-400 transition-all duration-300 rounded-sm">
+          <TrendingUp size={14} /> Trending
+        </button>
+        <button className="flex items-center gap-2 border border-zinc-800 hover:border-white/30 bg-zinc-900/30 px-5 py-2.5 text-[10px] tracking-widest uppercase text-zinc-400 transition-all duration-300 rounded-sm">
+          <Filter size={14} /> Filter A-Z
+        </button>
+      </div>
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\SearchBar.tsx -:
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { Search, User, PlayCircle, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+// Types based on what our API returns
+interface VideoSuggestion {
+  id: number;
+  slug: string;
+  title: string;
+  thumbnail: string;
+  duration: string;
+}
+
+interface PornstarSuggestion {
+  id: number;
+  slug: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
+export default function SearchBar() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const [videos, setVideos] = useState<VideoSuggestion[]>([]);
+  const [pornstars, setPornstars] = useState<PornstarSuggestion[]>([]);
+  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 🧠 THE CLEVER PART: Debounce the API call
+  // This waits 300ms after the user stops typing before hitting the server.
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setVideos([]);
+      setPornstars([]);
+      setIsOpen(false);
+      return;
+    }
+
+    const fetchSuggestions = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/search/suggest?q=${encodeURIComponent(query)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setVideos(data.videos || []);
+          setPornstars(data.pornstars || []);
+          setIsOpen(true);
+        }
+      } catch (error) {
+        console.error("Failed to fetch suggestions", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(() => {
+      fetchSuggestions();
+    }, 300);
+
+    // If they type again before 300ms, clear the timer and restart it
+    return () => clearTimeout(debounceTimer);
+  }, [query]);
+
+  // Handle clicking outside the dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Handle hitting Enter to go to the main search page
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && query.trim()) {
+      setIsOpen(false);
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+  };
+
+  return (
+    <div className="relative w-full max-w-md" ref={dropdownRef}>
+      {/* The Input Field */}
+      <div className="relative flex items-center">
+        <Search className="absolute left-3 text-zinc-500" size={16} />
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          onFocus={() => { if (videos.length > 0 || pornstars.length > 0) setIsOpen(true) }}
+          placeholder="Search videos, categories, or stars..."
+          className="w-full bg-zinc-900/50 border border-zinc-800 text-white text-sm rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-rose-800 focus:bg-black transition-all placeholder:text-zinc-600 font-light tracking-wide"
+        />
+        {isLoading && (
+          <div className="absolute right-3 w-4 h-4 border-t-2 border-rose-800 rounded-full animate-spin"></div>
+        )}
+      </div>
+
+      {/* The Smart Dropdown */}
+      {isOpen && (videos.length > 0 || pornstars.length > 0) && (
+        <div className="absolute top-full mt-2 w-full bg-[#0a0a0a] border border-white/10 rounded-sm shadow-2xl overflow-hidden z-50">
+          
+          {/* Pornstars Section (Shows up first if there is a match) */}
+          {pornstars.length > 0 && (
+            <div className="border-b border-white/5 pb-2">
+              <div className="px-4 py-2 text-[9px] uppercase tracking-widest text-zinc-500 font-medium bg-black/40">
+                Models
+              </div>
+              {pornstars.map((star) => (
+                <Link
+                  key={star.id}
+                  href={`/pornstars/${star.slug}`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-zinc-900 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-full bg-zinc-800 overflow-hidden flex-shrink-0">
+                    {star.avatarUrl ? (
+                      <img src={star.avatarUrl} alt={star.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-zinc-600"><User size={14} /></div>
+                    )}
+                  </div>
+                  <span className="text-sm font-light text-zinc-300 group-hover:text-white transition-colors">
+                    {star.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* Videos Section */}
+          {videos.length > 0 && (
+            <div className="pb-2">
+              <div className="px-4 py-2 text-[9px] uppercase tracking-widest text-zinc-500 font-medium bg-black/40">
+                Videos
+              </div>
+              {videos.map((video) => (
+                <Link
+                  key={video.id}
+                  href={`/watch/${video.id}/${video.slug}`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-zinc-900 transition-colors group"
+                >
+                  <div className="w-16 h-9 bg-zinc-800 rounded-sm overflow-hidden flex-shrink-0 relative">
+                    <img src={video.thumbnail} alt={video.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors" />
+                    <div className="absolute bottom-0 right-0 bg-black/80 px-1 text-[8px] text-white">
+                      {video.duration}
+                    </div>
+                  </div>
+                  <span className="text-xs font-light text-zinc-400 line-clamp-2 group-hover:text-rose-500 transition-colors leading-relaxed">
+                    {video.title}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          {/* See All Results Button */}
+          <Link
+            href={`/search?q=${encodeURIComponent(query)}`}
+            onClick={() => setIsOpen(false)}
+            className="block w-full px-4 py-3 bg-zinc-900/50 hover:bg-rose-900/20 border-t border-white/5 text-xs text-rose-600 hover:text-white transition-all text-center tracking-widest uppercase flex items-center justify-center gap-2 group"
+          >
+            See all results for "{query}"
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+          </Link>
+
+        </div>
+      )}
+    </div>
+  );
+}
+
+================================================================================
+
+src\components\ui\SmartHeader.tsx -:
+// src/components/ui/SmartHeader.tsx
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  Menu, Search, Video, MonitorPlay, TrendingUp,
+  Clock, Star, Sparkles, Filter, ChevronDown, X
+} from "lucide-react";
+import SearchBar from "@/src/components/ui/SearchBar";
+
+export default function SmartHeader({ categories }: { categories: string[] }) {
+  const [headerHeight, setHeaderHeight] = useState(104);
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+
+  const headerRef = useRef<HTMLHeadingElement>(null);
+  const categoryBarRef = useRef<HTMLDivElement>(null);
+
+  const accumulatedScroll = useRef(0);
+  const lastY = useRef(0);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsMobileSearchOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; };
+  }, [isMobileMenuOpen]);
+
+  const checkActive = (path: string) => {
+    if (path === "/") return pathname === "/";
+    return pathname?.startsWith(path);
+  };
+
+  const getNavClass = (path: string) => {
+    const isActive = checkActive(path);
+    return `flex items-center gap-2 py-3 text-sm font-bold uppercase tracking-wide transition-colors border-b-2 ${isActive
+      ? "text-rose-500 border-rose-600 drop-shadow-md"
+      : "text-zinc-300 border-transparent hover:text-white"
+      }`;
+  };
+
+  const getMobileNavClass = (path: string) => {
+    const isActive = checkActive(path);
+    return `flex items-center gap-4 py-4 text-lg font-bold uppercase tracking-widest border-b border-white/5 transition-colors ${isActive
+      ? "text-rose-500"
+      : "text-zinc-300 hover:text-white"
+      }`;
+  };
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (headerRef.current) {
+        setHeaderHeight(headerRef.current.offsetHeight);
+      }
+    };
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, [isMobileSearchOpen]);
+
+  useEffect(() => {
+    lastY.current = window.scrollY;
+    let ticking = false;
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentY = window.scrollY;
+          const diff = currentY - lastY.current;
+          lastY.current = currentY;
+          const bar = categoryBarRef.current;
+
+          if (bar) {
+            if (currentY < 60) {
+              bar.style.transform = "translateY(0)";
+              bar.style.opacity = "1";
+              bar.style.pointerEvents = "auto";
+              accumulatedScroll.current = 0;
+              ticking = false;
+              return;
+            }
+
+            if ((diff > 0 && accumulatedScroll.current > 0) || (diff < 0 && accumulatedScroll.current < 0)) {
+              accumulatedScroll.current += diff;
+            } else {
+              accumulatedScroll.current = diff;
+            }
+
+            if (accumulatedScroll.current > 40) {
+              bar.style.transform = "translateY(-100%)";
+              bar.style.opacity = "0";
+              bar.style.pointerEvents = "none";
+            } else if (accumulatedScroll.current < -40) {
+              bar.style.transform = "translateY(0)";
+              bar.style.opacity = "1";
+              bar.style.pointerEvents = "auto";
+            }
+          }
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // ========================================================================
+  // 🔥 DYNAMIC VISIBILITY LOGIC (ZERO JS OVERHEAD, PURE CSS BREAKPOINTS)
+  // ========================================================================
+  const getMainVisibilityClass = (index: number) => {
+    if (index < 2) return "flex";                     // Always visible (Mobile shows 2)
+    if (index < 5) return "hidden sm:flex";           // Tablet Portrait shows 5
+    if (index < 8) return "hidden md:flex";           // Tablet Landscape shows 8
+    if (index < 12) return "hidden lg:flex";          // Small Desktop shows 12
+    if (index < 17) return "hidden xl:flex";          // Large Desktop shows 17
+    return "hidden";                                  // Never in main bar
+  };
+
+  const getDropdownVisibilityClass = (index: number) => {
+    if (index < 2) return "hidden";                   // Never in dropdown
+    if (index < 5) return "flex sm:hidden";           // In dropdown on mobile, hidden on tablet+
+    if (index < 8) return "flex md:hidden";           // In dropdown up to md, hidden on md+
+    if (index < 12) return "flex lg:hidden";          // In dropdown up to lg, hidden on lg+
+    if (index < 17) return "flex xl:hidden";          // In dropdown up to xl, hidden on xl+
+    return "flex";                                    // Always in dropdown
+  };
+
+  return (
+    <>
+      <header ref={headerRef} className="sticky top-0 z-[99999] w-full bg-[#050505] border-white/10">
+        <div className="max-w-[1600px] w-full mx-auto px-4 py-2 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 lg:gap-8">
+            <button
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open Mobile Menu"
+              className="lg:hidden text-zinc-400 hover:text-white transition"
+            >
+              <Menu size={28} aria-hidden="true" />
+            </button>
+            <Link href="/" className="text-3xl tracking-widest cursor-pointer hover:opacity-80 transition duration-300">
+              <span className="font-serif italic text-rose-600 pr-1">Porn</span>
+              <span className="font-light text-white">Cater</span>
+            </Link>
+          </div>
+
+          <div className="flex-1 max-w-2xl hidden md:block">
+            <SearchBar />
+          </div>
+
+          {/* =========================================
+              🔥 RIGHT SIDE: UPLOAD & SEARCH
+              ========================================= */}
+          <div className="flex items-center gap-3 sm:gap-4 lg:gap-5">
+
+            {/* 🚀 SEXY MOBILE-READY UPLOAD BUTTON */}
+            <Link
+              href="/upload"
+              className="flex items-center gap-1.5 sm:gap-2 bg-rose-900/20 hover:bg-rose-900/40 sm:bg-white/5 sm:hover:bg-white/10 text-rose-500 sm:text-white px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-sm text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all border border-rose-900/50 sm:border-white/10 shadow-[0_0_10px_rgba(190,18,60,0.15)] sm:shadow-none group"
+            >
+              <Video size={16} className="group-hover:scale-110 transition-transform" />
+              {/* Text hides ONLY on ultra-tiny screens (< 360px), stays visible on standard modern phones */}
+              <span className="hidden min-[360px]:block">Upload</span>
+            </Link>
+
+            {/* Mobile Search Toggle */}
+            <button
+              onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+              aria-label="Toggle Mobile Search"
+              className="md:hidden text-zinc-400 hover:text-white transition p-1"
+            >
+              {isMobileSearchOpen ? <X size={24} aria-hidden="true" /> : <Search size={24} aria-hidden="true" />}
+            </button>
+
+          </div>
+        </div>
+
+        {isMobileSearchOpen && (
+          <div className="md:hidden w-full px-4 py-3 bg-[#111] border-t border-zinc-900 animate-in slide-in-from-top-2 duration-200">
+            <SearchBar />
+          </div>
+        )}
+
+        <div className="border-t border-white/5 hidden lg:block">
+          <div className="max-w-[1600px] mx-auto px-4 flex items-center gap-8">
+            <Link href="/" className={getNavClass("/")}><MonitorPlay size={18} /> Home</Link>
+            <Link href="/trending" className={getNavClass("/trending")}><TrendingUp size={18} /> Trending</Link>
+            <Link href="/latest" className={getNavClass("/latest")}><Clock size={18} /> New Videos</Link>
+            <Link href="/top-rated" className={getNavClass("/top-rated")}><Star size={18} /> Top Rated</Link>
+            <Link href="/pornstars" className={getNavClass("/pornstars")}><Sparkles size={18} /> Pornstars</Link>
+          </div>
+        </div>
+      </header>
+
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[100000] bg-[#050505] flex flex-col overflow-y-auto animate-in slide-in-from-left-full duration-300">
+          <div className="flex items-center justify-between px-4 py-4 border-b border-white/10">
+            <Link href="/" className="text-3xl tracking-widest cursor-pointer" onClick={() => setIsMobileMenuOpen(false)}>
+              <span className="font-serif italic text-rose-600 pr-1">Porn</span>
+              <span className="font-light text-white">Cater</span>
+            </Link>
+            <button
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-zinc-400 hover:text-white p-2"
+            >
+              <X size={32} />
+            </button>
+          </div>
+
+          <nav className="flex flex-col px-6 py-8">
+            <Link href="/" className={getMobileNavClass("/")}><MonitorPlay size={20} /> Home</Link>
+            <Link href="/trending" className={getMobileNavClass("/trending")}><TrendingUp size={20} /> Trending</Link>
+            <Link href="/latest" className={getMobileNavClass("/latest")}><Clock size={20} /> New Videos</Link>
+            <Link href="/top-rated" className={getMobileNavClass("/top-rated")}><Star size={20} /> Top Rated</Link>
+            <Link href="/pornstars" className={getMobileNavClass("/pornstars")}><Sparkles size={20} /> Pornstars</Link>
+
+            <div className="mt-8 pt-8 border-t border-white/5">
+              <Link href="/upload" className="flex items-center justify-center gap-2 bg-rose-900/20 text-rose-500 border border-rose-900/50 px-4 py-4 rounded-sm text-sm font-bold uppercase tracking-wider transition-colors w-full">
+                <Video size={18} /> Upload Video
+              </Link>
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* ========================================================================
+          🔥 SMART SINGLE-LEVEL CATEGORY BAR
+          ======================================================================== */}
+      <div
+        ref={categoryBarRef}
+        className="sticky z-[99998] w-full bg-[#111] border-b border-zinc-800 transition-transform duration-200 ease-out transform-gpu opacity-100 pointer-events-auto"
+        style={{
+          top: `${headerHeight}px`,
+          transform: "translateY(0)"
+        }}
+      >
+        <div className="max-w-[1600px] mx-auto px-2 lg:px-4 py-2 flex items-center flex-wrap gap-2">
+
+          {/* Static Niches Label */}
+          <div className="flex items-center gap-1 text-zinc-400 mr-1 shrink-0 px-1">
+            <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
+          </div>
+
+          {/* Dynamic Main Bar Rendering */}
+          {categories.map((cat, i) => {
+            const visibilityClass = getMainVisibilityClass(i);
+            if (visibilityClass === "hidden") return null;
+
+            return (
+              <Link
+                key={`main-${i}`}
+                href={`/category/${cat.toLowerCase()}`}
+                prefetch={false}
+                className={`${visibilityClass} items-center justify-center whitespace-nowrap bg-white/5 hover:bg-rose-900/40 border border-white/5 hover:border-rose-700/60 text-zinc-300 hover:text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm shrink-0`}
+              >
+                {cat}
+              </Link>
+            );
+          })}
+
+          {/* Dynamic "More" Dropdown */}
+          <details className="relative z-50 group shrink-0">
+            <summary className="list-none flex items-center gap-1 whitespace-nowrap bg-rose-900/40 hover:bg-rose-900/60 border border-rose-700/60 text-rose-100 px-3 py-1 text-[11px] font-semibold tracking-wider uppercase transition-all rounded-sm cursor-pointer select-none [&::-webkit-details-marker]:hidden">
+              More <ChevronDown size={14} className="group-open:rotate-180 transition-transform duration-200" />
+            </summary>
+
+            <div className="absolute right-0 top-full mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-sm shadow-2xl p-2 flex flex-col gap-1 z-[9999]">
+              {categories.map((cat, i) => {
+                const dropVisibilityClass = getDropdownVisibilityClass(i);
+                if (dropVisibilityClass === "hidden") return null;
+
+                return (
+                  <Link
+                    key={`drop-${i}`}
+                    href={`/category/${cat.toLowerCase()}`}
+                    prefetch={false}
+                    className={`${dropVisibilityClass} items-center text-zinc-300 hover:text-rose-100 hover:bg-white/10 px-3 py-2 text-[11px] font-semibold tracking-wider uppercase transition-colors rounded-sm`}
+                  >
+                    {cat}
+                  </Link>
+                );
+              })}
+            </div>
+          </details>
+
+        </div>
+      </div>
+    </>
+  );
+}
+
+================================================================================
+
+src\components\ui\SubscribeButton.tsx -:
+"use client";
+
+import { useState } from "react";
+import { Heart } from "lucide-react";
+
+export default function SubscribeButton() {
+  const [isFollowing, setIsFollowing] = useState(false);
+
+  return (
+    <button
+      onClick={() => setIsFollowing(!isFollowing)}
+      className={`px-8 py-3 rounded-sm text-[11px] uppercase tracking-widest font-semibold transition-all duration-300 flex items-center gap-2 ${
+        isFollowing 
+          ? "bg-zinc-900 text-zinc-400 border border-zinc-800" 
+          : "bg-rose-800 text-white hover:bg-rose-700 shadow-[0_0_15px_rgba(159,18,57,0.3)]"
+      }`}
+    >
+      <Heart size={14} className={isFollowing ? "fill-current" : ""} />
+      {isFollowing ? "Subscribed" : "Subscribe"}
+    </button>
+  );
+}
+
+================================================================================
+
+src\components\ui\watch\EmbedCodeGenerator.tsx -:
+'use client';
+
+import { useState } from 'react';
+import { Code, Copy, Check, X } from 'lucide-react';
+
+// 🔥 THIS INTERFACE FIXES YOUR TYPESCRIPT ERROR
+interface EmbedProps {
+  videoId: number;
+  videoTitle: string;
+}
+
+export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  // The perfectly formatted SEO-friendly iframe code
+  const embedCode = `<iframe src="https://porncater.com/embed/${videoId}" width="640" height="360" frameborder="0" title="${videoTitle.replace(/"/g, '&quot;')}" scrolling="no" allowfullscreen></iframe>`;
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(embedCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy code: ", err);
+    }
+  };
+
+  return (
+    <>
+      {/* Trigger Button - Matches the sleek Watch Page UI */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest"
+      >
+        <Code size={16} strokeWidth={1.5} /> Embed
+      </button>
+
+      {/* Modal Overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#111] border border-zinc-800 w-full max-w-lg rounded-sm shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+              <h3 className="text-lg font-serif italic text-white tracking-wide">Embed This Video</h3>
+              <button 
+                onClick={() => setIsOpen(false)}
+                className="text-zinc-500 hover:text-rose-500 transition-colors p-1"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="p-5 flex flex-col gap-4">
+              <p className="text-xs text-zinc-400 font-medium">
+                Copy and paste this HTML code into your website or blog to embed this video.
+              </p>
+
+              <div className="relative">
+                <textarea
+                  readOnly
+                  value={embedCode}
+                  className="w-full h-24 bg-black border border-zinc-800 rounded-sm p-3 text-xs text-zinc-300 font-mono resize-none focus:outline-none focus:border-rose-900/50 selection:bg-rose-900/50 scrollbar-hide"
+                  onClick={(e) => (e.target as HTMLTextAreaElement).select()}
+                />
+              </div>
+
+              {/* Action Button */}
+              <button
+                onClick={handleCopy}
+                className={`w-full flex items-center justify-center gap-2 py-3 rounded-sm text-xs font-bold uppercase tracking-widest transition-all ${
+                  copied 
+                    ? "bg-emerald-900/40 text-emerald-500 border border-emerald-900/50" 
+                    : "bg-rose-700 hover:bg-rose-600 text-white shadow-[0_0_15px_rgba(190,18,60,0.2)]"
+                }`}
+              >
+                {copied ? (
+                  <><Check size={16} strokeWidth={2.5} /> Copied to Clipboard!</>
+                ) : (
+                  <><Copy size={16} strokeWidth={2} /> Copy Embed Code</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+================================================================================
+
+src\components\ui\watch\LikeButton.tsx -:
+"use client";
+
+import { useState } from "react";
+import { Heart } from "lucide-react";
+
+export default function LikeButton({ videoId }: { videoId: number }) {
+  const [liked, setLiked] = useState(false);
+
+  const handleLike = async () => {
+    const newLikedState = !liked;
+    setLiked(newLikedState);
+
+    try {
+      await fetch(`/api/videos/${videoId}/like`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isLiking: newLikedState }),
+      });
+    } catch (error) {
+      console.error("Failed to register like action:", error);
+      setLiked(!newLikedState); // Revert on failure
+    }
+  };
+
+  return (
+    <button
+      onClick={handleLike}
+      className={`flex items-center gap-2 px-6 py-2.5 rounded-sm border transition-all duration-300 text-[11px] uppercase tracking-widest ${
+        liked 
+          ? "border-rose-800/50 bg-rose-900/20 text-rose-500" 
+          : "border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white"
+      }`}
+    >
+      <Heart className={liked ? "fill-rose-500" : ""} size={16} strokeWidth={1.5} />
+      {liked ? "Liked" : "Like"}
+    </button>
+  );
+}
+
+================================================================================
+
+src\components\ui\watch\ReportButton.tsx -:
+"use client";
+
+import { useState } from "react";
+import { Flag, X, AlertTriangle } from "lucide-react";
+
+export default function ReportButton({ videoId }: { videoId: number }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    reason: "",
+    description: "",
+    email: "",
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const res = await fetch(`/api/videos/${videoId}/report`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      if (res.ok) {
+        setSuccess(true);
+        setTimeout(() => {
+          setIsOpen(false);
+          setSuccess(false);
+          setFormData({ reason: "", description: "", email: "" });
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Report failed to submit", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      {/* The Trigger Button */}
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-rose-500 transition-all duration-300 text-[11px] uppercase tracking-widest"
+      >
+        <Flag size={16} strokeWidth={1.5} /> Report
+      </button>
+
+      {/* The Modal Overlay */}
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#0a0a0a] border border-white/10 w-full max-w-lg rounded-sm shadow-2xl overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-white/5 bg-[#050505]">
+              <div className="flex items-center gap-2 text-rose-600">
+                <AlertTriangle size={18} />
+                <h3 className="text-sm uppercase tracking-widest font-bold">Report Content</h3>
+              </div>
+              <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-white transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {success ? (
+                <div className="text-center py-8">
+                  <div className="w-12 h-12 bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-800/50">
+                    <Flag className="text-rose-500" size={24} />
+                  </div>
+                  <h4 className="text-white font-serif italic text-xl mb-2">Report Received</h4>
+                  <p className="text-zinc-400 text-xs tracking-wide font-light">Our compliance team will review this video within 24 hours.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <p className="text-zinc-400 text-xs font-light leading-relaxed mb-4">
+                    PornCater maintains a zero-tolerance policy against illegal content. If you believe this video violates our terms, please select a reason below.
+                  </p>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Reason for Report</label>
+                    <select 
+                      required
+                      value={formData.reason}
+                      onChange={(e) => setFormData({...formData, reason: e.target.value})}
+                      className="w-full bg-[#030303] border border-zinc-800 text-white text-sm rounded-sm p-3 focus:outline-none focus:border-rose-800 transition-colors"
+                    >
+                      <option value="" disabled>Select a reason...</option>
+                      <option value="Underage / CSAM">Underage Performer / CSAM</option>
+                      <option value="Non-Consensual">Non-Consensual Content</option>
+                      <option value="Copyright / DMCA">Copyright / DMCA Violation</option>
+                      <option value="Violence / Illegal Acts">Violence or Illegal Acts</option>
+                      <option value="Broken Video">Broken or Spam Video</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Additional Details (Optional)</label>
+                    <textarea 
+                      rows={3}
+                      value={formData.description}
+                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      className="w-full bg-[#030303] border border-zinc-800 text-white text-sm rounded-sm p-3 focus:outline-none focus:border-rose-800 transition-colors resize-none"
+                      placeholder="Please provide specific timestamps or details..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase tracking-widest text-zinc-500 mb-2">Your Email (For Follow-up)</label>
+                    <input 
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full bg-[#030303] border border-zinc-800 text-white text-sm rounded-sm p-3 focus:outline-none focus:border-rose-800 transition-colors"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+
+                  <div className="pt-4 flex justify-end gap-3 border-t border-white/5 mt-6">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsOpen(false)}
+                      className="px-6 py-2.5 text-[11px] uppercase tracking-widest font-semibold text-zinc-400 hover:text-white transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button 
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-rose-800 hover:bg-rose-700 text-white px-6 py-2.5 rounded-sm text-[11px] uppercase tracking-widest font-semibold transition-all disabled:opacity-50"
+                    >
+                      {isSubmitting ? "Submitting..." : "Submit Report"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+================================================================================
+
+src\components\ui\watch\ViewTracker.tsx -:
+"use client";
+
+import { useEffect } from "react";
+
+// This component is invisible. It just sits on the page and fires the view count ping.
+export default function ViewTracker({ videoId }: { videoId: number }) {
+  useEffect(() => {
+    const viewTimer = setTimeout(async () => {
+      try {
+        await fetch(`/api/videos/${videoId}/view`, { method: "POST" });
+        console.log(`🎯 Retention metric logged for video ${videoId}.`);
+      } catch (err) {
+        console.error("View counter ping failed:", err);
+      }
+    }, 5000); // 5 seconds retention
+
+    return () => clearTimeout(viewTimer);
+  }, [videoId]);
+
+  return null; 
+}
+
+================================================================================
+
+src\data\adConfig.ts -:
+// src/data/adConfig.ts
+
+export interface AffiliateBanner {
+  imageUrl: string;
+  targetUrl: string;
+  altText: string;
+}
+
+// ==========================================
+// 728x90 - LEADERBOARDS (Under Video Player)
+// ==========================================
+export const blackedLeaderboards: AffiliateBanner[] = [
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-ANGELINA-ROBIHOOD-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMzc3LjAuMC4w",
+    altText: "Watch Angelina Robihood Blacked Scene"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-AZUL-HERMOSA-103878.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjk2LjAuMC4w",
+    altText: "Watch Azul Hermosa Blacked Scene"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-GABBIE-CARTER-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjk4LjAuMC4w",
+    altText: "Watch Gabbie Carter Blacked Scene"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-GIANNA-DIOR-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjMyLjAuMC4w",
+    altText: "Watch Gianna Dior Blacked Scene"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-LILY-LARIMAR-103192.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjM3LjAuMC4w",
+    altText: "Watch Lily Larimar Blacked Scene"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-LITTLE-DRAGON-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMTY1LjAuMC4w",
+    altText: "Watch Little Dragon Blacked Scene"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/728x90-banner/BLK-728x90-VICTORIA-BAILEY.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjc1LjAuMC4w", // Extra link fallback
+    altText: "Watch Victoria Bailey Blacked Scene"
+  }
+];
+
+
+// ==========================================
+// 970x70 - SUPER LEADERBOARDS (Top of Grids)
+// ==========================================
+export const blackedSuperLeaderboards: AffiliateBanner[] = [
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-ANGELINA-ROBIHOOD-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zNDE0LjAuMC4w",
+    altText: "Angelina Robihood Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-EVE-SWEET.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zNDE2LjAuMC4w",
+    altText: "Eve Sweet Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-GABBIE-CARTER-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zNDE3LjAuMC4w",
+    altText: "Gabbie Carter Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-GIANNA-DIOR-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zNDE4LjAuMC4w",
+    altText: "Gianna Dior Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-LILY-LARIMAR-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMzc4LjAuMC4w",
+    altText: "Lily Larimar Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-LITTLE-DRAGON-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjM1LjAuMC4w",
+    altText: "Little Dragon Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-LIZ-JORDAN-.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMjM4LjAuMC4w",
+    altText: "Liz Jordan Exclusive"
+  },
+  {
+    imageUrl: "https://porncater-pz.b-cdn.net/mad-cheddar-media/970x70-banner/BLK-970x70-VICTORIA-BAILEY.jpg",
+    targetUrl: "https://join.blacked.com/track/MjUzMy4yLjMuMjcuMC4zMTYzLjAuMC4w",
+    altText: "Victoria Bailey Exclusive"
+  }
+];
+
+================================================================================
+
+src\utils\bunnyLoader-old.ts -:
+// export default function bunnyLoader({ src, width, quality }: { src: string, width: number, quality?: number }) {
+//   if (src.startsWith('/')) return src;
+
+//   try {
+//     const url = new URL(src);
+//     const isBunnyZone = 
+//       url.hostname.includes('b-cdn.net') || 
+//       url.hostname.includes('img-s1-cdn.porncater.com') ||
+//       url.hostname.includes('bkcdn.net');
+
+//     if (isBunnyZone) {
+//       url.searchParams.set('width', width.toString());
+//       // 🔥 Hardcode quality to 45 for maximum speed, ignoring Next.js defaults
+//       url.searchParams.set('quality', '45');
+//       return url.toString();
+//     }
+//   } catch (error) {
+//     return src;
+//   }
+//   return src;
+// }
+
+================================================================================
+
+src\utils\videoData.ts -:
+export const extractVideoData = (videoFile: File): Promise<{ duration: string, thumbnail: File }> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    video.src = URL.createObjectURL(videoFile);
+    video.crossOrigin = 'anonymous';
+    
+    video.addEventListener('loadedmetadata', () => {
+      const targetTime = video.duration > 10 ? 10 : video.duration / 2;
+      video.currentTime = targetTime;
+    });
+
+    video.addEventListener('seeked', () => {
+      // 🔥 HARDCODE TUBE GRID DIMENSIONS: 480x270 (16:9)
+      // This prevents uploading 1080p/4K frames as thumbnails!
+      canvas.width = 480;
+      canvas.height = 270;
+      
+      // Draw scaled down frame
+      ctx?.drawImage(video, 0, 0, 480, 270);
+      
+      const mins = Math.floor(video.duration / 60);
+      const secs = Math.floor(video.duration % 60);
+      const formattedDuration = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      // 🔥 EXPORT AS WEBP AT 50% QUALITY (~12KB FILE SIZE)
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const thumbFile = new File(
+            [blob], 
+            `${videoFile.name.split('.')[0]}_thumb.webp`, 
+            { type: 'image/webp' }
+          );
+          URL.revokeObjectURL(video.src);
+          resolve({ duration: formattedDuration, thumbnail: thumbFile });
+        } else {
+          reject(new Error("Canvas to Blob failed"));
+        }
+      }, 'image/webp', 0.50); // 0.50 quality WebP gives maximum compression
+    });
+
+    video.addEventListener('error', () => {
+      reject(new Error("Error loading video data"));
+    });
+  });
+};
+
+================================================================================
+
