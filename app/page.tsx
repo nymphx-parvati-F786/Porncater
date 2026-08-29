@@ -161,7 +161,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* <section className="max-w-[1600px] mx-auto px-4 py-12">
+        <section className="max-w-[1600px] mx-auto px-4 py-12">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
             <div className="flex items-center gap-3">
               <Sparkles className="text-amber-500" size={24} strokeWidth={1.5} />
@@ -207,7 +207,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {premiumChannels.length > 0 && (
+        {/* {premiumChannels.length > 0 && (
           <section className="max-w-[1600px] mx-auto px-4 py-12">
             <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
               <div className="flex items-center gap-3">
