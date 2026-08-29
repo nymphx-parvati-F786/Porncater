@@ -32,7 +32,7 @@ export async function listChannels(): Promise<ChannelCard[]> {
     return await listChannelsUnsafe();
   } catch (error) {
     console.error("listChannels failed:", error);
-    return AFFILIATE_CHANNELS.map(catalogToCard);
+    return AFFILIATE_CHANNELS.map((channel) => catalogToCard(channel));
   }
 }
 
