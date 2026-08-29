@@ -5,7 +5,6 @@ import {
   MonitorPlay, Star, ThumbsUp, Filter,
   TrendingUp, Menu, Search, Video
 } from "lucide-react";
-import SearchBar from "@/src/components/ui/SearchBar";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 
 // =========================================================

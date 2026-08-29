@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import SearchBar from "@/src/components/ui/SearchBar";
 import {
   Play, User, Flame, Clock, Sparkles,
   MonitorPlay, Star, ThumbsUp, Filter,

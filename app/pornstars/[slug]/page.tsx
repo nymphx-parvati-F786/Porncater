@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Share2,
@@ -32,29 +33,6 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC",
   "Lesbian",

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Flame,
@@ -19,11 +20,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
-import {
-  blackedSuperLeaderboards,
-  blackedLeaderboards,
-} from "@/src/data/adConfig";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
@@ -45,31 +41,6 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   const s = num % 60;
   return `${m}:${s < 10 ? "0" : ""}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER
-async function getTopBannerAd(dimension: string, studio?: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: {
-        dimension: dimension,
-        isActive: true,
-        ...(studio ? { targetStudios: { has: studio } } : {}),
-      },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 export default async function TrendingPage({
   searchParams,
 }: {

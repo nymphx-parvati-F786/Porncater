@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { Mail, MessageSquare, Send, ShieldAlert, Zap } from "lucide-react";
-import SearchBar from "@/src/components/ui/SearchBar";
 import {
   Play, User, Flame, Clock, Sparkles,
   MonitorPlay, Star, ThumbsUp, Filter,

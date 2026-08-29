@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
   Clock, ChevronLeft, ChevronRight, ThumbsUp,
@@ -7,7 +8,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import SearchBar from "@/src/components/ui/SearchBar";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
@@ -29,29 +29,6 @@ const formatDuration = (seconds: number | string | null | undefined) => {
   const s = num % 60;
   return `${m}:${s < 10 ? '0' : ''}${s}`;
 };
-
-// 🔥 SERVER-SIDE AD FETCHING HELPER FOR 0ms LCP
-async function getTopBannerAd(dimension: string) {
-  try {
-    const banner = await prisma.banner.findFirst({
-      where: { dimension: dimension, isActive: true },
-      orderBy: { weight: "desc" },
-      select: { imageUrl: true, trackingLink: true },
-    });
-
-    if (!banner) return null;
-
-    let imageUrl = banner.imageUrl;
-    if (imageUrl.startsWith("//")) {
-      imageUrl = "https:" + imageUrl;
-    }
-
-    return { imageUrl, trackingLink: banner.trackingLink };
-  } catch (error) {
-    return null;
-  }
-}
-
 const megaCategories = [
   "BBC", "Lesbian", "Cuckold", "Blowjob", "Creampie", "MILF", "Teen",
   "Anal", "Threesome", "Interracial", "Amateur", "BDSM", "POV",

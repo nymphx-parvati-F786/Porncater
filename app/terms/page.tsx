@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import SearchBar from "@/src/components/ui/SearchBar";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 
 // =========================================================
