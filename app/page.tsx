@@ -10,7 +10,8 @@ import VideoCard from "@/src/components/ui/VideoCard";
 import JsonLd from "@/src/components/json-ld";
 import { getTopBannerAd } from "@/src/lib/ads";
 import { MEGA_CATEGORIES, SITE_URL, videoAbsUrl } from "@/src/lib/site";
-import { listChannels } from "@/src/lib/channels";
+import { featuredChannels as pickFeatured, listChannels } from "@/src/lib/channels";
+import ChannelCard from "@/src/components/ui/ChannelCard";
 
 export const revalidate = 60;
 
@@ -68,7 +69,7 @@ export default async function Home() {
     }),
     listChannels(),
   ]);
-  const featuredChannels = topChannels.slice(0, 12);
+  const premiumChannels = pickFeatured(topChannels, 12);
 
   const [topDesktopAd, topMobileAd] = await Promise.all([
     getTopBannerAd("970x70"),
@@ -206,7 +207,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {featuredChannels.length > 0 && (
+        {premiumChannels.length > 0 && (
           <section className="max-w-[1600px] mx-auto px-4 py-12">
             <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
               <div className="flex items-center gap-3">
@@ -223,32 +224,8 @@ export default async function Home() {
               </Link>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-              {featuredChannels.map((channel) => (
-                <Link
-                  key={channel.slug}
-                  href={`/channels/${channel.slug}`}
-                  prefetch={false}
-                  className="group relative aspect-video overflow-hidden bg-zinc-900 shadow-md"
-                >
-                  {channel.thumbnail ? (
-                    <Image
-                      src={channel.thumbnail}
-                      alt={channel.studio}
-                      fill
-                      sizes="20vw"
-                      className="object-cover group-hover:scale-[1.01] transition-transform duration-75"
-                    />
-                  ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                  <div className="absolute bottom-1.5 left-1.5 right-1.5">
-                    <div className="font-serif italic text-white text-sm truncate tracking-wide">
-                      {channel.studio}
-                    </div>
-                    <div className="text-[9px] text-zinc-300 font-bold uppercase tracking-widest">
-                      {channel.videoCount.toLocaleString()} videos
-                    </div>
-                  </div>
-                </Link>
+              {premiumChannels.map((channel) => (
+                <ChannelCard key={channel.slug} channel={channel} featured />
               ))}
             </div>
           </section>

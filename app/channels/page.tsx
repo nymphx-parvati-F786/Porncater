@@ -1,13 +1,13 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import Image from "next/image";
-import { Tv, Play, ChevronLeft, ChevronRight } from "lucide-react";
+import { Tv, ChevronLeft, ChevronRight } from "lucide-react";
 import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import JsonLd from "@/src/components/json-ld";
+import ChannelCard from "@/src/components/ui/ChannelCard";
 import { getTopBannerAd } from "@/src/lib/ads";
-import { listChannels } from "@/src/lib/channels";
+import { featuredChannels, listChannels } from "@/src/lib/channels";
 import { MEGA_CATEGORIES, SITE_URL } from "@/src/lib/site";
 
 export const revalidate = 120;
@@ -27,7 +27,7 @@ export async function generateMetadata({ searchParams }: DirectoryProps): Promis
   const title = page > 1 ? `${titleBase} - Page ${page}` : `${titleBase} - HD Clips & Trailers`;
   const description = letter
     ? `Browse ${letter} porn studios and premium adult channels. Watch free HD clips, trailers, and full scenes on PornCater.`
-    : "Browse porn studio channels, premium networks, HD clips and trailers. Watch Blacked, Vixen, amateur studios and more on PornCater.";
+    : "Browse porn studio channels, premium networks, HD clips and trailers. Watch Blacked, Vixen, Team Skeet, Tushy and more on PornCater.";
 
   const params = new URLSearchParams();
   if (letter) params.set("letter", letter);
@@ -60,18 +60,26 @@ export default async function ChannelsDirectory({ searchParams }: DirectoryProps
     getTopBannerAd("300x100"),
   ]);
 
+  const premium = featuredChannels(allChannels, 12);
+
   let filtered = allChannels;
   if (letter) {
     filtered = filtered.filter((c) => c.studio.toUpperCase().startsWith(letter));
   }
   if (q) {
     const needle = q.toLowerCase();
-    filtered = filtered.filter((c) => c.studio.toLowerCase().includes(needle));
+    filtered = filtered.filter(
+      (c) =>
+        c.studio.toLowerCase().includes(needle) ||
+        c.niche.toLowerCase().includes(needle) ||
+        c.program.toLowerCase().includes(needle),
+    );
   }
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const page = Math.min(currentPage, totalPages);
   const slice = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const showFeatured = !letter && !q && page === 1 && premium.length > 0;
 
   const canonicalUrl = `${SITE_URL}/channels${letter ? `?letter=${letter}` : ""}`;
 
@@ -136,7 +144,7 @@ export default async function ChannelsDirectory({ searchParams }: DirectoryProps
           </div>
 
           <p className="text-zinc-500 text-sm font-light mb-6 max-w-3xl">
-            Studio channels, premium networks, clips and trailers. Tap a channel to binge their scenes.
+            Premium networks, studio channels, clips and trailers. Pick a logo and binge.
           </p>
 
           <div className="flex flex-wrap items-center gap-1.5 mb-8">
@@ -165,60 +173,43 @@ export default async function ChannelsDirectory({ searchParams }: DirectoryProps
             ))}
           </div>
 
+          {showFeatured && (
+            <div className="mb-10">
+              <div className="flex items-center justify-between mb-4 border-b border-zinc-800 pb-2">
+                <h2 className="text-xl font-serif italic text-white tracking-wide">
+                  Premium Networks
+                </h2>
+                <span className="text-[10px] uppercase tracking-widest font-bold text-zinc-500">
+                  Blacked · Vixen · Tushy · Team Skeet
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+                {premium.map((channel) => (
+                  <ChannelCard key={`feat-${channel.slug}`} channel={channel} featured />
+                ))}
+              </div>
+            </div>
+          )}
+
           {slice.length === 0 ? (
             <div className="py-20 text-center">
               <p className="text-zinc-500 font-light tracking-wide text-lg">
-                No channels found. Tag videos with a studio and they show up here.
+                No channels found.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              {slice.map((channel) => (
-                <Link
-                  key={channel.slug}
-                  href={`/channels/${channel.slug}`}
-                  prefetch={false}
-                  className="group flex flex-col"
-                >
-                  <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
-                    {channel.thumbnail ? (
-                      <Image
-                        src={channel.thumbnail}
-                        alt={channel.studio}
-                        fill
-                        sizes="(max-width: 640px) 50vw, 20vw"
-                        className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 to-zinc-950" />
-                    )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-10 h-10 rounded-full bg-rose-700/90 flex items-center justify-center">
-                        <Play size={16} className="text-white fill-white ml-0.5" />
-                      </div>
-                    </div>
-                    {channel.isNetwork ? (
-                      <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
-                        Network
-                      </div>
-                    ) : (
-                      <div className="absolute top-1.5 left-1.5 bg-zinc-950/80 backdrop-blur-sm text-zinc-200 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
-                        Channel
-                      </div>
-                    )}
-                    <div className="absolute bottom-1.5 left-1.5 right-1.5">
-                      <div className="font-serif italic text-white text-sm md:text-base truncate tracking-wide">
-                        {channel.studio}
-                      </div>
-                      <div className="text-[10px] text-zinc-300 font-bold uppercase tracking-widest">
-                        {channel.videoCount.toLocaleString()} videos
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <>
+              <div className="flex items-center justify-between mb-4 border-b border-zinc-800 pb-2">
+                <h2 className="text-xl font-serif italic text-white tracking-wide">
+                  {letter ? `${letter} Channels` : "All Studios"}
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                {slice.map((channel) => (
+                  <ChannelCard key={channel.slug} channel={channel} />
+                ))}
+              </div>
+            </>
           )}
 
           {totalPages > 1 && (

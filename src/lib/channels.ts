@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { studioSlug } from "@/src/lib/site";
+import {
+  AFFILIATE_CHANNELS,
+  type AffiliateTier,
+} from "@/src/data/affiliateChannels";
 
 export type ChannelCard = {
   studio: string;
@@ -9,6 +13,11 @@ export type ChannelCard = {
   thumbnail: string | null;
   officialUrl: string | null;
   isNetwork: boolean;
+  niche: string;
+  program: string;
+  tier: AffiliateTier | null;
+  siteType: string;
+  rank: number;
 };
 
 type StudioRow = {
@@ -23,8 +32,29 @@ export async function listChannels(): Promise<ChannelCard[]> {
     return await listChannelsUnsafe();
   } catch (error) {
     console.error("listChannels failed:", error);
-    return [];
+    return AFFILIATE_CHANNELS.map(catalogToCard);
   }
+}
+
+function catalogToCard(
+  channel: (typeof AFFILIATE_CHANNELS)[number],
+  extra?: Partial<ChannelCard>,
+): ChannelCard {
+  return {
+    studio: channel.name,
+    slug: channel.slug,
+    videoCount: 0,
+    totalViews: 0,
+    thumbnail: extra?.thumbnail ?? null,
+    officialUrl: extra?.officialUrl ?? channel.url,
+    isNetwork: channel.siteType === "Hub" || channel.siteType === "Bundle",
+    niche: channel.niche,
+    program: channel.program,
+    tier: channel.tier,
+    siteType: channel.siteType,
+    rank: channel.rank,
+    ...extra,
+  };
 }
 
 async function listChannelsUnsafe(): Promise<ChannelCard[]> {
@@ -60,15 +90,41 @@ async function listChannelsUnsafe(): Promise<ChannelCard[]> {
     ORDER BY s."videoCount" DESC
   `;
 
-  const channels: ChannelCard[] = rows.map((row) => ({
-    studio: row.studio,
-    slug: studioSlug(row.studio),
-    videoCount: Number(row.videoCount),
-    totalViews: Number(row.totalViews),
-    thumbnail: row.thumbnail,
-    officialUrl: null,
-    isNetwork: false,
-  }));
+  const bySlug = new Map<string, ChannelCard>();
+
+  for (const item of AFFILIATE_CHANNELS) {
+    bySlug.set(item.slug, catalogToCard(item));
+  }
+
+  for (const row of rows) {
+    const slug = studioSlug(row.studio);
+    const existing = bySlug.get(slug);
+    const stats = {
+      videoCount: Number(row.videoCount),
+      totalViews: Number(row.totalViews),
+      thumbnail: row.thumbnail,
+    };
+    if (existing) {
+      existing.videoCount = stats.videoCount;
+      existing.totalViews = stats.totalViews;
+      if (stats.thumbnail) existing.thumbnail = stats.thumbnail;
+    } else {
+      bySlug.set(slug, {
+        studio: row.studio,
+        slug,
+        videoCount: stats.videoCount,
+        totalViews: stats.totalViews,
+        thumbnail: stats.thumbnail,
+        officialUrl: null,
+        isNetwork: false,
+        niche: "",
+        program: "",
+        tier: null,
+        siteType: "Channel",
+        rank: 9999,
+      });
+    }
+  }
 
   const sponsors = await prisma.sponsor.findMany({
     where: { isActive: true },
@@ -93,9 +149,7 @@ async function listChannelsUnsafe(): Promise<ChannelCard[]> {
     const campaign = sponsor.campaigns[0];
     if (!campaign) continue;
     const slug = studioSlug(sponsor.name);
-    const existing = channels.find(
-      (c) => c.slug === slug || c.studio.toLowerCase() === sponsor.name.toLowerCase(),
-    );
+    const existing = bySlug.get(slug);
     const banner = campaign.banners[0];
     let imageUrl = banner?.imageUrl || null;
     if (imageUrl?.startsWith("//")) imageUrl = "https:" + imageUrl;
@@ -105,7 +159,7 @@ async function listChannelsUnsafe(): Promise<ChannelCard[]> {
       existing.isNetwork = true;
       if (!existing.thumbnail && imageUrl) existing.thumbnail = imageUrl;
     } else {
-      channels.push({
+      bySlug.set(slug, {
         studio: sponsor.name,
         slug,
         videoCount: 0,
@@ -113,20 +167,32 @@ async function listChannelsUnsafe(): Promise<ChannelCard[]> {
         thumbnail: imageUrl,
         officialUrl: campaign.baseLink,
         isNetwork: true,
+        niche: "",
+        program: "",
+        tier: null,
+        siteType: "Hub",
+        rank: 5000,
       });
     }
   }
 
-  channels.sort((a, b) => {
+  return [...bySlug.values()].sort((a, b) => {
+    const tierRank = (t: AffiliateTier | null) =>
+      t === "S" ? 0 : t === "A" ? 1 : t === "B" ? 2 : t === "C" ? 3 : t === "D" ? 4 : 5;
+    if (tierRank(a.tier) !== tierRank(b.tier)) return tierRank(a.tier) - tierRank(b.tier);
+    if (a.rank !== b.rank) return a.rank - b.rank;
     if (b.videoCount !== a.videoCount) return b.videoCount - a.videoCount;
-    if (Number(b.isNetwork) !== Number(a.isNetwork)) return Number(b.isNetwork) - Number(a.isNetwork);
     return a.studio.localeCompare(b.studio);
   });
-
-  return channels;
 }
 
 export async function getChannelBySlug(slug: string): Promise<ChannelCard | null> {
   const channels = await listChannels();
   return channels.find((c) => c.slug === slug) || null;
+}
+
+export function featuredChannels(channels: ChannelCard[], limit = 12): ChannelCard[] {
+  const premium = channels.filter((c) => c.tier === "S" || c.tier === "A");
+  const pool = premium.length >= limit ? premium : channels;
+  return pool.slice(0, limit);
 }

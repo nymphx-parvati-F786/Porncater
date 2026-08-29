@@ -15,10 +15,16 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import VideoCard from "@/src/components/ui/VideoCard";
+import ChannelCard, { ChannelLogo } from "@/src/components/ui/ChannelCard";
 import JsonLd from "@/src/components/json-ld";
 import { getTopBannerAd } from "@/src/lib/ads";
 import { getChannelBySlug, listChannels } from "@/src/lib/channels";
-import { MEGA_CATEGORIES, SITE_URL, channelPath } from "@/src/lib/site";
+import {
+  MEGA_CATEGORIES,
+  SITE_URL,
+  channelPath,
+  isTrailerDuration,
+} from "@/src/lib/site";
 
 export const revalidate = 120;
 
@@ -40,7 +46,8 @@ export async function generateMetadata({ params, searchParams }: ChannelProps): 
     page > 1
       ? `${channel.studio} Porn Videos - Page ${page}`
       : `${channel.studio} Channel - Free HD Clips & Trailers`;
-  const description = `Watch free ${channel.studio} porn videos, HD clips and trailers on PornCater. ${channel.videoCount.toLocaleString()} scenes from the ${channel.studio} studio channel.`;
+  const nicheBit = channel.niche ? ` ${channel.niche}.` : "";
+  const description = `Watch free ${channel.studio} porn videos, HD clips and trailers on PornCater.${nicheBit} ${channel.videoCount.toLocaleString()} scenes from the ${channel.studio} studio channel.`;
   const canonical = `${SITE_URL}${channelPath(channel.slug)}${page > 1 ? `?page=${page}` : ""}`;
 
   return {
@@ -126,6 +133,8 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PER_PAGE));
   const relatedChannels = related.filter((c) => c.slug !== channel.slug).slice(0, 12);
+  const trailers = videos.filter((v) => isTrailerDuration(v.duration));
+  const fullScenes = videos.filter((v) => !isTrailerDuration(v.duration));
   const canonicalUrl = `${SITE_URL}${channelPath(channel.slug)}`;
 
   const schema = {
@@ -160,7 +169,7 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
       <SmartHeader categories={[...MEGA_CATEGORIES]} />
 
       <main>
-        <div className="relative w-full min-h-[220px] md:min-h-[280px] overflow-hidden border-b border-zinc-800">
+        <div className="relative w-full min-h-[240px] md:min-h-[320px] overflow-hidden border-b border-zinc-800">
           {channel.thumbnail ? (
             <Image
               src={channel.thumbnail}
@@ -173,27 +182,36 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
           ) : (
             <div className="absolute inset-0 bg-[#111]" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/75 to-black/40" />
           <div className="relative max-w-[1600px] mx-auto px-4 py-10 md:py-14 flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">
-                <Tv size={14} className="text-rose-600" />
-                <Link href="/channels" className="hover:text-white">
-                  Channels
-                </Link>
-                <span className="text-zinc-700">/</span>
-                <span>{channel.isNetwork ? "Premium Network" : "Studio Channel"}</span>
-              </div>
-              <h1 className="text-3xl md:text-5xl font-serif italic text-white tracking-wide mb-3">
-                {channel.studio}
-              </h1>
-              <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-widest font-bold text-zinc-400">
-                <span className="flex items-center gap-1.5">
-                  <Play size={14} className="text-rose-500" /> {totalCount.toLocaleString()} videos
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Eye size={14} /> {channel.totalViews.toLocaleString()} views
-                </span>
+            <div className="flex items-end gap-4 md:gap-5">
+              <ChannelLogo name={channel.studio} size="lg" />
+              <div>
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-2">
+                  <Tv size={14} className="text-rose-600" />
+                  <Link href="/channels" className="hover:text-white">
+                    Channels
+                  </Link>
+                  <span className="text-zinc-700">/</span>
+                  <span>{channel.siteType || "Studio Channel"}</span>
+                </div>
+                <h1 className="text-3xl md:text-5xl font-serif italic text-white tracking-wide mb-2">
+                  {channel.studio}
+                </h1>
+                {channel.niche ? (
+                  <p className="text-zinc-400 text-sm font-light mb-3">{channel.niche}</p>
+                ) : null}
+                <div className="flex flex-wrap items-center gap-4 text-xs uppercase tracking-widest font-bold text-zinc-400">
+                  <span className="flex items-center gap-1.5">
+                    <Play size={14} className="text-rose-500" /> {totalCount.toLocaleString()} videos
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Eye size={14} /> {channel.totalViews.toLocaleString()} views
+                  </span>
+                  {channel.program ? (
+                    <span className="text-zinc-600">{channel.program}</span>
+                  ) : null}
+                </div>
               </div>
             </div>
             {channel.officialUrl ? (
@@ -226,6 +244,19 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
           />
         </div>
 
+        {currentPage === 1 && trailers.length > 0 && fullScenes.length > 0 && (
+          <section className="max-w-[1600px] mx-auto px-4 pt-6">
+            <div className="flex items-center justify-between mb-4 border-b border-zinc-800 pb-2">
+              <h2 className="text-xl font-serif italic text-white tracking-wide">Trailers</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+              {trailers.slice(0, 6).map((video) => (
+                <VideoCard key={`tr-${video.id}`} video={video} compact />
+              ))}
+            </div>
+          </section>
+        )}
+
         <section className="max-w-[1600px] mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2 gap-3">
             <h2 className="text-2xl font-serif italic text-white tracking-wide">
@@ -249,14 +280,24 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
           </div>
 
           {videos.length === 0 ? (
-            <div className="py-20 text-center">
-              <p className="text-zinc-500 font-light tracking-wide text-lg">
-                No scenes tagged for this channel yet.
+            <div className="py-16 text-center border border-zinc-900 rounded-sm bg-[#0c0c0c]">
+              <p className="text-zinc-500 font-light tracking-wide text-lg mb-4">
+                No free scenes tagged for {channel.studio} yet.
               </p>
+              {channel.officialUrl ? (
+                <a
+                  href={channel.officialUrl}
+                  target="_blank"
+                  rel="noopener noreferrer nofollow sponsored"
+                  className="inline-flex items-center gap-2 text-rose-500 hover:text-rose-400 text-xs font-bold uppercase tracking-widest"
+                >
+                  Watch on {channel.studio} <ExternalLink size={14} />
+                </a>
+              ) : null}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-              {videos.map((video) => (
+              {(fullScenes.length > 0 && trailers.length > 0 ? fullScenes : videos).map((video) => (
                 <VideoCard key={video.id} video={video} badge="hd" />
               ))}
             </div>
@@ -306,31 +347,9 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
                 All Channels
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
               {relatedChannels.map((c) => (
-                <Link
-                  key={c.slug}
-                  href={`/channels/${c.slug}`}
-                  prefetch={false}
-                  className="group relative aspect-video overflow-hidden bg-zinc-900 shadow-md"
-                >
-                  {c.thumbnail ? (
-                    <Image
-                      src={c.thumbnail}
-                      alt={c.studio}
-                      fill
-                      sizes="20vw"
-                      className="object-cover group-hover:scale-[1.01] transition-transform duration-75"
-                    />
-                  ) : null}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                  <div className="absolute bottom-1.5 left-1.5 right-1.5">
-                    <div className="font-serif italic text-white text-sm truncate">{c.studio}</div>
-                    <div className="text-[9px] text-zinc-300 font-bold uppercase tracking-widest">
-                      {c.videoCount.toLocaleString()} videos
-                    </div>
-                  </div>
-                </Link>
+                <ChannelCard key={c.slug} channel={c} />
               ))}
             </div>
           </section>
