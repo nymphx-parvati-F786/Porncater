@@ -16,6 +16,7 @@ import Pagination from "@/src/components/ui/Pagination";
 import SubscribeButton from "@/src/components/ui/SubscribeButton";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import { rotatePage, ROTATE_POOL_PAGES } from "@/src/lib/rotate";
 
 export const revalidate = 120; // Cache for 2 minutes
 
@@ -133,15 +134,22 @@ export default async function PornstarProfile({
   // =========================================================================
 
   // Step A: Get video IDs (correct A/B)
-  const videoIds = await prisma.$queryRaw<{ id: number }[]>`
+  const poolSize = videosPerPage * ROTATE_POOL_PAGES;
+  const usePool = skipAmount < poolSize;
+  const limit = usePool ? poolSize : videosPerPage;
+  const offset = usePool ? 0 : skipAmount;
+  let videoIds = await prisma.$queryRaw<{ id: number }[]>`
   SELECT v.id 
   FROM "Video" v
   INNER JOIN "_PornstarToVideo" vp ON v.id = vp."B"
   WHERE vp."A" = ${star.id} 
     AND v.status = 'PUBLISHED'
   ORDER BY v."createdAt" DESC
-  LIMIT ${videosPerPage} OFFSET ${skipAmount};
+  LIMIT ${limit} OFFSET ${offset};
 `;
+  if (usePool) {
+    videoIds = rotatePage(videoIds, videosPerPage, skipAmount, 99 + star.id);
+  }
 
   const ids = videoIds.map((v) => v.id);
 

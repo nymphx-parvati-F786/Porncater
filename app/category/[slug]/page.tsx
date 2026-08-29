@@ -12,6 +12,7 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 import Pagination from "@/src/components/ui/Pagination";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import { rotatePage, ROTATE_POOL_PAGES } from "@/src/lib/rotate";
 
 export const revalidate = 120; // Cache category pages for 2 minutes on CDN
 
@@ -92,6 +93,10 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   // =========================================================================
 
   let videoIds: { id: number }[] = [];
+  const poolSize = videosPerPage * ROTATE_POOL_PAGES;
+  const usePool = skipAmount < poolSize;
+  const limit = usePool ? poolSize : videosPerPage;
+  const offset = usePool ? 0 : skipAmount;
 
   // Exact match on Category/Tags, Fuzzy match on Title using Trigram
   if (currentSort === "most-viewed") {
@@ -100,7 +105,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       WHERE status = 'PUBLISHED' 
         AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery})
       ORDER BY views DESC
-      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+      LIMIT ${limit} OFFSET ${offset};
     `;
   } else if (currentSort === "newest") {
     videoIds = await prisma.$queryRaw<{ id: number }[]>`
@@ -108,7 +113,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       WHERE status = 'PUBLISHED' 
         AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery})
       ORDER BY "createdAt" DESC
-      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+      LIMIT ${limit} OFFSET ${offset};
     `;
   } else {
     videoIds = await prisma.$queryRaw<{ id: number }[]>`
@@ -116,8 +121,11 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       WHERE status = 'PUBLISHED' 
         AND (category ILIKE ${rawSearchQuery} OR ${rawSearchQuery.toLowerCase()} = ANY(tags) OR title % ${rawSearchQuery})
       ORDER BY likes DESC
-      LIMIT ${videosPerPage} OFFSET ${skipAmount};
+      LIMIT ${limit} OFFSET ${offset};
     `;
+  }
+  if (usePool) {
+    videoIds = rotatePage(videoIds, videosPerPage, skipAmount, 77);
   }
 
   const ids = videoIds.map((v) => v.id);

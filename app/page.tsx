@@ -12,6 +12,7 @@ import { getTopBannerAd } from "@/src/lib/ads";
 import { MEGA_CATEGORIES, SITE_URL, videoAbsUrl } from "@/src/lib/site";
 import { featuredChannels as pickFeatured, listChannels } from "@/src/lib/channels";
 import ChannelCard from "@/src/components/ui/ChannelCard";
+import { rotatePage } from "@/src/lib/rotate";
 
 export const revalidate = 60;
 
@@ -33,10 +34,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const [trendingVideos, latestVideos, topPornstars, topChannels] = await Promise.all([
+  const [trendingPool, latestPool, starPool, topChannels] = await Promise.all([
     prisma.video.findMany({
       where: { status: "PUBLISHED" },
-      take: 24,
+      take: 96,
       orderBy: { views: "desc" },
       select: {
         id: true,
@@ -50,7 +51,7 @@ export default async function Home() {
     }),
     prisma.video.findMany({
       where: { status: "PUBLISHED" },
-      take: 18,
+      take: 96,
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -63,12 +64,16 @@ export default async function Home() {
       },
     }),
     prisma.pornstar.findMany({
-      take: 12,
+      take: 36,
       orderBy: { views: "desc" },
       select: { id: true, slug: true, name: true, avatarUrl: true, views: true },
     }),
     listChannels(),
   ]);
+  const trendingVideos = rotatePage(trendingPool, 24, 0, 11);
+  const seen = new Set(trendingVideos.map((v) => v.id));
+  const latestVideos = rotatePage(latestPool, 48, 0, 22).filter((v) => !seen.has(v.id)).slice(0, 18);
+  const topPornstars = rotatePage(starPool, 12, 0, 33);
   const premiumChannels = pickFeatured(topChannels, 12);
 
   const [topDesktopAd, topMobileAd] = await Promise.all([

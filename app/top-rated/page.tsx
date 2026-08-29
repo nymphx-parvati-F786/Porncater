@@ -12,6 +12,7 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 import Pagination from "@/src/components/ui/Pagination";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import { rotatePage, ROTATE_POOL_PAGES } from "@/src/lib/rotate";
 
 export const revalidate = 120;
 
@@ -70,13 +71,25 @@ export default async function TopRatedPage({
   // =========================================================================
 
   // Step A: Fast Index-Only scan to get JUST the IDs
-  const videoIds = await prisma.video.findMany({
-    where: whereClause,
-    select: { id: true },
-    orderBy: { likes: "desc" },
-    skip: skipAmount,
-    take: videosPerPage,
-  });
+  const poolSize = videosPerPage * ROTATE_POOL_PAGES;
+  let videoIds: { id: number }[];
+  if (skipAmount >= poolSize) {
+    videoIds = await prisma.video.findMany({
+      where: whereClause,
+      select: { id: true },
+      orderBy: { likes: "desc" },
+      skip: skipAmount,
+      take: videosPerPage,
+    });
+  } else {
+    const pool = await prisma.video.findMany({
+      where: whereClause,
+      select: { id: true },
+      orderBy: { likes: "desc" },
+      take: poolSize,
+    });
+    videoIds = rotatePage(pool, videosPerPage, skipAmount, 66);
+  }
 
   const ids = videoIds.map((v) => v.id);
 
