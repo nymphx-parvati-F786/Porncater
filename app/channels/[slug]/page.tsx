@@ -18,6 +18,7 @@ import VideoCard from "@/src/components/ui/VideoCard";
 import ChannelCard, { ChannelLogo } from "@/src/components/ui/ChannelCard";
 import JsonLd from "@/src/components/json-ld";
 import { getTopBannerAd } from "@/src/lib/ads";
+import { rotatePage, ROTATE_POOL_PAGES } from "@/src/lib/rotate";
 import { getChannelBySlug, listChannels } from "@/src/lib/channels";
 import {
   MEGA_CATEGORIES,
@@ -75,6 +76,8 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
   if (!channel) notFound();
 
   const skip = (currentPage - 1) * PER_PAGE;
+  const poolSize = PER_PAGE * ROTATE_POOL_PAGES;
+  const usePool = skip < poolSize;
   const studioFilter = {
     status: "PUBLISHED" as const,
     studio: { equals: channel.studio, mode: "insensitive" as const },
@@ -83,8 +86,8 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
   let [videos, totalCount, topDesktopAd, topMobileAd, related] = await Promise.all([
     prisma.video.findMany({
       where: studioFilter,
-      take: PER_PAGE,
-      skip,
+      take: usePool ? poolSize : PER_PAGE,
+      skip: usePool ? 0 : skip,
       orderBy: sort === "newest" ? { createdAt: "desc" } : { views: "desc" },
       select: {
         id: true,
@@ -101,6 +104,7 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
     getTopBannerAd("300x100", channel.studio),
     listChannels(),
   ]);
+  if (usePool) videos = rotatePage(videos, PER_PAGE, skip, 111);
 
   let usedTitleFallback = false;
   if (totalCount === 0) {
@@ -112,8 +116,8 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
     const [fallbackVideos, fallbackCount] = await Promise.all([
       prisma.video.findMany({
         where: titleFilter,
-        take: PER_PAGE,
-        skip,
+        take: usePool ? poolSize : PER_PAGE,
+        skip: usePool ? 0 : skip,
         orderBy: sort === "newest" ? { createdAt: "desc" } : { views: "desc" },
         select: {
           id: true,
@@ -127,7 +131,7 @@ export default async function ChannelPage({ params, searchParams }: ChannelProps
       }),
       prisma.video.count({ where: titleFilter }),
     ]);
-    videos = fallbackVideos;
+    videos = usePool ? rotatePage(fallbackVideos, PER_PAGE, skip, 111) : fallbackVideos;
     totalCount = fallbackCount;
   }
 

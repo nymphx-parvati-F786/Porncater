@@ -1,18 +1,10 @@
 app\api\admin\add-pornstar\route.ts -:
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
-// Pull directly from the environment variables
 const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
 const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
 const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
-
-// Fail fast: Throw an error immediately if the keys are missing
-if (!STORAGE_ZONE || !STORAGE_API_KEY || !STORAGE_PULLZONE) {
-  throw new Error("Missing Bunny.net environment variables in .env file.");
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -133,27 +125,28 @@ export async function GET(req: Request) {
 ================================================================================
 
 app\api\admin\campaigns\route.ts -:
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
     const campaigns = await prisma.campaign.findMany({
       where: { isActive: true },
       include: {
-        sponsor: { select: { name: true } }
+        sponsor: { select: { name: true } },
       },
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     });
-    
+
     return NextResponse.json(campaigns);
   } catch (error) {
     console.error("Failed to fetch campaigns:", error);
     return NextResponse.json({ error: "Failed to load campaigns" }, { status: 500 });
   }
 }
+
 
 ================================================================================
 
@@ -435,68 +428,50 @@ export async function GET(
 
 app\api\admin\videos\[id]\dmca\route.ts -:
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
+export const dynamic = "force-dynamic";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> } // Updated for Next.js 15+
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    // =========================================================
-    // 🛡️ CRITICAL SECURITY CHECK
-    // =========================================================
-    // Example: Checking an Authorization header. 
-    // You MUST implement whatever admin auth you are using for your /admin/upload page here.
-    // If you don't, trolls can hit this API and take down your videos.
-    /*
-    const authHeader = request.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.ADMIN_SECRET}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    */
-
-    const resolvedParams = await params;
-    const videoId = parseInt(resolvedParams.id);
+    const { id } = await params;
+    const videoId = parseInt(id, 10);
 
     if (isNaN(videoId)) {
       return NextResponse.json({ error: "Invalid Video ID" }, { status: 400 });
     }
-    
-    const body = await request.json();
-    const { claimantName } = body;
 
-    const video = await prisma.video.update({
+    const body = await request.json().catch(() => ({}));
+    const claimantName = typeof body.claimantName === "string" ? body.claimantName.slice(0, 120) : "";
+
+    await prisma.video.update({
       where: { id: videoId },
       data: {
         status: "DMCA_TAKEDOWN",
-        // Using the exact schema field you created
         dmcaNotes: claimantName ? `Takedown requested by: ${claimantName}` : "DMCA Takedown",
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Video taken down securely", 
-      video 
+    return NextResponse.json({
+      success: true,
+      message: "Video taken down securely",
     });
-    
   } catch (error) {
     console.error("DMCA Takedown Error:", error);
     return NextResponse.json({ error: "Failed to process DMCA takedown" }, { status: 500 });
   }
 }
 
+
 ================================================================================
 
 app\api\ads\route.ts -:
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
-// 🔥 Force this route to be completely dynamic (no caching)
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
@@ -505,16 +480,11 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const dimension = searchParams.get("dimension");
     const studio = searchParams.get("studio");
-    const category = searchParams.get("category");
 
     if (!dimension) {
-      return NextResponse.json(
-        { error: "Dimension parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Dimension parameter is required" }, { status: 400 });
     }
 
-    // 1. Fetch matching active banners
     let banners = await prisma.banner.findMany({
       where: {
         dimension,
@@ -539,13 +509,9 @@ export async function GET(req: Request) {
       },
     });
 
-    // Fallback if nothing matched
     if (banners.length === 0) {
       banners = await prisma.banner.findMany({
-        where: {
-          dimension,
-          isActive: true,
-        },
+        where: { dimension, isActive: true },
         include: {
           campaign: { select: { baseLink: true, name: true } },
         },
@@ -553,16 +519,10 @@ export async function GET(req: Request) {
     }
 
     if (banners.length === 0) {
-      return NextResponse.json(
-        { error: "No active banners found for this slot" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "No active banners found for this slot" }, { status: 404 });
     }
 
-    // 2. Weighted random selection
     const selected = selectWeightedBanner(banners);
-
-    // Add tracking subid
     const trackingLinkWithSubId = `${selected.trackingLink}?subid=site_${selected.dimension}_${studio || "general"}`;
 
     return NextResponse.json(
@@ -575,73 +535,51 @@ export async function GET(req: Request) {
         weight: selected.weight,
       },
       {
-        headers: {
-          "Cache-Control": "no-store, max-age=0",
-        },
-      }
+        headers: { "Cache-Control": "no-store, max-age=0" },
+      },
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Ad Server Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-// Cleaner & more efficient weighted random
-function selectWeightedBanner(banners: any[]) {
-  const totalWeight = banners.reduce(
-    (sum, b) => sum + (b.weight || 10),
-    0
-  );
-
+function selectWeightedBanner<T extends { weight?: number | null }>(banners: T[]): T {
+  const totalWeight = banners.reduce((sum, b) => sum + (b.weight || 10), 0);
   let random = Math.random() * totalWeight;
-
   for (const banner of banners) {
     const weight = banner.weight || 10;
-    if (random < weight) {
-      return banner;
-    }
+    if (random < weight) return banner;
     random -= weight;
   }
-
-  // Fallback (should almost never happen)
   return banners[banners.length - 1];
 }
+
 
 ================================================================================
 
 app\api\pornstars\route.ts -:
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient();
-
-// 1. Add the request parameter to read the incoming URL
 export async function GET(request: Request) {
   try {
-    // 2. Parse the URL to look for the ?limit= param
     const { searchParams } = new URL(request.url);
-    const limitParam = searchParams.get('limit');
-
-    // 3. If a limit exists, use it. Otherwise, default to 50 for the main directory.
-    const takeCount = limitParam ? parseInt(limitParam) : 50;
+    const limitParam = searchParams.get("limit");
+    const takeCount = Math.min(200, Math.max(1, limitParam ? parseInt(limitParam, 10) : 50));
 
     const pornstars = await prisma.pornstar.findMany({
-      take: takeCount, // 4. Tell Prisma exactly how many to fetch
-      orderBy: { views: 'desc' },
-
-      // Tell Prisma to dynamically count the joined videos
+      take: takeCount,
+      orderBy: { views: "desc" },
       include: {
-        _count: {
-          select: { videos: true }
-        }
-      }
+        _count: { select: { videos: true } },
+      },
     });
 
-    // Map the data so the frontend receives the 'videoCount' property it expects
-    const formattedPornstars = pornstars.map((star: any) => ({...star,videoCount: star._count?.videos || 0 }));
+    const formattedPornstars = pornstars.map((star) => ({
+      ...star,
+      videoCount: star._count?.videos || 0,
+    }));
 
     return NextResponse.json(formattedPornstars);
   } catch (error) {
@@ -649,6 +587,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Failed to fetch pornstars" }, { status: 500 });
   }
 }
+
 
 ================================================================================
 
@@ -754,38 +693,56 @@ export async function GET(request: Request) {
 
 app\api\unlock\route.ts -:
 import { NextRequest, NextResponse } from "next/server";
+import {
+  ADMIN_COOKIE,
+  ADMIN_COOKIE_OPTIONS,
+  signAdminSession,
+} from "@/src/lib/admin-session";
+import { clientIp, rateLimit } from "@/src/lib/rate-limit";
+
+export const dynamic = "force-dynamic";
+
+function isValidKey(key: string | null): boolean {
+  if (!key) return false;
+  const a = process.env.ADMIN_SECRET_KEY;
+  const b = process.env.ADMIN_SECRET;
+  return Boolean((a && key === a) || (b && key === b));
+}
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const key = searchParams.get("key");
+  const ip = clientIp(request);
+  const limited = rateLimit(`unlock:${ip}`, 8, 15 * 60 * 1000);
 
-  // Check if the secret key matches your environment variable
-  if (key === process.env.ADMIN_SECRET_KEY) {
-    // 1. Create a response that redirects you straight to your sexy inbox
+  if (!limited.ok) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (isValidKey(key)) {
+    const token = await signAdminSession();
+    if (!token) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+
     const response = NextResponse.redirect(new URL("/admin/inbox", request.url));
-
-    // 2. Plant the invisible God-Tier cookie in your browser (lasts for 7 days)
-    response.cookies.set("porncater_god_mode", "engaged", {
-      httpOnly: true, // Javascript can't read it (immune to XSS attacks)
-      secure: process.env.NODE_ENV === "production", // Only over HTTPS
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24 * 7, // 7 days of seamless access
-    });
-
+    response.cookies.set(ADMIN_COOKIE, token, ADMIN_COOKIE_OPTIONS);
+    response.cookies.delete("porncater_god_mode");
+    response.headers.set("Cache-Control", "private, no-store");
     return response;
   }
 
-  // If some random person tries to guess the URL but gets the key wrong?
-  // Instantly redirect them to the homepage.
   return NextResponse.redirect(new URL("/", request.url));
 }
+
 
 ================================================================================
 
 app\api\user\upload-video\route.ts -:
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import crypto from 'crypto';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import crypto from "crypto";
+import { clientIp, rateLimit } from "@/src/lib/rate-limit";
 
 const BUNNY_LIBRARY_ID = process.env.BUNNY_LIBRARY_ID as string;
 const STREAM_GENERAL_FULL_SCENES_COLLECTION_ID = process.env.STREAM_GENERAL_FULL_SCENES_COLLECTION_ID as string;
@@ -795,116 +752,140 @@ const STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE as string;
 const STORAGE_API_KEY = process.env.BUNNY_STORAGE_API_KEY as string;
 const STORAGE_PULLZONE = process.env.BUNNY_PULLZONE as string;
 
-// Helper to sanitize text into a URL-friendly slug
 const generateSlug = (text: string) => {
-  return text.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 80);
 };
 
-// Generates the secure cryptographic signature required by BunnyCDN for Direct TUS Uploads
 function generateSignature(libraryId: string, apiKey: string, expirationTime: number, videoId: string) {
   const dataToSign = libraryId + apiKey + expirationTime + videoId;
-  const hash = crypto.createHash('sha256');
-  hash.update(dataToSign);
-  return hash.digest('hex');
+  return crypto.createHash("sha256").update(dataToSign).digest("hex");
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-
-    const title = formData.get('title') as string;
-    const duration = formData.get('duration') as string;
-    const tagsString = formData.get('tags') as string;
-    const pornstarIdsString = formData.get('pornstarIds') as string;
-    const thumbnailFile = formData.get('thumbnail') as File;
-
-    if (!title || !duration || !thumbnailFile) {
-      return NextResponse.json({ error: 'Missing required metadata or thumbnail' }, { status: 400 });
+    const ip = clientIp(request);
+    const limited = rateLimit(`upload:${ip}`, 4, 60 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json({ error: "Upload limit reached. Try again later." }, { status: 429 });
     }
 
-    const slug = generateSlug(title) + '-' + Math.floor(Math.random() * 10000); // Ensures unique slug for UGC
-    
-    const tagsArray = tagsString ? tagsString.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0) : [];
+    if (!BUNNY_LIBRARY_ID || !BUNNY_API_KEY || !STORAGE_ZONE || !STORAGE_API_KEY || !STORAGE_PULLZONE || !BUNNY_CDN) {
+      return NextResponse.json({ error: "Upload is temporarily unavailable." }, { status: 503 });
+    }
+
+    const formData = await request.formData();
+    const title = String(formData.get("title") || "").trim().slice(0, 180);
+    const duration = String(formData.get("duration") || "").trim().slice(0, 16);
+    const tagsString = String(formData.get("tags") || "");
+    const pornstarIdsString = String(formData.get("pornstarIds") || "[]");
+    const thumbnailFile = formData.get("thumbnail") as File | null;
+
+    if (!title || !duration || !thumbnailFile) {
+      return NextResponse.json({ error: "Missing required metadata or thumbnail" }, { status: 400 });
+    }
+
+    if (thumbnailFile.size > 4 * 1024 * 1024) {
+      return NextResponse.json({ error: "Thumbnail must be under 4MB" }, { status: 400 });
+    }
+
+    const allowedThumbs = ["image/jpeg", "image/png", "image/webp"];
+    if (thumbnailFile.type && !allowedThumbs.includes(thumbnailFile.type)) {
+      return NextResponse.json({ error: "Thumbnail must be JPG, PNG, or WebP" }, { status: 400 });
+    }
+
+    const slug = generateSlug(title) + "-" + Math.floor(Math.random() * 10000);
+    const tagsArray = tagsString
+      ? tagsString
+          .split(",")
+          .map((t) => t.trim().toLowerCase())
+          .filter((t) => t.length > 0)
+          .slice(0, 12)
+      : [];
     const category = tagsArray.length > 0 ? tagsArray[0] : "Amateur";
 
     let pornstarIds: number[] = [];
-    try { pornstarIds = JSON.parse(pornstarIdsString).map(Number).filter((id: number) => !isNaN(id)); } catch (e) {}
+    try {
+      pornstarIds = JSON.parse(pornstarIdsString)
+        .map(Number)
+        .filter((id: number) => !isNaN(id))
+        .slice(0, 10);
+    } catch {
+      pornstarIds = [];
+    }
 
-    // ==========================================
-    // 1. Create BLANK Video Shell in BunnyCDN
-    // ==========================================
     const createVideoRes = await fetch(
       `https://video.bunnycdn.com/library/${BUNNY_LIBRARY_ID}/videos`,
       {
-        method: 'POST',
-        headers: { AccessKey: BUNNY_API_KEY, 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { AccessKey: BUNNY_API_KEY, "Content-Type": "application/json" },
         body: JSON.stringify({ title, collectionId: STREAM_GENERAL_FULL_SCENES_COLLECTION_ID }),
-      }
+      },
     );
 
-    if (!createVideoRes.ok) return NextResponse.json({ error: 'Failed to create Bunny CDN entry' }, { status: 500 });
+    if (!createVideoRes.ok) {
+      return NextResponse.json({ error: "Failed to create CDN entry" }, { status: 500 });
+    }
     const { guid } = await createVideoRes.json();
 
-    // ==========================================
-    // 2. Upload Thumbnail to Bunny Storage
-    // ==========================================
-    const thumbExt = thumbnailFile.name.split('.').pop() || 'jpg';
+    const thumbExt = (thumbnailFile.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
     const thumbnailPath = `thumbnails/ugc-${slug}-${Date.now()}.${thumbExt}`;
 
     const uploadThumbnail = await fetch(
       `https://storage.bunnycdn.com/${STORAGE_ZONE}/${thumbnailPath}`,
       {
-        method: 'PUT',
-        headers: { AccessKey: STORAGE_API_KEY, 'Content-Type': thumbnailFile.type },
+        method: "PUT",
+        headers: { AccessKey: STORAGE_API_KEY, "Content-Type": thumbnailFile.type || "image/jpeg" },
         body: thumbnailFile,
-      }
+      },
     );
 
-    if (!uploadThumbnail.ok) return NextResponse.json({ error: 'Thumbnail upload failed' }, { status: 500 });
+    if (!uploadThumbnail.ok) {
+      return NextResponse.json({ error: "Thumbnail upload failed" }, { status: 500 });
+    }
 
-    // ==========================================
-    // 3. Save to Prisma Database (AS PENDING!)
-    // ==========================================
     const videoUrl = `https://${BUNNY_CDN}/${guid}/playlist.m3u8`;
     const thumbnailUrl = `https://${STORAGE_PULLZONE}/${thumbnailPath}`;
 
     const newVideo = await prisma.video.create({
       data: {
-        title, 
-        slug, 
-        videoUrl, 
-        thumbnail: thumbnailUrl, 
-        duration, 
-        category, 
-        tags: tagsArray, 
-        status: "PENDING", // 🔥 SECURE: Requires admin approval to go live
-        views: 0, // UGC starts at 0 views
-        ...(pornstarIds.length > 0 && { pornstars: { connect: pornstarIds.map(id => ({ id })) } })
+        title,
+        slug,
+        videoUrl,
+        thumbnail: thumbnailUrl,
+        duration,
+        category,
+        tags: tagsArray,
+        status: "PENDING",
+        views: 0,
+        ...(pornstarIds.length > 0 && { pornstars: { connect: pornstarIds.map((id) => ({ id })) } }),
       },
+      select: { id: true, slug: true, status: true },
     });
 
-    // ==========================================
-    // 4. Generate TUS Credentials for the Client
-    // ==========================================
-    const expirationTime = Math.floor(Date.now() / 1000) + 3600; // 1 hour valid upload window
+    const expirationTime = Math.floor(Date.now() / 1000) + 3600;
     const signature = generateSignature(BUNNY_LIBRARY_ID, BUNNY_API_KEY, expirationTime, guid);
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       video: newVideo,
       tusAuth: {
         libraryId: BUNNY_LIBRARY_ID,
         videoId: guid,
         signature,
-        expirationTime
-      }
+        expirationTime,
+      },
     });
-
-  } catch (error: any) {
-    console.error('UGC Upload Error:', error);
-    return NextResponse.json({ error: 'Server processing failed', details: error.message }, { status: 500 });
+  } catch (error) {
+    console.error("UGC Upload Error:", error);
+    return NextResponse.json({ error: "Server processing failed" }, { status: 500 });
   }
 }
+
 
 ================================================================================
 
@@ -1022,53 +1003,77 @@ export async function GET(request: Request) {
 ================================================================================
 
 app\api\videos\[id]\like\route.ts -:
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/src/lib/rate-limit";
 
-const prisma = new PrismaClient();
+export const dynamic = "force-dynamic";
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const resolvedParams = await params;
-    const videoId = parseInt(resolvedParams.id);
-    
-    // Parse the request body to see if the user is liking or unliking
-    const body = await request.json();
-    const isLiking = body.isLiking;
-
+    const { id } = await params;
+    const videoId = parseInt(id, 10);
     if (isNaN(videoId)) {
-      return NextResponse.json({ error: 'Invalid video ID format' }, { status: 400 });
+      return NextResponse.json({ error: "Invalid video ID format" }, { status: 400 });
     }
 
-    // Use Prisma's atomic increment/decrement to prevent race conditions
-    const updatedVideo = await prisma.video.update({
+    const ip = clientIp(request);
+    const limited = rateLimit(`like:${ip}:${videoId}`, 8, 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json({ error: "Slow down" }, { status: 429 });
+    }
+
+    const body = await request.json().catch(() => ({}));
+    const isLiking = Boolean(body.isLiking);
+    const cookieName = `pc_lk_${videoId}`;
+    const already = request.cookies.get(cookieName)?.value === "1";
+
+    if (isLiking && already) {
+      return NextResponse.json({ success: true, likes: null, duplicate: true });
+    }
+    if (!isLiking && !already) {
+      return NextResponse.json({ success: true, likes: null, duplicate: true });
+    }
+
+    const delta = isLiking ? 1 : -1;
+    await prisma.$executeRaw`
+      UPDATE "Video"
+      SET likes = GREATEST(likes + ${delta}, 0)
+      WHERE id = ${videoId} AND status = 'PUBLISHED'
+    `;
+
+    const updated = await prisma.video.findUnique({
       where: { id: videoId },
-      data: {
-        likes: {
-          [isLiking ? 'increment' : 'decrement']: 1,
-        },
-      },
-      select: {
-        id: true,
-        likes: true,
-      },
+      select: { likes: true },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      likes: updatedVideo.likes 
+    const response = NextResponse.json({
+      success: true,
+      likes: updated?.likes ?? 0,
     });
+
+    if (isLiking) {
+      response.cookies.set(cookieName, "1", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: true,
+        path: "/",
+        maxAge: 60 * 60 * 24 * 365,
+      });
+    } else {
+      response.cookies.delete(cookieName);
+    }
+
+    return response;
   } catch (error) {
     console.error("Failed to update likes:", error);
-    return NextResponse.json(
-      { error: 'Failed to update like metric' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update like metric" }, { status: 500 });
   }
 }
+
 
 ================================================================================
 
@@ -1150,15 +1155,21 @@ export async function GET(
 ================================================================================
 
 app\api\videos\[id]\report\route.ts -:
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";           // ← Use your existing prisma instance
-import { RecipientType } from "@prisma/client";  // ← Import the enum
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { RecipientType } from "@prisma/client";
+import { clientIp, rateLimit } from "@/src/lib/rate-limit";
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const limited = rateLimit(`report:${clientIp(req)}`, 6, 60 * 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json({ error: "Too many reports" }, { status: 429 });
+    }
+
     const resolvedParams = await params;
     const videoId = parseInt(resolvedParams.id);
 
@@ -1261,50 +1272,57 @@ export async function GET(
 ================================================================================
 
 app\api\videos\[id]\view\route.ts -:
-import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { clientIp, rateLimit } from "@/src/lib/rate-limit";
 
-const prisma = new PrismaClient();
+export const dynamic = "force-dynamic";
 
 export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const resolvedParams = await params;
-    const videoId = parseInt(resolvedParams.id);
-
+    const { id } = await params;
+    const videoId = parseInt(id, 10);
     if (isNaN(videoId)) {
-      return NextResponse.json({ error: 'Invalid video ID format' }, { status: 400 });
+      return NextResponse.json({ error: "Invalid video ID format" }, { status: 400 });
     }
 
-    // ATOMIC INCREMENT: Updates the number directly in the database row 
-    // without reading it first, preventing race conditions.
-    const updatedVideo = await prisma.video.update({
-      where: { id: videoId },
-      data: {
-        views: {
-          increment: 1,
-        },
-      },
-      select: {
-        id: true,
-        views: true,
-      },
+    const ip = clientIp(request);
+    const limited = rateLimit(`view:${ip}`, 40, 60 * 1000);
+    if (!limited.ok) {
+      return NextResponse.json({ success: true, views: null });
+    }
+
+    const cookieName = `pc_vw_${videoId}`;
+    if (request.cookies.get(cookieName)?.value === "1") {
+      return NextResponse.json({ success: true, views: null, duplicate: true });
+    }
+
+    const updatedVideo = await prisma.video.updateMany({
+      where: { id: videoId, status: "PUBLISHED" },
+      data: { views: { increment: 1 } },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      views: updatedVideo.views 
+    const response = NextResponse.json({
+      success: true,
+      counted: updatedVideo.count > 0,
     });
+    response.cookies.set(cookieName, "1", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+      path: "/",
+      maxAge: 60 * 60 * 6,
+    });
+    return response;
   } catch (error) {
     console.error("Failed to increment views:", error);
-    return NextResponse.json(
-      { error: 'Failed to log view tracking metric' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to log view tracking metric" }, { status: 500 });
   }
 }
+
 
 ================================================================================
 
@@ -1376,6 +1394,7 @@ model Video {
   // 🔥 ADD THIS: Speeds up category filtering & search
   @@index([category(ops: raw("gin_trgm_ops"))], type: Gin)
   @@index([studio])
+  @@index([status])
 }
 
 model Pornstar {

@@ -33,6 +33,7 @@ import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdultForceBanner from "@/src/components/ui/ads/AdultForceAds/AdultForceBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import ExoClickPopunder from "@/src/components/ui/ads/ExoClickAds/ExoClickPopunder"; // <-- ADD THI
+import { rotatePage } from "@/src/lib/rotate";
 
 interface PageProps {
   params: Promise<{ id: string; slug: string }>;
@@ -130,10 +131,10 @@ export default async function WatchPage({ params }: PageProps) {
   };
 
   // Concurrent parallel data fetching including Top Banner Ads
-  const [relatedVideos, topPornstars, topDesktopAd, topMobileAd] = await Promise.all([
+  const [relatedPool, topPornstars, topDesktopAd, topMobileAd] = await Promise.all([
     prisma.video.findMany({
       where: whereRelated,
-      take: 30,
+      take: 48,
       orderBy: { views: "desc" },
       select: { id: true, title: true, thumbnail: true, duration: true, views: true, likes: true, slug: true }
     }),
@@ -145,6 +146,7 @@ export default async function WatchPage({ params }: PageProps) {
     getTopBannerAd("970x70"),
     getTopBannerAd("300x100")
   ]);
+  const relatedVideos = rotatePage(relatedPool, 30, 0, 88 + videoId);
 
   const uploadDateFormatted = new Date(video.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
   const canonicalUrl = videoAbsUrl(video.id, video.slug);

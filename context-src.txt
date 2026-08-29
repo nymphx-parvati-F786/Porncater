@@ -1,3 +1,16 @@
+src\components\json-ld.tsx -:
+export default function JsonLd({ data }: { data: unknown }) {
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+
+================================================================================
+
 src\components\layout\Footer.tsx -:
 import Link from "next/link";
 
@@ -16,6 +29,9 @@ export default function Footer() {
         </Link>
         <Link href="/2257" className="hover:text-zinc-300 transition-colors">
           18 U.S.C. 2257
+        </Link>
+        <Link href="/channels" className="hover:text-zinc-300 transition-colors">
+          Channels
         </Link>
         <Link href="/contact" className="hover:text-zinc-300 transition-colors">
           Contact Us
@@ -631,24 +647,338 @@ export default function JuicyAdsBanner({
 
 ================================================================================
 
+src\components\ui\ChannelCard.tsx -:
+import Link from "next/link";
+import Image from "next/image";
+import { Play } from "lucide-react";
+import type { ChannelCard as ChannelData } from "@/src/lib/channels";
+
+function ChannelMark({
+  name,
+  size = "md",
+}: {
+  name: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  const letter = (name.match(/[A-Za-z0-9]/)?.[0] || "P").toUpperCase();
+  const box =
+    size === "lg"
+      ? "w-16 h-16 md:w-[72px] md:h-[72px] text-3xl"
+      : size === "sm"
+        ? "w-9 h-9 text-lg"
+        : "w-12 h-12 md:w-14 md:h-14 text-2xl";
+
+  return (
+    <div
+      className={`${box} shrink-0 rounded-sm border border-white/25 bg-black/60 backdrop-blur-sm flex items-center justify-center shadow-[0_8px_30px_rgba(0,0,0,0.55)]`}
+    >
+      <span className="font-serif italic text-white leading-none">{letter}</span>
+    </div>
+  );
+}
+
+export default function ChannelCard({
+  channel,
+  featured = false,
+}: {
+  channel: ChannelData;
+  featured?: boolean;
+}) {
+  return (
+    <Link
+      href={`/channels/${channel.slug}`}
+      prefetch={false}
+      className="group flex flex-col"
+    >
+      <div className="relative overflow-hidden bg-zinc-900 aspect-video shadow-md">
+        {channel.thumbnail ? (
+          <Image
+            src={channel.thumbnail}
+            alt={channel.studio}
+            fill
+            sizes={featured ? "(max-width: 640px) 50vw, 25vw" : "(max-width: 640px) 50vw, 20vw"}
+            className="object-cover transition-transform duration-75 ease-out group-hover:scale-[1.01]"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 via-zinc-950 to-black" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/35 to-black/10" />
+
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <ChannelMark name={channel.studio} size={featured ? "lg" : "md"} />
+        </div>
+
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="w-10 h-10 rounded-full bg-rose-700/90 flex items-center justify-center shadow-lg">
+            <Play size={16} className="text-white fill-white ml-0.5" />
+          </div>
+        </div>
+
+        {channel.tier === "S" || channel.isNetwork ? (
+          <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+            {channel.tier === "S" ? "Premium" : "Network"}
+          </div>
+        ) : channel.siteType ? (
+          <div className="absolute top-1.5 left-1.5 bg-zinc-950/80 backdrop-blur-sm text-zinc-200 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+            {channel.siteType}
+          </div>
+        ) : (
+          <div className="absolute top-1.5 left-1.5 bg-zinc-950/80 backdrop-blur-sm text-zinc-200 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+            Channel
+          </div>
+        )}
+
+        <div className="absolute bottom-1.5 left-1.5 right-1.5">
+          <div className="font-serif italic text-white text-sm md:text-base truncate tracking-wide">
+            {channel.studio}
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[9px] md:text-[10px] text-zinc-300 font-bold uppercase tracking-widest truncate">
+              {channel.niche || `${channel.videoCount.toLocaleString()} videos`}
+            </span>
+            {channel.videoCount > 0 ? (
+              <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest shrink-0">
+                {channel.videoCount.toLocaleString()}
+              </span>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+export function ChannelLogo({
+  name,
+  size = "lg",
+}: {
+  name: string;
+  size?: "sm" | "md" | "lg";
+}) {
+  return <ChannelMark name={name} size={size} />;
+}
+
+
+================================================================================
+
+src\components\ui\Pagination.tsx -:
+import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+function pageItems(currentPage: number, totalPages: number): Array<number | "..."> {
+  if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+  if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
+  if (currentPage >= totalPages - 2) {
+    return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+  }
+  return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
+}
+
+export default function Pagination({
+  currentPage,
+  totalPages,
+  hrefFor,
+}: {
+  currentPage: number;
+  totalPages: number;
+  hrefFor: (page: number) => string;
+}) {
+  if (totalPages <= 1) return null;
+
+  return (
+    <div className="mt-8 mb-8 flex items-center justify-center gap-1 select-none">
+      {currentPage > 1 ? (
+        <Link
+          href={hrefFor(currentPage - 1)}
+          className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
+        >
+          <ChevronLeft size={14} /> Prev
+        </Link>
+      ) : (
+        <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
+          <ChevronLeft size={14} /> Prev
+        </div>
+      )}
+
+      <div className="hidden sm:flex gap-1">
+        {pageItems(currentPage, totalPages).map((pageNum, index) => {
+          if (pageNum === "...") {
+            return (
+              <span
+                key={`ellipsis-${index}`}
+                className="w-8 h-8 flex items-end justify-center pb-1 text-zinc-600 font-bold tracking-widest text-sm"
+              >
+                ...
+              </span>
+            );
+          }
+          const isCurrent = currentPage === pageNum;
+          return (
+            <Link
+              key={pageNum}
+              href={hrefFor(pageNum)}
+              className={`w-8 h-8 flex items-center justify-center text-xs font-bold transition-none ${
+                isCurrent
+                  ? "bg-rose-700 text-white border border-rose-700"
+                  : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
+              }`}
+            >
+              {pageNum}
+            </Link>
+          );
+        })}
+      </div>
+
+      {currentPage < totalPages ? (
+        <Link
+          href={hrefFor(currentPage + 1)}
+          className="h-8 px-3 flex items-center justify-center bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 hover:text-white font-bold text-[10px] uppercase tracking-wider transition-none"
+        >
+          Next <ChevronRight size={14} />
+        </Link>
+      ) : (
+        <div className="h-8 px-3 flex items-center justify-center bg-black border border-zinc-900 text-zinc-700 font-bold text-[10px] uppercase tracking-wider cursor-not-allowed">
+          Next <ChevronRight size={14} />
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+================================================================================
+
+src\components\ui\player\icons.tsx -:
+type IconProps = { size?: number; className?: string };
+
+export function IcoPlay({ size = 22, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="currentColor" d="M6.2 2.4v19.2L21.6 12 6.2 2.4z" />
+    </svg>
+  );
+}
+
+export function IcoPause({ size = 22, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="currentColor" d="M5 3h5.2v18H5V3zm8.8 0H19v18h-5.2V3z" />
+    </svg>
+  );
+}
+
+export function IcoSkipTen({
+  dir,
+  size = 28,
+  className,
+}: IconProps & { dir: "back" | "fwd" }) {
+  return (
+    <svg width={size} height={Math.round(size * 0.72)} viewBox="0 0 34 24" className={className} aria-hidden>
+      {dir === "back" ? (
+        <>
+          <path fill="currentColor" d="M13.4 3.4v17.2L1.4 12 13.4 3.4z" />
+          <rect fill="currentColor" x="14.8" y="3.4" width="2.3" height="17.2" />
+        </>
+      ) : (
+        <>
+          <rect fill="currentColor" x="16.8" y="3.4" width="2.3" height="17.2" />
+          <path fill="currentColor" d="M20.6 3.4v17.2L32.6 12 20.6 3.4z" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+export function IcoVolume({ size = 18, className, muted }: IconProps & { muted?: boolean }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="currentColor" d="M2.8 8.2H7.4L13 3.6v16.8L7.4 15.8H2.8V8.2z" />
+      {muted ? (
+        <path fill="none" stroke="currentColor" strokeWidth="1.8" d="M15.4 8.2l6.4 7.6M21.8 8.2l-6.4 7.6" />
+      ) : (
+        <>
+          <path fill="none" stroke="currentColor" strokeWidth="1.6" d="M15.6 9.1c1.35 1.2 1.35 4.6 0 5.8" />
+          <path fill="none" stroke="currentColor" strokeWidth="1.6" d="M18.5 6.8c2.5 2.3 2.5 8.1 0 10.4" />
+        </>
+      )}
+    </svg>
+  );
+}
+
+export function IcoExpand({ size = 18, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="currentColor" d="M3 3h7.2v2.2H5.2V10H3V3zm10.8 0H21v7h-2.2V5.2H13.8V3zM3 14h2.2v4.8H10V21H3v-7zm13.8 4.8V14H21v7h-7v-2.2h4.8z" />
+    </svg>
+  );
+}
+
+export function IcoCompress({ size = 18, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="currentColor" d="M9.4 9.4H3V7.2h4.2V3h2.2v6.4zM21 9.4h-6.4V3h2.2v4.2H21v2.2zM9.4 21h-2.2v-4.2H3v-2.2h6.4V21zM21 14.6v2.2h-4.2V21h-2.2v-6.4H21z" />
+    </svg>
+  );
+}
+
+export function IcoLoop({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" d="M8 7.2h9.4l-2.6-2.6" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" d="M16 16.8H6.6l2.6 2.6" />
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" d="M17.4 7.2v4.2M6.6 16.8v-4.2" />
+    </svg>
+  );
+}
+
+export function IcoPip({ size = 16, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" d="M3 5h18v14H3z" />
+      <path fill="currentColor" d="M12.2 11.4H20V18h-7.8v-6.6z" />
+    </svg>
+  );
+}
+
+export function IcoOut({ size = 12, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="none" stroke="currentColor" strokeWidth="1.8" d="M4 10V4h16v16h-6" />
+      <path fill="currentColor" d="M11 13.2h9.4v2H11z" />
+      <path fill="currentColor" d="M16.4 7.4l5.8 5.6-5.8 5.6v-3.8H9.4v-3.6h7V7.4z" />
+    </svg>
+  );
+}
+
+export function IcoSkipAd({ size = 14, className }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
+      <path fill="currentColor" d="M2.8 4.2v15.6L14 12 2.8 4.2z" />
+      <path fill="currentColor" d="M14.8 4.2v15.6L21.6 12 14.8 4.2z" />
+    </svg>
+  );
+}
+
+
+================================================================================
+
 src\components\ui\player\VideoPlayer.tsx -:
 "use client";
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Hls from "hls.js";
 import {
-  Play,
-  Pause,
-  Volume2,
-  VolumeX,
-  Maximize,
-  Minimize,
-  SkipBack,
-  SkipForward,
-  Settings,
-  ExternalLink,
-  Repeat,
-} from "lucide-react";
+  IcoPlay,
+  IcoPause,
+  IcoSkipTen,
+  IcoVolume,
+  IcoExpand,
+  IcoCompress,
+  IcoLoop,
+  IcoPip,
+  IcoOut,
+  IcoSkipAd,
+} from "./icons";
 
 interface VideoPlayerProps {
   src: string;
@@ -656,6 +986,24 @@ interface VideoPlayerProps {
   title?: string;
   vastTagUrl?: string;
   autoNext?: boolean;
+}
+
+type QualityLevel = { index: number; height: number; label: string };
+
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const SEEK_STEP = 10;
+
+function fmt(t: number) {
+  if (!Number.isFinite(t) || t < 0) return "0:00";
+  const h = Math.floor(t / 3600);
+  const m = Math.floor((t % 3600) / 60);
+  const s = Math.floor(t % 60);
+  if (h > 0) return `${h}:${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+
+function posKey(src: string) {
+  return `pc_pos_${src.slice(-80)}`;
 }
 
 export default function VideoPlayer({
@@ -666,15 +1014,23 @@ export default function VideoPlayer({
 }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const originalSrcRef = useRef(src);
   const firedTracking = useRef<Set<string>>(new Set());
   const controlsTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const singleTapTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTap = useRef(0);
+  const lastTapZone = useRef<"left" | "center" | "right" | null>(null);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holding2x = useRef(false);
+  const rateBeforeHold = useRef(1);
+  const ignoreClick = useRef(false);
+  const handlersRef = useRef<Record<string, () => void>>({});
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [buffered, setBuffered] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(1);
@@ -683,11 +1039,19 @@ export default function VideoPlayer({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [isLooping, setIsLooping] = useState(false);
-  const [actionAnim, setActionAnim] = useState<"forward" | "rewind" | null>(
-    null,
-  );
+  const [actionAnim, setActionAnim] = useState<"forward" | "rewind" | null>(null);
   const [adAttempted, setAdAttempted] = useState(false);
   const [isLoadingAd, setIsLoadingAd] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [hoverX, setHoverX] = useState(0);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [holdBoost, setHoldBoost] = useState(false);
+  const [levels, setLevels] = useState<QualityLevel[]>([]);
+  const [currentLevel, setCurrentLevel] = useState(-1);
+  const [isIos, setIsIos] = useState(false);
+  const [pipSupported, setPipSupported] = useState(false);
+  const [error, setError] = useState(false);
 
   const [preloadedAd, setPreloadedAd] = useState<{
     mediaUrl: string;
@@ -698,7 +1062,25 @@ export default function VideoPlayer({
   const [adState, setAdState] = useState({ isPlaying: false, skipOffset: 5 });
   const [adCountdown, setAdCountdown] = useState(5);
 
-  // ─── HLS ───────────────────────────────────────────────
+  useEffect(() => {
+    setIsIos(/iPad|iPhone|iPod/.test(navigator.userAgent));
+    setPipSupported("pictureInPictureEnabled" in document);
+    const savedVol = localStorage.getItem("porncater_vol");
+    if (savedVol !== null) {
+      const n = parseFloat(savedVol);
+      if (Number.isFinite(n)) {
+        setVolume(n);
+        setIsMuted(n === 0);
+        if (videoRef.current) videoRef.current.volume = n;
+      }
+    }
+    const savedRate = localStorage.getItem("porncater_rate");
+    if (savedRate) {
+      const n = parseFloat(savedRate);
+      if (SPEEDS.includes(n)) setPlaybackRate(n);
+    }
+  }, []);
+
   useEffect(() => {
     originalSrcRef.current = src;
     const video = videoRef.current;
@@ -708,15 +1090,51 @@ export default function VideoPlayer({
       hlsRef.current.destroy();
       hlsRef.current = null;
     }
+    setLevels([]);
+    setCurrentLevel(-1);
+    setError(false);
 
     if (src.includes(".m3u8") && Hls.isSupported()) {
       const hls = new Hls({
-        maxMaxBufferLength: 30,
-        startLevel: -1,
         enableWorker: true,
+        lowLatencyMode: false,
+        backBufferLength: 60,
+        maxBufferLength: 24,
+        maxMaxBufferLength: 48,
+        maxBufferHole: 0.5,
+        startLevel: -1,
+        capLevelToPlayerSize: true,
+        startFragPrefetch: true,
+        fragLoadingMaxRetry: 4,
+        manifestLoadingMaxRetry: 3,
+        abrEwmaDefaultEstimate: 800000,
       });
       hls.loadSource(src);
       hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, (_e, data) => {
+        const next: QualityLevel[] = data.levels
+          .map((level, index) => ({
+            index,
+            height: level.height || 0,
+            label: level.height ? `${level.height}p` : `${Math.round(level.bitrate / 1000)}k`,
+          }))
+          .filter((l) => l.height || l.label);
+        next.sort((a, b) => b.height - a.height);
+        setLevels(next);
+      });
+      hls.on(Hls.Events.LEVEL_SWITCHED, (_e, data) => {
+        setCurrentLevel(data.level);
+      });
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (!data.fatal) return;
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+          hls.startLoad();
+        } else if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          hls.recoverMediaError();
+        } else {
+          setError(true);
+        }
+      });
       hlsRef.current = hls;
     } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
@@ -724,15 +1142,18 @@ export default function VideoPlayer({
       video.src = src;
     }
 
+    video.playbackRate = playbackRate;
+
     return () => {
       if (hlsRef.current) {
         hlsRef.current.destroy();
         hlsRef.current = null;
       }
     };
+    // playbackRate applied separately; don't rebuild HLS on speed change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [src, adState.isPlaying]);
 
-  // ─── VAST PREFETCH ─────────────────────────────────────
   useEffect(() => {
     if (!vastTagUrl) return;
     const controller = new AbortController();
@@ -742,14 +1163,11 @@ export default function VideoPlayer({
       .then((r) => (r.ok ? r.text() : Promise.reject()))
       .then((text) => {
         const doc = new DOMParser().parseFromString(text, "text/xml");
-        const media = doc
-          .getElementsByTagName("MediaFile")[0]
-          ?.textContent?.trim();
+        const media = doc.getElementsByTagName("MediaFile")[0]?.textContent?.trim();
         if (!media) return;
 
         const click =
-          doc.getElementsByTagName("ClickThrough")[0]?.textContent?.trim() ||
-          null;
+          doc.getElementsByTagName("ClickThrough")[0]?.textContent?.trim() || null;
         const tracking: Record<string, string[]> = { impression: [] };
 
         Array.from(doc.getElementsByTagName("Tracking")).forEach((node) => {
@@ -779,25 +1197,13 @@ export default function VideoPlayer({
     };
   }, [vastTagUrl]);
 
-  // ─── VOLUME MEMORY ─────────────────────────────────────
-  useEffect(() => {
-    const v = localStorage.getItem("porncater_vol");
-    if (v !== null) {
-      const n = parseFloat(v);
-      setVolume(n);
-      setIsMuted(n === 0);
-      if (videoRef.current) videoRef.current.volume = n;
-    }
-  }, []);
-
-  // ─── CONTROLS AUTO-HIDE ────────────────────────────────
   const resetControls = useCallback(() => {
     setShowControls(true);
     if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
-    if (isPlaying && !adState.isPlaying) {
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 1800);
+    if (isPlaying && !adState.isPlaying && !settingsOpen) {
+      controlsTimeout.current = setTimeout(() => setShowControls(false), 2400);
     }
-  }, [isPlaying, adState.isPlaying]);
+  }, [isPlaying, adState.isPlaying, settingsOpen]);
 
   useEffect(() => {
     resetControls();
@@ -812,72 +1218,6 @@ export default function VideoPlayer({
     return () => document.removeEventListener("fullscreenchange", fn);
   }, []);
 
-  // ─── KEYBOARD ──────────────────────────────────────────
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (
-        !containerRef.current?.contains(document.activeElement) &&
-        document.activeElement !== document.body
-      )
-        return;
-      const v = videoRef.current;
-      if (!v || adState.isPlaying) return;
-
-      switch (e.key.toLowerCase()) {
-        case " ":
-        case "k":
-          e.preventDefault();
-          togglePlay();
-          break;
-        case "arrowleft":
-          e.preventDefault();
-          v.currentTime = Math.max(0, v.currentTime - 5);
-          showAnim("rewind");
-          break;
-        case "arrowright":
-          e.preventDefault();
-          v.currentTime = Math.min(v.duration, v.currentTime + 5);
-          showAnim("forward");
-          break;
-        case "j":
-          e.preventDefault();
-          v.currentTime = Math.max(0, v.currentTime - 10);
-          showAnim("rewind");
-          break;
-        case "l":
-          e.preventDefault();
-          v.currentTime = Math.min(v.duration, v.currentTime + 10);
-          showAnim("forward");
-          break;
-        case "m":
-          e.preventDefault();
-          toggleMute();
-          break;
-        case "f":
-          e.preventDefault();
-          toggleFullscreen();
-          break;
-        case "0":
-        case "1":
-        case "2":
-        case "3":
-        case "4":
-        case "5":
-        case "6":
-        case "7":
-        case "8":
-        case "9":
-          e.preventDefault();
-          v.currentTime = (parseInt(e.key) / 10) * v.duration;
-          break;
-      }
-      resetControls();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  });
-
-  // ─── TRACKING ──────────────────────────────────────────
   const fire = (urls?: string[]) => {
     if (!urls) return;
     urls.forEach((u) => {
@@ -888,7 +1228,22 @@ export default function VideoPlayer({
     });
   };
 
-  // ─── AD ENGINE ─────────────────────────────────────────
+  const showAnim = (type: "forward" | "rewind") => {
+    setActionAnim(type);
+    setTimeout(() => setActionAnim(null), 420);
+  };
+
+  const seekBy = useCallback((delta: number) => {
+    const v = videoRef.current;
+    if (!v || adState.isPlaying) return;
+    const next = Math.min(Math.max(0, v.currentTime + delta), v.duration || 0);
+    v.currentTime = next;
+    setCurrentTime(next);
+    if (v.duration) setProgress((next / v.duration) * 100);
+    showAnim(delta > 0 ? "forward" : "rewind");
+    resetControls();
+  }, [adState.isPlaying, resetControls]);
+
   const skipAd = useCallback(() => {
     if (preloadedAd) fire(preloadedAd.trackingUrls.skip);
     setAdState({ isPlaying: false, skipOffset: 5 });
@@ -900,13 +1255,10 @@ export default function VideoPlayer({
     const video = videoRef.current;
     if (!video) return;
 
-    // restore original
-    video.src = originalSrcRef.current;
-    video.load();
     setTimeout(() => {
       video.play().catch(() => {});
       setIsPlaying(true);
-    }, 40);
+    }, 80);
   }, [preloadedAd]);
 
   const togglePlay = useCallback(async () => {
@@ -919,7 +1271,6 @@ export default function VideoPlayer({
       return;
     }
 
-    // zero-latency ad inject
     if (!adAttempted && preloadedAd) {
       setAdAttempted(true);
       setIsLoadingAd(true);
@@ -939,74 +1290,230 @@ export default function VideoPlayer({
       return;
     }
 
-    video.play().catch(() => {});
+    video.play().catch(() => setError(true));
     setIsPlaying(true);
   }, [isPlaying, adAttempted, preloadedAd]);
 
-  // ─── TOUCH ZONES (clean double-tap) ────────────────────
-  const showAnim = (type: "forward" | "rewind") => {
-    setActionAnim(type);
-    setTimeout(() => setActionAnim(null), 320);
+  const toggleMute = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (isMuted) {
+      const n = volume || 1;
+      v.volume = n;
+      setIsMuted(false);
+      localStorage.setItem("porncater_vol", String(n));
+    } else {
+      v.volume = 0;
+      setIsMuted(true);
+      localStorage.setItem("porncater_vol", "0");
+    }
+  }, [isMuted, volume]);
+
+  const toggleFullscreen = useCallback(() => {
+    const el = containerRef.current;
+    const video = videoRef.current as (HTMLVideoElement & { webkitEnterFullscreen?: () => void }) | null;
+    if (!el || !video) return;
+    if (isIos && video.webkitEnterFullscreen && !document.fullscreenElement) {
+      video.webkitEnterFullscreen();
+      return;
+    }
+    if (!document.fullscreenElement) el.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  }, [isIos]);
+
+  const togglePip = useCallback(async () => {
+    const video = videoRef.current;
+    if (!video || !document.pictureInPictureEnabled) return;
+    try {
+      if (document.pictureInPictureElement) await document.exitPictureInPicture();
+      else await video.requestPictureInPicture();
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const changeSpeed = useCallback((rate: number) => {
+    if (adState.isPlaying) return;
+    if (videoRef.current) videoRef.current.playbackRate = rate;
+    setPlaybackRate(rate);
+    localStorage.setItem("porncater_rate", String(rate));
+  }, [adState.isPlaying]);
+
+  const changeQuality = useCallback((index: number) => {
+    if (!hlsRef.current) return;
+    hlsRef.current.currentLevel = index;
+    setCurrentLevel(index);
+  }, []);
+
+  handlersRef.current = {
+    togglePlay,
+    toggleMute,
+    toggleFullscreen,
+    seekBack: () => seekBy(-SEEK_STEP),
+    seekFwd: () => seekBy(SEEK_STEP),
   };
 
-  const handleZone = (zone: "left" | "center" | "right") => {
-    if (adState.isPlaying) return;
-    const now = Date.now();
-    const DELAY = 280;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      const v = videoRef.current;
+      if (!v || adState.isPlaying) return;
+      const h = handlersRef.current;
 
-    if (now - lastTap.current < DELAY) {
-      // DOUBLE
+      switch (e.key.toLowerCase()) {
+        case " ":
+        case "k":
+          e.preventDefault();
+          h.togglePlay();
+          break;
+        case "arrowleft":
+          e.preventDefault();
+          h.seekBack();
+          break;
+        case "arrowright":
+          e.preventDefault();
+          h.seekFwd();
+          break;
+        case "j":
+          e.preventDefault();
+          seekBy(-10);
+          break;
+        case "l":
+          e.preventDefault();
+          seekBy(10);
+          break;
+        case "arrowup":
+          e.preventDefault();
+          {
+            const n = Math.min(1, (isMuted ? 0 : volume) + 0.05);
+            v.volume = n;
+            setVolume(n);
+            setIsMuted(n === 0);
+            localStorage.setItem("porncater_vol", String(n));
+          }
+          break;
+        case "arrowdown":
+          e.preventDefault();
+          {
+            const n = Math.max(0, (isMuted ? 0 : volume) - 0.05);
+            v.volume = n;
+            setVolume(n);
+            setIsMuted(n === 0);
+            localStorage.setItem("porncater_vol", String(n));
+          }
+          break;
+        case "m":
+          e.preventDefault();
+          h.toggleMute();
+          break;
+        case "f":
+          e.preventDefault();
+          h.toggleFullscreen();
+          break;
+        case ">":
+        case ".":
+          if (e.shiftKey || e.key === ">") {
+            e.preventDefault();
+            const i = SPEEDS.indexOf(playbackRate);
+            if (i < SPEEDS.length - 1) changeSpeed(SPEEDS[i + 1]);
+          }
+          break;
+        case "<":
+        case ",":
+          if (e.shiftKey || e.key === "<") {
+            e.preventDefault();
+            const i = SPEEDS.indexOf(playbackRate);
+            if (i > 0) changeSpeed(SPEEDS[i - 1]);
+          }
+          break;
+        case "0":
+        case "1":
+        case "2":
+        case "3":
+        case "4":
+        case "5":
+        case "6":
+        case "7":
+        case "8":
+        case "9":
+          e.preventDefault();
+          if (v.duration) v.currentTime = (parseInt(e.key, 10) / 10) * v.duration;
+          break;
+      }
+      resetControls();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [
+    adState.isPlaying,
+    seekBy,
+    resetControls,
+    volume,
+    isMuted,
+    playbackRate,
+    changeSpeed,
+  ]);
+
+  const handleZone = (zone: "left" | "center" | "right", pointerType: string) => {
+    if (adState.isPlaying || holding2x.current || ignoreClick.current) return;
+    setSettingsOpen(false);
+    const now = Date.now();
+    const isTouch = pointerType === "touch";
+    const DELAY = isTouch ? 260 : 0;
+
+    if (isTouch && now - lastTap.current < 280 && lastTapZone.current === zone) {
       if (singleTapTimeout.current) {
         clearTimeout(singleTapTimeout.current);
         singleTapTimeout.current = null;
       }
-      const video = videoRef.current;
-      if (!video) return;
-
-      if (zone === "right") {
-        video.currentTime = Math.min(
-          video.currentTime + 10,
-          video.duration || 9999,
-        );
-        showAnim("forward");
-      } else if (zone === "left") {
-        video.currentTime = Math.max(video.currentTime - 10, 0);
-        showAnim("rewind");
-      } else {
-        // center double = fullscreen
-        toggleFullscreen();
-      }
-      resetControls();
-    } else {
-      // potential single – delay it
-      lastTap.current = now;
-      if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
-      singleTapTimeout.current = setTimeout(() => {
-        if (zone === "center") {
-          togglePlay();
-        } else {
-          // left/right single just toggles controls on mobile
-          if (window.innerWidth < 768) setShowControls((s) => !s);
-          else togglePlay();
-        }
-        resetControls();
-        singleTapTimeout.current = null;
-      }, DELAY);
+      if (zone === "right") seekBy(SEEK_STEP);
+      else if (zone === "left") seekBy(-SEEK_STEP);
+      else togglePlay();
+      lastTap.current = 0;
+      lastTapZone.current = null;
+      return;
     }
+
+    lastTap.current = now;
+    lastTapZone.current = zone;
+
+    if (!isTouch) {
+      if (zone === "center") togglePlay();
+      else togglePlay();
+      resetControls();
+      return;
+    }
+
+    if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
+    singleTapTimeout.current = setTimeout(() => {
+      if (zone === "center") togglePlay();
+      else setShowControls((s) => !s);
+      resetControls();
+      singleTapTimeout.current = null;
+    }, DELAY);
   };
 
-  // ─── VIDEO EVENTS ──────────────────────────────────────
   const onTimeUpdate = () => {
     const v = videoRef.current;
     if (!v || !v.duration) return;
     const p = (v.currentTime / v.duration) * 100;
     setProgress(p);
     setCurrentTime(v.currentTime);
+    if (v.buffered.length) {
+      setBuffered((v.buffered.end(v.buffered.length - 1) / v.duration) * 100);
+    }
+
+    if (!adState.isPlaying && v.currentTime > 5) {
+      try {
+        sessionStorage.setItem(posKey(src), String(Math.floor(v.currentTime)));
+      } catch {
+        /* private mode */
+      }
+    }
 
     if (adState.isPlaying && preloadedAd) {
-      setAdCountdown(
-        Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)),
-      );
+      setAdCountdown(Math.max(0, Math.ceil(adState.skipOffset - v.currentTime)));
       if (p >= 25) fire(preloadedAd.trackingUrls.firstQuartile);
       if (p >= 50) fire(preloadedAd.trackingUrls.midpoint);
       if (p >= 75) fire(preloadedAd.trackingUrls.thirdQuartile);
@@ -1020,16 +1527,39 @@ export default function VideoPlayer({
     } else if (!isLooping) {
       setIsPlaying(false);
       setShowControls(true);
+      try {
+        sessionStorage.removeItem(posKey(src));
+      } catch {
+        /* ignore */
+      }
     }
   };
 
-  const onSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (adState.isPlaying) return;
+  const seekToRatio = (ratio: number) => {
     const v = videoRef.current;
-    if (!v) return;
-    const t = (parseFloat(e.target.value) / 100) * v.duration;
+    if (!v || adState.isPlaying || !v.duration) return;
+    const t = Math.min(Math.max(ratio, 0), 1) * v.duration;
     v.currentTime = t;
-    setProgress(parseFloat(e.target.value));
+    setProgress(ratio * 100);
+    setCurrentTime(t);
+  };
+
+  const onBarPointer = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (adState.isPlaying) return;
+    const bar = barRef.current;
+    if (!bar) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = (e.clientX - rect.left) / rect.width;
+    seekToRatio(ratio);
+  };
+
+  const onBarMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const bar = barRef.current;
+    if (!bar || !duration) return;
+    const rect = bar.getBoundingClientRect();
+    const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+    setHoverTime(ratio * duration);
+    setHoverX(ratio * rect.width);
   };
 
   const onVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1042,40 +1572,41 @@ export default function VideoPlayer({
     localStorage.setItem("porncater_vol", String(n));
   };
 
-  const toggleMute = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    if (isMuted) {
-      const n = volume || 1;
-      v.volume = n;
-      setIsMuted(false);
-      localStorage.setItem("porncater_vol", String(n));
-    } else {
-      v.volume = 0;
-      setIsMuted(true);
-      localStorage.setItem("porncater_vol", "0");
+  const onPointerDownHold = (e: React.PointerEvent) => {
+    if (adState.isPlaying || e.button !== 0) return;
+    if (videoRef.current?.paused) return;
+    if ((e.target as HTMLElement).closest("[data-controls]")) return;
+    rateBeforeHold.current = playbackRate;
+    holdTimer.current = setTimeout(() => {
+      const v = videoRef.current;
+      if (!v) return;
+      holding2x.current = true;
+      ignoreClick.current = true;
+      v.playbackRate = 2;
+      setHoldBoost(true);
+    }, 380);
+  };
+
+  const onPointerUpHold = () => {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+    }
+    if (holding2x.current) {
+      const v = videoRef.current;
+      if (v) v.playbackRate = rateBeforeHold.current;
+      holding2x.current = false;
+      setHoldBoost(false);
+      setTimeout(() => {
+        ignoreClick.current = false;
+      }, 50);
     }
   };
 
-  const changeSpeed = (rate: number) => {
-    if (adState.isPlaying) return;
-    if (videoRef.current) videoRef.current.playbackRate = rate;
-    setPlaybackRate(rate);
-  };
-
-  const toggleFullscreen = () => {
-    const el = containerRef.current;
-    if (!el) return;
-    if (!document.fullscreenElement) el.requestFullscreen?.();
-    else document.exitFullscreen?.();
-  };
-
-  const fmt = (t: number) => {
-    if (isNaN(t)) return "0:00";
-    const m = Math.floor(t / 60);
-    const s = Math.floor(t % 60);
-    return `${m}:${s < 10 ? "0" : ""}${s}`;
-  };
+  const qualityLabel =
+    currentLevel >= 0
+      ? levels.find((l) => l.index === currentLevel)?.label || "Auto"
+      : "Auto";
 
   return (
     <div
@@ -1086,15 +1617,15 @@ export default function VideoPlayer({
       }`}
       onMouseMove={resetControls}
       onMouseLeave={() => {
-        if (isPlaying) setShowControls(false);
+        if (isPlaying && !settingsOpen) setShowControls(false);
+        setHoverTime(null);
       }}
+      onPointerDown={onPointerDownHold}
+      onPointerUp={onPointerUpHold}
+      onPointerCancel={onPointerUpHold}
       onClick={(e) => {
-        // only play/pause if click is directly on the video area (not controls)
         if ((e.target as HTMLElement).closest("[data-controls]")) return;
-
-        // 🔥 ADD THIS LINE: Tell the container to ignore clicks from the giant play button
         if ((e.target as HTMLElement).closest("[data-play-btn]")) return;
-
         if (!isPlaying && !adState.isPlaying) togglePlay();
       }}
     >
@@ -1108,42 +1639,76 @@ export default function VideoPlayer({
         className="w-full h-full object-contain"
         onTimeUpdate={onTimeUpdate}
         onEnded={onEnded}
-        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+        onWaiting={() => setIsBuffering(true)}
+        onPlaying={() => {
+          setIsBuffering(false);
+          setError(false);
+        }}
+        onCanPlay={() => setIsBuffering(false)}
+        onLoadedMetadata={(e) => {
+          const v = e.currentTarget;
+          setDuration(v.duration);
+          v.volume = isMuted ? 0 : volume;
+          v.playbackRate = playbackRate;
+          try {
+            const saved = sessionStorage.getItem(posKey(src));
+            const t = saved ? parseFloat(saved) : 0;
+            if (t > 8 && t < v.duration - 8) v.currentTime = t;
+          } catch {
+            /* ignore */
+          }
+        }}
         onPlay={() => setIsPlaying(true)}
-        onPause={() => setIsPlaying(false)}
+        onPause={() => {
+          if (!holding2x.current) setIsPlaying(false);
+        }}
+        onError={() => {
+          if (!adState.isPlaying) setError(true);
+        }}
       />
 
-      {/* TOUCH ZONES – only while playing so center play button is never blocked */}
       {isPlaying && !adState.isPlaying && (
         <>
           <div
             className="absolute inset-y-0 left-0 w-1/3 z-10"
-            onClick={() => handleZone("left")}
+            onPointerUp={(e) => handleZone("left", e.pointerType)}
           />
           <div
             className="absolute inset-y-0 left-1/3 w-1/3 z-10"
-            onClick={() => handleZone("center")}
+            onPointerUp={(e) => handleZone("center", e.pointerType)}
           />
           <div
             className="absolute inset-y-0 right-0 w-1/3 z-10"
-            onClick={() => handleZone("right")}
+            onPointerUp={(e) => handleZone("right", e.pointerType)}
           />
         </>
       )}
 
-      {/* ULTRA-MINIMAL SEEK FLASH – pure chevron only */}
       {actionAnim && (
         <div
-          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none text-white text-6xl font-extralight leading-none select-none ${
-            actionAnim === "forward" ? "right-[19%]" : "left-[19%]"
+          className={`absolute top-1/2 -translate-y-1/2 z-20 pointer-events-none flex items-center justify-center gap-1 h-12 px-3 bg-black/85 border border-white/15 text-white ${
+            actionAnim === "forward" ? "right-[14%]" : "left-[14%]"
           }`}
-          style={{ opacity: 0.9 }}
         >
-          {actionAnim === "forward" ? "›" : "‹"}
+          <IcoSkipTen dir={actionAnim === "forward" ? "fwd" : "back"} size={26} />
+          <span className="text-[11px] font-bold tabular-nums tracking-tight">10</span>
         </div>
       )}
 
-      {/* AD LAYER */}
+      {holdBoost && (
+        <div className="absolute top-3 right-3 z-20 pointer-events-none bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 border border-red-500">
+          2×
+        </div>
+      )}
+
+      {title && showControls && !adState.isPlaying && (
+        <div className="absolute top-0 inset-x-0 z-20 pointer-events-none bg-gradient-to-b from-black/80 to-transparent px-3 py-2.5">
+          <p className="text-[11px] md:text-xs font-medium text-white/90 truncate tracking-wide">
+            {title}
+          </p>
+        </div>
+      )}
+
       {adState.isPlaying && preloadedAd && (
         <>
           {preloadedAd.clickThroughUrl && (
@@ -1155,7 +1720,7 @@ export default function VideoPlayer({
               aria-label="Visit Advertisement"
             >
               <span className="bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 flex items-center gap-1.5 border border-red-500">
-                Visit Sponsor <ExternalLink size={11} strokeWidth={2.5} />
+                Visit Sponsor <IcoOut size={12} />
               </span>
             </a>
           )}
@@ -1172,187 +1737,273 @@ export default function VideoPlayer({
                 }}
                 className="bg-black hover:bg-zinc-900 border-l-2 border-red-600 text-white text-xs font-bold uppercase px-5 py-2.5 flex items-center gap-2"
               >
-                Skip Ad <SkipForward size={13} strokeWidth={2.5} />
+                Skip Ad <IcoSkipAd size={14} />
               </button>
             )}
           </div>
         </>
       )}
 
-      {/* LOADING */}
-      {isLoadingAd && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/40">
-          <div className="w-9 h-9 border-2 border-zinc-700 border-t-red-600 animate-spin" />
+      {(isLoadingAd || (isBuffering && isPlaying && !adState.isPlaying)) && (
+        <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+          <div className="flex items-end gap-[3px] h-6">
+            <span className="w-[3px] h-3 bg-red-600 animate-pulse" />
+            <span className="w-[3px] h-6 bg-red-600 animate-pulse [animation-delay:120ms]" />
+            <span className="w-[3px] h-4 bg-red-600 animate-pulse [animation-delay:240ms]" />
+          </div>
         </div>
       )}
 
-      {/* GIANT HARD PLAY BUTTON – only when paused */}
-      {!isPlaying && !adState.isPlaying && !isLoadingAd && (
+      {error && !adState.isPlaying && (
         <button
+          onClick={() => {
+            setError(false);
+            const v = videoRef.current;
+            if (v) {
+              v.load();
+              v.play().catch(() => {});
+            }
+          }}
+          className="absolute inset-0 z-30 flex items-center justify-center bg-black/70"
+        >
+          <span className="bg-red-700 hover:bg-red-600 text-white text-[11px] font-bold uppercase tracking-widest px-4 py-2 border border-red-500">
+            Tap to retry
+          </span>
+        </button>
+      )}
+
+      {!isPlaying && !adState.isPlaying && !isLoadingAd && !error && (
+        <button
+          data-play-btn
           onClick={(e) => {
             e.stopPropagation();
             togglePlay();
           }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[72px] h-12 flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-500 shadow-[0_0_0_1px_rgba(0,0,0,0.8)]"
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 w-[88px] h-[52px] flex items-center justify-center bg-red-700 hover:bg-red-600 text-white border border-red-400/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_0_1px_#000]"
           aria-label="Play"
         >
-          <Play
-            size={28}
-            fill="currentColor"
-            strokeWidth={0}
-            className="ml-0.5"
-          />
+          <IcoPlay size={28} className="ml-1" />
         </button>
       )}
 
-      {/* BOTTOM BAR – sharp, minimal, hard */}
       <div
         data-controls
-        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-12 pb-1.5 px-2 transition-opacity duration-150 ${
+        className={`absolute bottom-0 inset-x-0 z-40 bg-gradient-to-t from-black via-black/90 to-transparent pt-10 pb-1.5 px-2 transition-opacity duration-100 ${
           showControls && !adState.isPlaying && !isLoadingAd
             ? "opacity-100"
             : "opacity-0 pointer-events-none"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* PROGRESS – hard thin red */}
-        <div className="relative w-full h-1.5 mb-2 group/bar cursor-pointer">
-          <div className="absolute inset-0 bg-zinc-800">
+        <div
+          ref={barRef}
+          className="relative w-full h-3 md:h-2 mb-2 group/bar cursor-pointer"
+          onPointerDown={onBarPointer}
+          onMouseMove={onBarMove}
+          onMouseLeave={() => setHoverTime(null)}
+        >
+          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 md:h-[3px] group-hover/bar:h-1.5 bg-zinc-800">
+            <div
+              className="absolute top-0 left-0 h-full bg-zinc-600"
+              style={{ width: `${buffered}%` }}
+            />
             <div
               className="absolute top-0 left-0 h-full bg-red-600"
               style={{ width: `${progress}%` }}
             />
           </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            step={0.1}
-            value={progress || 0}
-            onChange={onSeek}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-          />
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-white border border-black opacity-0 group-hover/bar:opacity-100 pointer-events-none"
-            style={{ left: `calc(${progress}% - 5px)` }}
+            className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-red-600 pointer-events-none"
+            style={{ left: `calc(${progress}% - 4px)` }}
           />
+          {hoverTime !== null && (
+            <div
+              className="absolute -top-7 -translate-x-1/2 bg-black border border-zinc-700 text-white text-[10px] font-bold tabular-nums px-1.5 py-0.5 pointer-events-none"
+              style={{ left: hoverX }}
+            >
+              {fmt(hoverTime)}
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center justify-between text-zinc-200">
-          {/* LEFT */}
-          <div className="flex items-center gap-3 md:gap-5">
+        <div className="flex items-center justify-between gap-2 text-white">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             <button
               onClick={togglePlay}
-              className="p-0.5 hover:text-red-500 transition-colors"
+              className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-white"
+              aria-label={isPlaying ? "Pause" : "Play"}
             >
-              {isPlaying ? (
-                <Pause size={20} fill="currentColor" strokeWidth={0} />
-              ) : (
-                <Play size={20} fill="currentColor" strokeWidth={0} />
-              )}
+              {isPlaying ? <IcoPause size={18} /> : <IcoPlay size={18} className="ml-0.5" />}
             </button>
 
-            <div className="hidden md:flex items-center gap-3 text-zinc-500">
-              <button
-                onClick={() => {
-                  if (videoRef.current) videoRef.current.currentTime -= 10;
-                  showAnim("rewind");
-                }}
-                className="hover:text-white"
-              >
-                <SkipBack size={16} strokeWidth={2} />
-              </button>
-              <button
-                onClick={() => {
-                  if (videoRef.current) videoRef.current.currentTime += 10;
-                  showAnim("forward");
-                }}
-                className="hover:text-white"
-              >
-                <SkipForward size={16} strokeWidth={2} />
-              </button>
-            </div>
+            <button
+              onClick={() => seekBy(-SEEK_STEP)}
+              className="h-9 px-1.5 flex items-center gap-0.5 hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Back 10 seconds"
+            >
+              <IcoSkipTen dir="back" size={22} />
+              <span className="text-[10px] font-bold tabular-nums leading-none">10</span>
+            </button>
+            <button
+              onClick={() => seekBy(SEEK_STEP)}
+              className="h-9 px-1.5 flex items-center gap-0.5 hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Forward 10 seconds"
+            >
+              <span className="text-[10px] font-bold tabular-nums leading-none">10</span>
+              <IcoSkipTen dir="fwd" size={22} />
+            </button>
 
-            <div className="flex items-center gap-1.5 group/vol">
+            {!isIos && (
+              <div className="flex items-center group/vol">
+                <button
+                  onClick={toggleMute}
+                  className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200 hover:text-white"
+                  aria-label={isMuted ? "Unmute" : "Mute"}
+                >
+                  <IcoVolume size={16} muted={isMuted || volume === 0} />
+                </button>
+                <div className="w-0 overflow-hidden group-hover/vol:w-[72px] transition-[width] duration-150">
+                  <input
+                    type="range"
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={isMuted ? 0 : volume}
+                    onChange={onVolume}
+                    className="w-[64px] ml-1 h-[3px] bg-zinc-700 appearance-none cursor-pointer
+                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-[3px] [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
+                      [&::-moz-range-thumb]:w-[3px] [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
+                  />
+                </div>
+              </div>
+            )}
+            {isIos && (
               <button
                 onClick={toggleMute}
-                className="p-0.5 text-zinc-400 hover:text-red-500"
+                className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200"
+                aria-label={isMuted ? "Unmute" : "Mute"}
               >
-                {isMuted || volume === 0 ? (
-                  <VolumeX size={18} strokeWidth={2} />
-                ) : (
-                  <Volume2 size={18} strokeWidth={2} />
-                )}
+                <IcoVolume size={16} muted={isMuted} />
               </button>
-              <div className="w-0 overflow-hidden group-hover/vol:w-14 transition-all duration-200">
-                <input
-                  type="range"
-                  min={0}
-                  max={1}
-                  step={0.05}
-                  value={isMuted ? 0 : volume}
-                  onChange={onVolume}
-                  className="w-full h-1 bg-zinc-700 appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-1.5 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:rounded-none
-                    [&::-moz-range-thumb]:w-1.5 [&::-moz-range-thumb]:h-3 [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-0 [&::-moz-range-thumb]:rounded-none"
-                />
-              </div>
-            </div>
+            )}
 
-            <span className="text-[11px] font-mono tracking-tight tabular-nums ml-1 select-none">
+            <span className="hidden sm:inline text-[11px] font-mono tabular-nums select-none px-1.5">
               <span className="text-white">{fmt(currentTime)}</span>
               <span className="text-zinc-600 mx-0.5">/</span>
-              <span className="text-zinc-500">{fmt(duration)}</span>
+              <span className="text-zinc-400">{fmt(duration)}</span>
+            </span>
+            <span className="sm:hidden text-[11px] font-mono tabular-nums select-none px-1">
+              {fmt(currentTime)}
             </span>
           </div>
 
-          {/* RIGHT */}
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center gap-0.5">
             <button
               onClick={() => setIsLooping((l) => !l)}
-              className={`hidden sm:block p-0.5 ${isLooping ? "text-red-500" : "text-zinc-500 hover:text-white"}`}
+              className={`h-9 w-9 flex items-center justify-center hover:bg-white/10 ${isLooping ? "text-red-500" : "text-zinc-300 hover:text-white"}`}
+              aria-label="Loop"
             >
-              <Repeat size={16} strokeWidth={2} />
+              <IcoLoop size={15} />
             </button>
 
-            <div className="relative group/speed">
-              <button className="p-0.5 text-zinc-500 hover:text-white flex items-center">
-                <Settings
-                  size={16}
-                  strokeWidth={2}
-                  className="group-hover/speed:rotate-90 transition-transform duration-200"
-                />
+            {pipSupported && !isIos && (
+              <button
+                onClick={togglePip}
+                className="hidden sm:flex h-9 w-9 items-center justify-center hover:bg-white/10 text-zinc-300 hover:text-white"
+                aria-label="Picture in picture"
+              >
+                <IcoPip size={15} />
               </button>
-              <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-800 opacity-0 invisible group-hover/speed:opacity-100 group-hover/speed:visible transition-opacity flex flex-col py-1 min-w-[90px] shadow-xl">
-                <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-600 font-bold">
-                  Speed
-                </div>
-                {[0.5, 1, 1.25, 1.5, 2].map((rate) => (
-                  <button
-                    key={rate}
-                    onClick={() => changeSpeed(rate)}
-                    className={`px-3 py-1.5 text-xs text-left font-medium hover:bg-zinc-900 flex items-center justify-between ${
-                      playbackRate === rate ? "text-red-500" : "text-zinc-300"
-                    }`}
-                  >
-                    {rate === 1 ? "Normal" : `${rate}×`}
-                    {playbackRate === rate && (
-                      <span className="w-1 h-1 bg-red-500" />
-                    )}
-                  </button>
-                ))}
+            )}
+
+            <div className="relative">
+              <button
+                onClick={() => setSettingsOpen((o) => !o)}
+                className={`h-7 mx-0.5 px-1.5 text-[10px] font-bold tabular-nums tracking-wide border ${
+                  settingsOpen || playbackRate !== 1
+                    ? "border-red-600 text-red-500"
+                    : "border-zinc-600 text-zinc-200 hover:border-white hover:text-white"
+                }`}
+                aria-label="Speed"
+              >
+                {playbackRate === 1 ? "1×" : `${playbackRate}×`}
+              </button>
+            </div>
+
+            {levels.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setSettingsOpen((o) => !o)}
+                  className={`h-7 px-1.5 text-[10px] font-bold uppercase tracking-wide border ${
+                    settingsOpen
+                      ? "border-red-600 text-red-500"
+                      : "border-zinc-600 text-zinc-200 hover:border-white hover:text-white"
+                  }`}
+                  aria-label="Quality"
+                >
+                  {qualityLabel}
+                </button>
               </div>
+            )}
+
+            <div className="relative">
+              {settingsOpen && (
+                <div className="absolute bottom-full right-0 mb-2 bg-black border border-zinc-700 min-w-[128px] py-1 z-50">
+                  <div className="px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold">
+                    Speed
+                  </div>
+                  {SPEEDS.map((rate) => (
+                    <button
+                      key={rate}
+                      onClick={() => changeSpeed(rate)}
+                      className={`w-full px-3 py-1.5 text-[11px] text-left font-bold tabular-nums hover:bg-zinc-900 flex items-center justify-between ${
+                        playbackRate === rate ? "text-red-500" : "text-zinc-200"
+                      }`}
+                    >
+                      {rate === 1 ? "1×" : `${rate}×`}
+                      {playbackRate === rate && <span className="w-1.5 h-1.5 bg-red-600" />}
+                    </button>
+                  ))}
+                  {levels.length > 1 && (
+                    <>
+                      <div className="mt-1 border-t border-zinc-800 px-3 py-1 text-[9px] uppercase tracking-widest text-zinc-500 font-bold">
+                        Quality
+                      </div>
+                      <button
+                        onClick={() => changeQuality(-1)}
+                        className={`w-full px-3 py-1.5 text-[11px] text-left font-bold hover:bg-zinc-900 flex items-center justify-between ${
+                          currentLevel === -1 ? "text-red-500" : "text-zinc-200"
+                        }`}
+                      >
+                        Auto
+                        {currentLevel === -1 && <span className="w-1.5 h-1.5 bg-red-600" />}
+                      </button>
+                      {levels.map((level) => (
+                        <button
+                          key={level.index}
+                          onClick={() => changeQuality(level.index)}
+                          className={`w-full px-3 py-1.5 text-[11px] text-left font-bold hover:bg-zinc-900 flex items-center justify-between ${
+                            currentLevel === level.index ? "text-red-500" : "text-zinc-200"
+                          }`}
+                        >
+                          {level.label}
+                          {currentLevel === level.index && (
+                            <span className="w-1.5 h-1.5 bg-red-600" />
+                          )}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
               onClick={toggleFullscreen}
-              className="p-0.5 text-zinc-400 hover:text-red-500"
+              className="h-9 w-9 flex items-center justify-center hover:bg-white/10 text-zinc-200 hover:text-white"
+              aria-label="Fullscreen"
             >
-              {isFullscreen ? (
-                <Minimize size={18} strokeWidth={2} />
-              ) : (
-                <Maximize size={18} strokeWidth={2} />
-              )}
+              {isFullscreen ? <IcoCompress size={15} /> : <IcoExpand size={15} />}
             </button>
           </div>
         </div>
@@ -1613,7 +2264,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Menu, Search, Video, MonitorPlay, TrendingUp,
-  Clock, Star, Sparkles, Filter, ChevronDown, X
+  Clock, Star, Sparkles, Filter, ChevronDown, X, Tv
 } from "lucide-react";
 import SearchBar from "@/src/components/ui/SearchBar";
 
@@ -1806,6 +2457,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/trending" className={getNavClass("/trending")}><TrendingUp size={18} /> Trending</Link>
             <Link href="/latest" className={getNavClass("/latest")}><Clock size={18} /> New Videos</Link>
             <Link href="/top-rated" className={getNavClass("/top-rated")}><Star size={18} /> Top Rated</Link>
+            {/* <Link href="/channels" className={getNavClass("/channels")}><Tv size={18} /> Channels</Link> */}
             <Link href="/pornstars" className={getNavClass("/pornstars")}><Sparkles size={18} /> Pornstars</Link>
           </div>
         </div>
@@ -1831,6 +2483,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/trending" className={getMobileNavClass("/trending")}><TrendingUp size={20} /> Trending</Link>
             <Link href="/latest" className={getMobileNavClass("/latest")}><Clock size={20} /> New Videos</Link>
             <Link href="/top-rated" className={getMobileNavClass("/top-rated")}><Star size={20} /> Top Rated</Link>
+            <Link href="/channels" className={getMobileNavClass("/channels")}><Tv size={20} /> Channels</Link>
             <Link href="/pornstars" className={getMobileNavClass("/pornstars")}><Sparkles size={20} /> Pornstars</Link>
 
             <div className="mt-8 pt-8 border-t border-white/5">
@@ -1936,13 +2589,113 @@ export default function SubscribeButton() {
 
 ================================================================================
 
+src\components\ui\VideoCard.tsx -:
+import Link from "next/link";
+import Image from "next/image";
+import { ThumbsUp } from "lucide-react";
+import { formatDuration, isTrailerDuration, videoPath } from "@/src/lib/site";
+
+export type VideoCardData = {
+  id: number;
+  slug: string;
+  title: string;
+  thumbnail: string;
+  duration?: string | number | null;
+  views?: number | null;
+  likes?: number | null;
+};
+
+export default function VideoCard({
+  video,
+  badge,
+  compact = false,
+}: {
+  video: VideoCardData;
+  badge?: "hd" | "new";
+  compact?: boolean;
+}) {
+  const duration = formatDuration(video.duration);
+  const views = Number(video.views || 0);
+  const likes = Number(video.likes || 0);
+  const trailer = isTrailerDuration(video.duration);
+
+  return (
+    <Link
+      href={videoPath(video.id, video.slug)}
+      prefetch={false}
+      className={
+        compact
+          ? "group flex flex-col bg-[#0a0a0a] border border-zinc-800 rounded-sm overflow-hidden hover:border-rose-900 transition-colors"
+          : "group flex flex-col"
+      }
+    >
+      <div className={`relative overflow-hidden bg-zinc-900 aspect-video ${compact ? "" : "shadow-md"}`}>
+        <Image
+          src={video.thumbnail}
+          alt={video.title}
+          fill
+          sizes="(max-width: 640px) 50vw, 20vw"
+          className={`object-cover ${compact ? "group-hover:opacity-80 transition-opacity" : ""}`}
+        />
+        {badge === "new" ? (
+          <div className="absolute top-1.5 left-1.5 bg-amber-600/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+            NEW
+          </div>
+        ) : (
+          <div className="absolute top-1.5 left-1.5 bg-rose-700/90 backdrop-blur-sm text-white text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm">
+            HD
+          </div>
+        )}
+        {trailer ? (
+          <div className="absolute top-1.5 right-1.5 bg-zinc-950/85 backdrop-blur-sm text-amber-400 text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-sm tracking-wider">
+            Trailer
+          </div>
+        ) : null}
+        {duration ? (
+          <div className="absolute bottom-1.5 right-1.5 bg-black/80 backdrop-blur-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-sm tracking-wider">
+            {duration}
+          </div>
+        ) : null}
+      </div>
+      <div className={`${compact ? "p-2" : "mt-2"} flex flex-col flex-grow`}>
+        <h3
+          className={
+            compact
+              ? "text-xs text-zinc-300 font-light line-clamp-2 leading-tight group-hover:text-rose-500 transition-colors"
+              : "font-light text-zinc-200 text-sm line-clamp-2 leading-relaxed group-hover:text-rose-600 transition-colors duration-75"
+          }
+        >
+          {video.title}
+        </h3>
+        <div
+          className={`flex items-center justify-between text-zinc-500 mt-auto ${
+            compact
+              ? "pt-2 text-[9px] uppercase tracking-widest font-bold"
+              : "pt-1.5 text-[11px] font-medium"
+          }`}
+        >
+          <span>{views.toLocaleString()} views</span>
+          {likes > 0 ? (
+            <span className="flex items-center gap-1 text-emerald-500">
+              <ThumbsUp size={compact ? 10 : 12} /> {likes.toLocaleString()}
+            </span>
+          ) : null}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+
+================================================================================
+
 src\components\ui\watch\EmbedCodeGenerator.tsx -:
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Code, Copy, Check, X } from 'lucide-react';
+import { useState } from "react";
+import { Code, Copy, Check, X } from "lucide-react";
+import { SITE_URL } from "@/src/lib/site";
 
-// 🔥 THIS INTERFACE FIXES YOUR TYPESCRIPT ERROR
 interface EmbedProps {
   videoId: number;
   videoTitle: string;
@@ -1952,8 +2705,8 @@ export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) 
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // The perfectly formatted SEO-friendly iframe code
-  const embedCode = `<iframe src="https://porncater.com/embed/${videoId}" width="640" height="360" frameborder="0" title="${videoTitle.replace(/"/g, '&quot;')}" scrolling="no" allowfullscreen></iframe>`;
+  const safeTitle = videoTitle.replace(/"/g, "'");
+  const embedCode = `<iframe src="${SITE_URL}/embed/${videoId}" width="640" height="360" frameborder="0" title="${safeTitle}" scrolling="no" allowfullscreen></iframe>`;
 
   const handleCopy = async () => {
     try {
@@ -1967,23 +2720,19 @@ export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) 
 
   return (
     <>
-      {/* Trigger Button - Matches the sleek Watch Page UI */}
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2 px-6 py-2.5 rounded-sm border border-zinc-800 text-zinc-400 hover:border-white/30 hover:text-white transition-all duration-300 text-[11px] uppercase tracking-widest"
       >
         <Code size={16} strokeWidth={1.5} /> Embed
       </button>
 
-      {/* Modal Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-[#111] border border-zinc-800 w-full max-w-lg rounded-sm shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
-            
-            {/* Header */}
+          <div className="bg-[#111] border border-zinc-800 w-full max-w-lg rounded-sm shadow-2xl relative">
             <div className="flex items-center justify-between p-5 border-b border-zinc-800">
               <h3 className="text-lg font-serif italic text-white tracking-wide">Embed This Video</h3>
-              <button 
+              <button
                 onClick={() => setIsOpen(false)}
                 className="text-zinc-500 hover:text-rose-500 transition-colors p-1"
               >
@@ -1991,7 +2740,6 @@ export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) 
               </button>
             </div>
 
-            {/* Body */}
             <div className="p-5 flex flex-col gap-4">
               <p className="text-xs text-zinc-400 font-medium">
                 Copy and paste this HTML code into your website or blog to embed this video.
@@ -2006,19 +2754,22 @@ export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) 
                 />
               </div>
 
-              {/* Action Button */}
               <button
                 onClick={handleCopy}
                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-sm text-xs font-bold uppercase tracking-widest transition-all ${
-                  copied 
-                    ? "bg-emerald-900/40 text-emerald-500 border border-emerald-900/50" 
+                  copied
+                    ? "bg-emerald-900/40 text-emerald-500 border border-emerald-900/50"
                     : "bg-rose-700 hover:bg-rose-600 text-white shadow-[0_0_15px_rgba(190,18,60,0.2)]"
                 }`}
               >
                 {copied ? (
-                  <><Check size={16} strokeWidth={2.5} /> Copied to Clipboard!</>
+                  <>
+                    <Check size={16} strokeWidth={2.5} /> Copied to Clipboard!
+                  </>
                 ) : (
-                  <><Copy size={16} strokeWidth={2} /> Copy Embed Code</>
+                  <>
+                    <Copy size={16} strokeWidth={2} /> Copy Embed Code
+                  </>
                 )}
               </button>
             </div>
@@ -2029,30 +2780,46 @@ export default function EmbedCodeGenerator({ videoId, videoTitle }: EmbedProps) 
   );
 }
 
+
 ================================================================================
 
 src\components\ui\watch\LikeButton.tsx -:
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart } from "lucide-react";
 
 export default function LikeButton({ videoId }: { videoId: number }) {
+  const storageKey = `pc_liked_${videoId}`;
   const [liked, setLiked] = useState(false);
+
+  useEffect(() => {
+    try {
+      setLiked(localStorage.getItem(storageKey) === "1");
+    } catch {
+      // ignore
+    }
+  }, [storageKey]);
 
   const handleLike = async () => {
     const newLikedState = !liked;
     setLiked(newLikedState);
+    try {
+      localStorage.setItem(storageKey, newLikedState ? "1" : "0");
+    } catch {
+      // ignore
+    }
 
     try {
       await fetch(`/api/videos/${videoId}/like`, {
         method: "POST",
+        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isLiking: newLikedState }),
       });
     } catch (error) {
       console.error("Failed to register like action:", error);
-      setLiked(!newLikedState); // Revert on failure
+      setLiked(!newLikedState);
     }
   };
 
@@ -2060,8 +2827,8 @@ export default function LikeButton({ videoId }: { videoId: number }) {
     <button
       onClick={handleLike}
       className={`flex items-center gap-2 px-6 py-2.5 rounded-sm border transition-all duration-300 text-[11px] uppercase tracking-widest ${
-        liked 
-          ? "border-rose-800/50 bg-rose-900/20 text-rose-500" 
+        liked
+          ? "border-rose-800/50 bg-rose-900/20 text-rose-500"
           : "border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white"
       }`}
     >
@@ -2070,6 +2837,7 @@ export default function LikeButton({ videoId }: { videoId: number }) {
     </button>
   );
 }
+
 
 ================================================================================
 
@@ -2230,23 +2998,25 @@ src\components\ui\watch\ViewTracker.tsx -:
 
 import { useEffect } from "react";
 
-// This component is invisible. It just sits on the page and fires the view count ping.
 export default function ViewTracker({ videoId }: { videoId: number }) {
   useEffect(() => {
     const viewTimer = setTimeout(async () => {
       try {
-        await fetch(`/api/videos/${videoId}/view`, { method: "POST" });
-        console.log(`🎯 Retention metric logged for video ${videoId}.`);
-      } catch (err) {
-        console.error("View counter ping failed:", err);
+        await fetch(`/api/videos/${videoId}/view`, {
+          method: "POST",
+          credentials: "same-origin",
+        });
+      } catch {
+        // ignore
       }
-    }, 5000); // 5 seconds retention
+    }, 5000);
 
     return () => clearTimeout(viewTimer);
   }, [videoId]);
 
-  return null; 
+  return null;
 }
+
 
 ================================================================================
 
@@ -2349,6 +3119,703 @@ export const blackedSuperLeaderboards: AffiliateBanner[] = [
 
 ================================================================================
 
+src\data\affiliateChannels.ts -:
+export type AffiliateTier = "S" | "A" | "B" | "C" | "D";
+
+export type AffiliateChannel = {
+  rank: number;
+  tier: AffiliateTier;
+  program: string;
+  name: string;
+  slug: string;
+  url: string;
+  niche: string;
+  siteType: string;
+  notes: string;
+};
+
+export const AFFILIATE_CHANNELS: AffiliateChannel[] = [
+  { rank: 1, tier: 'S', program: 'Mad Cheddar', name: 'Blacked', slug: 'blacked', url: 'https://www.blacked.com', niche: 'Interracial cinematic', siteType: 'Hub', notes: 'VMG flagship' },
+  { rank: 2, tier: 'S', program: 'Mad Cheddar', name: 'Vixen', slug: 'vixen', url: 'https://www.vixen.com', niche: 'Glam hardcore', siteType: 'Hub', notes: 'VMG original brand' },
+  { rank: 3, tier: 'S', program: 'Mad Cheddar', name: 'Tushy', slug: 'tushy', url: 'https://www.tushy.com', niche: 'Anal cinematic', siteType: 'Hub', notes: 'VMG anal flagship' },
+  { rank: 4, tier: 'S', program: 'Mad Cheddar', name: 'Vixen Plus', slug: 'vixen-plus', url: 'https://www.vixenplus.com', niche: 'All-access bundle', siteType: 'Bundle', notes: 'Unlocks full VMG network' },
+  { rank: 5, tier: 'S', program: 'Paper Street Cash', name: 'Team Skeet', slug: 'team-skeet', url: 'https://www.teamskeet.com', niche: '18+ teen mega', siteType: 'Hub', notes: 'Paper Street flagship' },
+  { rank: 6, tier: 'S', program: 'Bang Affiliates', name: 'Bang.com', slug: 'bang-com', url: 'https://www.bang.com', niche: 'Mega library + originals', siteType: 'Hub', notes: 'Not BangBros' },
+  { rank: 7, tier: 'S', program: 'SexCash', name: 'XVideos RED', slug: 'xvideos-red', url: 'https://www.xvideos.red', niche: 'Premium tube', siteType: 'Hub', notes: 'Paid XVideos' },
+  { rank: 8, tier: 'S', program: 'SexCash', name: 'XNXX Gold', slug: 'xnxx-gold', url: 'https://www.xnxx.gold', niche: 'Premium tube', siteType: 'Hub', notes: 'Paid XNXX' },
+  { rank: 9, tier: 'S', program: 'Nubiles Cash', name: 'Nubiles', slug: 'nubiles', url: 'https://nubiles.net', niche: '18+ solo amateur mega', siteType: 'Hub', notes: 'Original Nubiles' },
+  { rank: 10, tier: 'S', program: 'SexCash', name: 'Private', slug: 'private', url: 'https://www.private.com', niche: 'Euro studio glam/hardcore', siteType: 'Hub', notes: 'Classic Private' },
+  { rank: 11, tier: 'S', program: 'SexCash', name: 'Penthouse Gold', slug: 'penthouse-gold', url: 'https://www.penthousegold.com', niche: 'Glam / Pets / vintage', siteType: 'Hub', notes: 'Use Gold not random clones' },
+  { rank: 12, tier: 'S', program: 'Nubiles Cash', name: 'Bratty Sis', slug: 'bratty-sis', url: 'https://brattysis.com', niche: 'Step-sis taboo', siteType: 'Hub', notes: 'Highest-search Nubiles brand' },
+  { rank: 13, tier: 'S', program: 'Paper Street Cash', name: 'Sis Loves Me', slug: 'sis-loves-me', url: 'https://www.sislovesme.com', niche: 'Step-sis POV stories', siteType: 'Channel', notes: 'Top Team Skeet channel' },
+  { rank: 14, tier: 'S', program: 'Paper Street Cash', name: 'MYLF', slug: 'mylf', url: 'https://www.mylf.com', niche: 'MILF mega', siteType: 'Hub', notes: 'Paper Street MILF' },
+  { rank: 15, tier: 'S', program: 'SexCash', name: 'Pornworld', slug: 'pornworld', url: 'https://www.pornworld.com', niche: 'Euro glam/hardcore mega', siteType: 'Hub', notes: 'Ex-DDF Network' },
+  { rank: 16, tier: 'A', program: 'Mad Cheddar', name: 'Blacked Raw', slug: 'blacked-raw', url: 'https://www.blackedraw.com', niche: 'Interracial gonzo', siteType: 'Hub', notes: 'Sister to Blacked' },
+  { rank: 17, tier: 'A', program: 'Mad Cheddar', name: 'Tushy Raw', slug: 'tushy-raw', url: 'https://www.tushyraw.com', niche: 'Anal gonzo', siteType: 'Hub', notes: 'Sister to Tushy' },
+  { rank: 18, tier: 'A', program: 'Mad Cheddar', name: 'Deeper', slug: 'deeper', url: 'https://www.deeper.com', niche: 'Story / kink / BDSM-adjacent', siteType: 'Hub', notes: 'Kayden Kross brand' },
+  { rank: 19, tier: 'A', program: 'Sticky Dollars', name: 'True Anal', slug: 'true-anal', url: 'https://tour.trueanal.com', niche: 'Dirty anal', siteType: 'Hub', notes: 'Mike Adriano flagship' },
+  { rank: 20, tier: 'A', program: 'Sticky Dollars', name: 'Swallowed', slug: 'swallowed', url: 'https://tour.swallowed.com', niche: 'Sloppy BJ / blowbang', siteType: 'Hub', notes: 'Oral flagship' },
+  { rank: 21, tier: 'A', program: 'Nubiles Cash', name: 'Nubiles Porn', slug: 'nubiles-porn', url: 'https://nubiles-porn.com', niche: '18+ hardcore network', siteType: 'Hub', notes: 'Hardcore hub' },
+  { rank: 22, tier: 'A', program: 'Nubiles Cash', name: 'Nubile Films', slug: 'nubile-films', url: 'https://nubilefilms.com', niche: 'Sensual hardcore', siteType: 'Hub', notes: 'Couple-friendly' },
+  { rank: 23, tier: 'A', program: 'Nubiles Cash', name: 'Anilos', slug: 'anilos', url: 'https://anilos.com', niche: 'MILF / mature mega', siteType: 'Hub', notes: 'Mature flagship' },
+  { rank: 24, tier: 'A', program: 'Nubiles Cash', name: 'Step Siblings Caught', slug: 'step-siblings-caught', url: 'https://stepsiblingscaught.com', niche: 'Step-sis', siteType: 'Channel', notes: 'Nubiles Porn flagship channel' },
+  { rank: 25, tier: 'A', program: 'Paper Street Cash', name: 'Family Strokes', slug: 'family-strokes', url: 'https://www.familystrokes.com', niche: 'Step-family', siteType: 'Hub', notes: 'Taboo hub' },
+  { rank: 26, tier: 'A', program: 'Paper Street Cash', name: 'Shoplyfter', slug: 'shoplyfter', url: 'https://www.shoplyfter.com', niche: 'Caught shoplifting', siteType: 'Channel', notes: 'High-search TS channel' },
+  { rank: 27, tier: 'A', program: 'Paper Street Cash', name: 'Innocent High', slug: 'innocent-high', url: 'https://www.innocenthigh.com', niche: 'Schoolgirl 18+', siteType: 'Channel', notes: 'Classic TS' },
+  { rank: 28, tier: 'A', program: 'SexCash', name: 'Pornbox', slug: 'pornbox', url: 'https://www.pornbox.com', niche: 'Ticket / clip mega library', siteType: 'Hub', notes: '150k+ scenes' },
+  { rank: 29, tier: 'A', program: 'Mad Cheddar', name: 'Wifey', slug: 'wifey', url: 'https://www.wifey.com', niche: 'Hotwife / cuckold', siteType: 'Hub', notes: 'Newest VMG' },
+  { rank: 30, tier: 'A', program: 'Mad Cheddar', name: 'Milfy', slug: 'milfy', url: 'https://www.milfy.com', niche: 'MILF', siteType: 'Hub', notes: 'VMG MILF' },
+  { rank: 31, tier: 'A', program: 'Mad Cheddar', name: 'Slayed', slug: 'slayed', url: 'https://www.slayed.com', niche: 'Lesbian glam', siteType: 'Hub', notes: 'VMG all-girl' },
+  { rank: 32, tier: 'A', program: 'ARX Bucks', name: 'Cuck Hunter', slug: 'cuck-hunter', url: 'https://cuckhunter.com', niche: 'Interracial cuckold / hotwife', siteType: 'Hub', notes: 'ARX flagship' },
+  { rank: 33, tier: 'A', program: 'Nubiles Cash', name: 'Mom Lover', slug: 'mom-lover', url: 'https://momlover.com', niche: 'MILF network', siteType: 'Hub', notes: 'Nubiles MILF hub' },
+  { rank: 34, tier: 'A', program: 'Nubiles Cash', name: 'Moms Teach Sex', slug: 'moms-teach-sex', url: 'https://momsteachsex.com', niche: 'MILF teaches couple', siteType: 'Channel', notes: 'Classic Nubiles MILF' },
+  { rank: 35, tier: 'A', program: 'Paper Street Cash', name: 'Exxxtra Small', slug: 'exxxtra-small', url: 'https://www.exxxtrasmall.com', niche: 'Petite / size contrast', siteType: 'Channel', notes: '' },
+  { rank: 36, tier: 'A', program: 'Sticky Dollars', name: 'Nympho', slug: 'nympho', url: 'https://tour.nympho.com', niche: 'Gonzo hardcore', siteType: 'Hub', notes: '' },
+  { rank: 37, tier: 'B', program: 'Sticky Dollars', name: 'All Anal', slug: 'all-anal', url: 'https://tour.allanal.com', niche: 'Anal threesomes', siteType: 'Hub', notes: '' },
+  { rank: 38, tier: 'B', program: 'Sticky Dollars', name: 'Anal Only', slug: 'anal-only', url: 'https://tour.analonly.com', niche: 'Anal only', siteType: 'Hub', notes: '' },
+  { rank: 39, tier: 'B', program: 'Sticky Dollars', name: 'Dirty Auditions', slug: 'dirty-auditions', url: 'https://dirtyauditions.com', niche: 'Casting / raw auditions', siteType: 'Hub', notes: '' },
+  { rank: 40, tier: 'B', program: 'SexCash', name: 'AnalVids', slug: 'analvids', url: 'https://www.analvids.com', niche: 'Extreme Euro anal', siteType: 'Hub', notes: 'Ex-Legal Porno' },
+  { rank: 41, tier: 'B', program: 'SexCash', name: 'Private Black', slug: 'private-black', url: 'https://www.privateblack.com', niche: 'Interracial', siteType: 'Hub', notes: 'Private BBC line' },
+  { rank: 42, tier: 'B', program: 'SexCash', name: 'Bustyworld', slug: 'bustyworld', url: 'https://www.bustyworld.com', niche: 'Big tits', siteType: 'Hub', notes: 'Ex-DDF Busty' },
+  { rank: 43, tier: 'B', program: 'Nubiles Cash', name: 'NF Busty', slug: 'nf-busty', url: 'https://nfbusty.com', niche: 'Big naturals', siteType: 'Hub', notes: '' },
+  { rank: 44, tier: 'B', program: 'Nubiles Cash', name: 'Deep Lush', slug: 'deep-lush', url: 'https://deeplush.com', niche: 'Intimate raw hardcore', siteType: 'Hub', notes: '' },
+  { rank: 45, tier: 'B', program: 'Nubiles Cash', name: 'My Family Pies', slug: 'my-family-pies', url: 'https://myfamilypies.com', niche: 'Step-family creampie', siteType: 'Channel', notes: '' },
+  { rank: 46, tier: 'B', program: 'Nubiles Cash', name: 'Family Swap', slug: 'family-swap', url: 'https://familyswap.xxx', niche: 'Family swap taboo', siteType: 'Channel', notes: '' },
+  { rank: 47, tier: 'B', program: 'Paper Street Cash', name: 'Dad Crush', slug: 'dad-crush', url: 'https://www.dadcrush.com', niche: 'Step-dad / daughter roleplay', siteType: 'Channel', notes: '' },
+  { rank: 48, tier: 'B', program: 'Paper Street Cash', name: 'Daughter Swap', slug: 'daughter-swap', url: 'https://www.daughterswap.com', niche: 'Dads swap daughters', siteType: 'Channel', notes: '' },
+  { rank: 49, tier: 'B', program: 'Paper Street Cash', name: 'Teens Love Black Cocks', slug: 'teens-love-black-cocks', url: 'https://www.teensloveblackcocks.com', niche: 'Interracial 18+', siteType: 'Channel', notes: '' },
+  { rank: 50, tier: 'B', program: 'Paper Street Cash', name: 'This Girl Sucks', slug: 'this-girl-sucks', url: 'https://www.thisgirlsucks.com', niche: 'Blowjob 18+', siteType: 'Channel', notes: '' },
+  { rank: 51, tier: 'B', program: 'Paper Street Cash', name: 'Teen Pies', slug: 'teen-pies', url: 'https://www.teenpies.com', niche: 'Creampie 18+', siteType: 'Channel', notes: '' },
+  { rank: 52, tier: 'B', program: 'Paper Street Cash', name: 'Teens Love Anal', slug: 'teens-love-anal', url: 'https://www.teensloveanal.com', niche: 'Anal 18+', siteType: 'Channel', notes: '' },
+  { rank: 53, tier: 'B', program: 'Paper Street Cash', name: 'Oye Loca', slug: 'oye-loca', url: 'https://www.oyeloca.com', niche: 'Latina', siteType: 'Channel', notes: '' },
+  { rank: 54, tier: 'B', program: 'Paper Street Cash', name: 'Teeny Black', slug: 'teeny-black', url: 'https://www.teenyblack.com', niche: 'Ebony 18+', siteType: 'Channel', notes: '' },
+  { rank: 55, tier: 'B', program: 'Paper Street Cash', name: 'Bad MILFs', slug: 'bad-milfs', url: 'https://www.badmilfs.com', niche: 'MILF + 18+', siteType: 'Channel', notes: '' },
+  { rank: 56, tier: 'B', program: 'Paper Street Cash', name: 'Perv Mom', slug: 'perv-mom', url: 'https://www.pervmom.com', niche: 'Stepmom', siteType: 'Channel', notes: '' },
+  { rank: 57, tier: 'B', program: 'Paper Street Cash', name: 'Swappz', slug: 'swappz', url: 'https://www.swappz.com', niche: 'Family swap pack', siteType: 'Hub', notes: 'Daughter/Mom/Sis Swap' },
+  { rank: 58, tier: 'B', program: 'Paper Street Cash', name: 'Freeuse Fantasy', slug: 'freeuse-fantasy', url: 'https://www.freeusefantasy.com', niche: 'Freeuse fetish', siteType: 'Hub', notes: '' },
+  { rank: 59, tier: 'B', program: 'Nubiles Cash', name: 'Princess Cum', slug: 'princess-cum', url: 'https://princesscum.com', niche: 'Creampie 18+', siteType: 'Channel', notes: '' },
+  { rank: 60, tier: 'B', program: 'SexCash', name: 'Private Classics', slug: 'private-classics', url: 'https://www.privateclassics.com', niche: 'Vintage Private', siteType: 'Hub', notes: '' },
+  { rank: 61, tier: 'C', program: 'Nubiles Cash', name: 'Girls Only Porn', slug: 'girls-only-porn', url: 'https://girlsonlyporn.com', niche: 'Lesbian', siteType: 'Hub', notes: '' },
+  { rank: 62, tier: 'C', program: 'Nubiles Cash', name: 'Cum Swapping Sis', slug: 'cum-swapping-sis', url: 'https://cumswappingsis.com', niche: 'Step-sis cum swap', siteType: 'Channel', notes: '' },
+  { rank: 63, tier: 'C', program: 'Nubiles Cash', name: 'Cheating Sis', slug: 'cheating-sis', url: 'https://cheatingsis.com', niche: 'Step-sis cheats', siteType: 'Channel', notes: '' },
+  { rank: 64, tier: 'C', program: 'Nubiles Cash', name: 'Reality Sis', slug: 'reality-sis', url: 'https://realitysis.com', niche: 'Reality step-sis', siteType: 'Channel', notes: '' },
+  { rank: 65, tier: 'C', program: 'Nubiles Cash', name: 'Shes Breeding Material', slug: 'shes-breeding-material', url: 'https://shesbreedingmaterial.com', niche: 'Breeding / creampie step', siteType: 'Channel', notes: '' },
+  { rank: 66, tier: 'C', program: 'Nubiles Cash', name: 'Daddys Lil Angel', slug: 'daddys-lil-angel', url: 'https://daddyslilangel.com', niche: 'Step-dad + 18+ anal', siteType: 'Channel', notes: '' },
+  { rank: 67, tier: 'C', program: 'Nubiles Cash', name: 'Detention Girls', slug: 'detention-girls', url: 'https://detentiongirls.com', niche: 'School / detention 18+', siteType: 'Channel', notes: '' },
+  { rank: 68, tier: 'C', program: 'Nubiles Cash', name: 'Teacher Fucks Teens', slug: 'teacher-fucks-teens', url: 'https://teacherfucksteens.com', niche: 'Teacher + 18+', siteType: 'Channel', notes: '' },
+  { rank: 69, tier: 'C', program: 'Nubiles Cash', name: 'Caught My Coach', slug: 'caught-my-coach', url: 'https://caughtmycoach.com', niche: 'Coach + team 18+', siteType: 'Channel', notes: '' },
+  { rank: 70, tier: 'C', program: 'Nubiles Cash', name: 'Bad Teens Punished', slug: 'bad-teens-punished', url: 'https://badteenspunished.com', niche: 'Spank / punish 18+', siteType: 'Channel', notes: '' },
+  { rank: 71, tier: 'C', program: 'Nubiles Cash', name: 'Petite HD Porn', slug: 'petite-hd-porn', url: 'https://petitehdporn.com', niche: 'Petite hardcore', siteType: 'Channel', notes: '' },
+  { rank: 72, tier: 'C', program: 'Nubiles Cash', name: 'Petite Ballerinas Fucked', slug: 'petite-ballerinas-fucked', url: 'https://petiteballerinasfucked.com', niche: 'Ballerina 18+', siteType: 'Channel', notes: '' },
+  { rank: 73, tier: 'C', program: 'Nubiles Cash', name: 'Nubiles Casting', slug: 'nubiles-casting', url: 'https://nubiles-casting.com', niche: 'Casting 18+', siteType: 'Channel', notes: '' },
+  { rank: 74, tier: 'C', program: 'Nubiles Cash', name: 'Driver XXX', slug: 'driver-xxx', url: 'https://driverxxx.com', niche: 'Fake taxi / car', siteType: 'Channel', notes: '' },
+  { rank: 75, tier: 'C', program: 'Nubiles Cash', name: 'Bratty MILF', slug: 'bratty-milf', url: 'https://brattymilf.com', niche: 'Bratty stepmom', siteType: 'Channel', notes: '' },
+  { rank: 76, tier: 'C', program: 'Nubiles Cash', name: 'Cheating Mommy', slug: 'cheating-mommy', url: 'https://cheatingmommy.com', niche: 'Cheating mom', siteType: 'Channel', notes: '' },
+  { rank: 77, tier: 'C', program: 'Nubiles Cash', name: 'Mom Wants Creampie', slug: 'mom-wants-creampie', url: 'https://momwantscreampie.com', niche: 'MILF creampie', siteType: 'Channel', notes: '' },
+  { rank: 78, tier: 'C', program: 'Nubiles Cash', name: 'Mom Wants To Breed', slug: 'mom-wants-to-breed', url: 'https://momwantstobreed.com', niche: 'MILF breeding', siteType: 'Channel', notes: '' },
+  { rank: 79, tier: 'C', program: 'Nubiles Cash', name: 'Mom Swapped', slug: 'mom-swapped', url: 'https://momswapped.com', niche: 'Moms swap sons', siteType: 'Channel', notes: '' },
+  { rank: 80, tier: 'C', program: 'Nubiles Cash', name: 'Dating My Stepson', slug: 'dating-my-stepson', url: 'https://datingmystepson.com', niche: 'Mom friends + stepson', siteType: 'Channel', notes: '' },
+  { rank: 81, tier: 'C', program: 'Nubiles Cash', name: 'Im Not Your Mommy', slug: 'im-not-your-mommy', url: 'https://imnotyourmommy.com', niche: 'Older woman + younger man', siteType: 'Channel', notes: '' },
+  { rank: 82, tier: 'C', program: 'Nubiles Cash', name: 'MILF Coach', slug: 'milf-coach', url: 'https://milfcoach.com', niche: 'Dominant coach MILF', siteType: 'Channel', notes: '' },
+  { rank: 83, tier: 'C', program: 'Nubiles Cash', name: 'Moms Boy Toy', slug: 'moms-boy-toy', url: 'https://momsboytoy.com', niche: 'MILF + younger guy', siteType: 'Channel', notes: '' },
+  { rank: 84, tier: 'C', program: 'Nubiles Cash', name: 'Moms Family Secrets', slug: 'moms-family-secrets', url: 'https://momsfamilysecrets.com', niche: 'Taboo mom secrets', siteType: 'Channel', notes: '' },
+  { rank: 85, tier: 'C', program: 'Nubiles Cash', name: 'Moms Tight', slug: 'moms-tight', url: 'https://momstight.com', niche: 'Fit MILF', siteType: 'Channel', notes: '' },
+  { rank: 86, tier: 'C', program: 'Paper Street Cash', name: 'Shes New', slug: 'shes-new', url: 'https://www.shesnew.com', niche: 'First-timer 18+', siteType: 'Channel', notes: '' },
+  { rank: 87, tier: 'C', program: 'Paper Street Cash', name: 'Teens Do Porn', slug: 'teens-do-porn', url: 'https://www.teensdoporn.com', niche: 'Casting 18+', siteType: 'Channel', notes: '' },
+  { rank: 88, tier: 'C', program: 'Paper Street Cash', name: 'Rub A Teen', slug: 'rub-a-teen', url: 'https://www.rubateen.com', niche: 'Massage 18+', siteType: 'Channel', notes: '' },
+  { rank: 89, tier: 'C', program: 'Paper Street Cash', name: 'POV Life', slug: 'pov-life', url: 'https://www.povlife.com', niche: 'Amateur POV', siteType: 'Channel', notes: '' },
+  { rank: 90, tier: 'C', program: 'Paper Street Cash', name: 'Teen Curves', slug: 'teen-curves', url: 'https://www.teencurves.com', niche: 'Bubble butt 18+', siteType: 'Channel', notes: '' },
+  { rank: 91, tier: 'C', program: 'Paper Street Cash', name: 'Busty Petite', slug: 'busty-petite', url: 'https://www.bustypetite.com', niche: 'Petite + big tits', siteType: 'Channel', notes: '' },
+  { rank: 92, tier: 'C', program: 'Paper Street Cash', name: 'Teens Love Money', slug: 'teens-love-money', url: 'https://www.teenslovemoney.com', niche: 'Cash / public reality 18+', siteType: 'Channel', notes: '' },
+  { rank: 93, tier: 'C', program: 'Paper Street Cash', name: 'Black Valley Girls', slug: 'black-valley-girls', url: 'https://www.blackvalleygirls.com', niche: 'Young ebony 18+', siteType: 'Channel', notes: '' },
+  { rank: 94, tier: 'C', program: 'Paper Street Cash', name: 'The Real Workout', slug: 'the-real-workout', url: 'https://www.therealworkout.com', niche: 'Gym', siteType: 'Channel', notes: '' },
+  { rank: 95, tier: 'C', program: 'Paper Street Cash', name: 'Titty Attack', slug: 'titty-attack', url: 'https://www.tittyattack.com', niche: 'Big tits', siteType: 'Channel', notes: '' },
+  { rank: 96, tier: 'C', program: 'Paper Street Cash', name: 'BFFs', slug: 'bffs', url: 'https://www.bffs.com', niche: 'Girl-group / friends', siteType: 'Channel', notes: '' },
+  { rank: 97, tier: 'C', program: 'Paper Street Cash', name: 'Dyked', slug: 'dyked', url: 'https://www.dyked.com', niche: 'Lesbian', siteType: 'Channel', notes: '' },
+  { rank: 98, tier: 'C', program: 'Paper Street Cash', name: 'My Babysitters Club', slug: 'my-babysitters-club', url: 'https://www.mybabysittersclub.com', niche: 'Babysitter 18+', siteType: 'Channel', notes: '' },
+  { rank: 99, tier: 'C', program: 'Paper Street Cash', name: 'Mom Swap', slug: 'mom-swap', url: 'https://www.momswap.com', niche: 'Moms swap', siteType: 'Channel', notes: '' },
+  { rank: 100, tier: 'C', program: 'Paper Street Cash', name: 'Sis Swap', slug: 'sis-swap', url: 'https://www.sisswap.com', niche: 'Bros swap sisters', siteType: 'Channel', notes: '' },
+  { rank: 101, tier: 'C', program: 'Paper Street Cash', name: 'Tiny Sis', slug: 'tiny-sis', url: 'https://www.tinysis.com', niche: 'Petite step-sis', siteType: 'Channel', notes: '' },
+  { rank: 102, tier: 'C', program: 'Paper Street Cash', name: 'Perv Doctor', slug: 'perv-doctor', url: 'https://www.pervdoctor.com', niche: 'Doctor / medical', siteType: 'Channel', notes: '' },
+  { rank: 103, tier: 'C', program: 'Paper Street Cash', name: 'Perv Therapy', slug: 'perv-therapy', url: 'https://www.pervtherapy.com', niche: 'Therapist fetish', siteType: 'Channel', notes: '' },
+  { rank: 104, tier: 'C', program: 'Paper Street Cash', name: 'Hijab Hookup', slug: 'hijab-hookup', url: 'https://www.hijabhookup.com', niche: 'Hijab / Arab-themed', siteType: 'Channel', notes: '' },
+  { rank: 105, tier: 'C', program: 'Paper Street Cash', name: 'Thickumz', slug: 'thickumz', url: 'https://www.thickumz.com', niche: 'Thick / PAWG', siteType: 'Channel', notes: '' },
+  { rank: 106, tier: 'C', program: 'Paper Street Cash', name: 'Black Step Dad', slug: 'black-step-dad', url: 'https://www.blackstepdad.com', niche: 'Interracial step-dad', siteType: 'Channel', notes: '' },
+  { rank: 107, tier: 'C', program: 'Paper Street Cash', name: 'Foster Tapes', slug: 'foster-tapes', url: 'https://www.fostertapes.com', niche: 'Foster-family roleplay', siteType: 'Channel', notes: '' },
+  { rank: 108, tier: 'C', program: 'Paper Street Cash', name: 'Not My Grandpa', slug: 'not-my-grandpa', url: 'https://www.notmygrandpa.com', niche: 'Old/young', siteType: 'Channel', notes: '' },
+  { rank: 109, tier: 'C', program: 'ARX Bucks', name: 'POV Masters', slug: 'pov-masters', url: 'https://povmasters.com', niche: 'Big-dick POV', siteType: 'Hub', notes: '' },
+  { rank: 110, tier: 'C', program: 'ARX Bucks', name: 'JOI Babes', slug: 'joi-babes', url: 'https://joibabes.com', niche: 'JOI / tease', siteType: 'Hub', notes: '' },
+  { rank: 111, tier: 'C', program: 'ARX Bucks', name: 'Les Worship', slug: 'les-worship', url: 'https://lesworship.com', niche: 'Lesbian', siteType: 'Hub', notes: '' },
+  { rank: 112, tier: 'C', program: 'SexCash', name: 'Private Castings', slug: 'private-castings', url: 'https://www.privatecastings.com', niche: 'Castings', siteType: 'Hub', notes: '' },
+  { rank: 113, tier: 'C', program: 'SexCash', name: 'Gonzo', slug: 'gonzo', url: 'https://gonzo.pornbox.com', niche: 'Rough POV / anal gonzo', siteType: 'Channel', notes: 'Pornbox studio tour' },
+  { rank: 114, tier: 'C', program: 'SexCash', name: 'Sheer', slug: 'sheer', url: 'https://www.sheer.com', niche: 'Creator / fan platform', siteType: 'Hub', notes: '' },
+  { rank: 115, tier: 'D', program: 'Nubiles Cash', name: 'Nubiles Unscripted', slug: 'nubiles-unscripted', url: 'https://nubilesunscripted.com', niche: 'Unscripted 18+', siteType: 'Channel', notes: '' },
+  { rank: 116, tier: 'D', program: 'Nubiles Cash', name: 'Nubiles ET', slug: 'nubiles-et', url: 'https://nubileset.com', niche: 'Extra line', siteType: 'Channel', notes: '' },
+  { rank: 117, tier: 'D', program: 'Nubiles Cash', name: 'Bounty Hunter Porn', slug: 'bounty-hunter-porn', url: 'https://bountyhunterporn.com', niche: 'Bounty / public 18+', siteType: 'Channel', notes: '' },
+  { rank: 118, tier: 'D', program: 'Nubiles Cash', name: 'Smashed', slug: 'smashed', url: 'https://smashed.xxx', niche: 'Harder gonzo', siteType: 'Channel', notes: '' },
+  { rank: 119, tier: 'D', program: 'Nubiles Cash', name: 'Younger Mommy', slug: 'younger-mommy', url: 'https://youngermommy.com', niche: 'Young-looking mom', siteType: 'Channel', notes: '' },
+  { rank: 120, tier: 'D', program: 'Nubiles Cash', name: 'Hot Crazy Mess', slug: 'hot-crazy-mess', url: 'https://hotcrazymess.com', niche: 'Wild POV taboo', siteType: 'Hub', notes: '' },
+  { rank: 121, tier: 'D', program: 'Nubiles Cash', name: 'That Sitcom Show', slug: 'that-sitcom-show', url: 'https://thatsitcomshow.com', niche: 'Sitcom parody', siteType: 'Hub', notes: '' },
+  { rank: 122, tier: 'D', program: 'Nubiles Cash', name: 'The POV God', slug: 'the-pov-god', url: 'https://thepovgod.com', niche: 'POV', siteType: 'Hub', notes: '' },
+  { rank: 123, tier: 'D', program: 'Nubiles Cash', name: 'Glowing Desire', slug: 'glowing-desire', url: 'https://glowingdesire.com', niche: 'Intimate hardcore', siteType: 'Hub', notes: '' },
+  { rank: 124, tier: 'D', program: 'Nubiles Cash', name: 'Double Pies', slug: 'double-pies', url: 'https://doublepies.com', niche: 'Double creampie', siteType: 'Hub', notes: '' },
+  { rank: 125, tier: 'D', program: 'Paper Street Cash', name: 'Punish Teens', slug: 'punish-teens', url: 'https://www.punishteens.com', niche: 'Rough 18+', siteType: 'Channel', notes: '' },
+  { rank: 126, tier: 'D', program: 'Paper Street Cash', name: 'Ginger Patch', slug: 'ginger-patch', url: 'https://www.gingerpatch.com', niche: 'Redhead 18+', siteType: 'Channel', notes: '' },
+  { rank: 127, tier: 'D', program: 'Paper Street Cash', name: 'Brace Faced', slug: 'brace-faced', url: 'https://www.bracefaced.com', niche: 'Braces 18+', siteType: 'Channel', notes: '' },
+  { rank: 128, tier: 'D', program: 'Paper Street Cash', name: 'Teen JOI', slug: 'teen-joi', url: 'https://www.teenjoi.com', niche: 'JOI 18+', siteType: 'Channel', notes: '' },
+  { rank: 129, tier: 'D', program: 'Paper Street Cash', name: 'Stay Home POV', slug: 'stay-home-pov', url: 'https://www.stayhomepov.com', niche: 'At-home POV', siteType: 'Channel', notes: '' },
+  { rank: 130, tier: 'D', program: 'Paper Street Cash', name: 'Lust HD', slug: 'lust-hd', url: 'https://www.lusthd.com', niche: 'Glam Euro hardcore', siteType: 'Channel', notes: '' },
+  { rank: 131, tier: 'D', program: 'Paper Street Cash', name: 'Anal Euro', slug: 'anal-euro', url: 'https://www.analeuro.com', niche: 'Euro anal', siteType: 'Channel', notes: '' },
+  { rank: 132, tier: 'D', program: 'Paper Street Cash', name: 'Step Siblings', slug: 'step-siblings', url: 'https://www.stepsiblings.com', niche: 'Step-sis', siteType: 'Channel', notes: '' },
+  { rank: 133, tier: 'D', program: 'Paper Street Cash', name: 'Solo Interviews', slug: 'solo-interviews', url: 'https://www.solointerviews.com', niche: 'Solo first nude', siteType: 'Channel', notes: '' },
+  { rank: 134, tier: 'D', program: 'Paper Street Cash', name: 'Self Desire', slug: 'self-desire', url: 'https://www.selfdesire.com', niche: 'Glam masturbation', siteType: 'Channel', notes: '' },
+  { rank: 135, tier: 'D', program: 'Paper Street Cash', name: 'CFNM Teens', slug: 'cfnm-teens', url: 'https://www.cfnmteens.com', niche: 'CFNM 18+', siteType: 'Channel', notes: '' },
+  { rank: 136, tier: 'D', program: 'Paper Street Cash', name: 'Watch This Teen', slug: 'watch-this-teen', url: 'https://www.watchthisteen.com', niche: 'Expose / 18+', siteType: 'Channel', notes: '' },
+  { rank: 137, tier: 'D', program: 'Paper Street Cash', name: 'Her Freshman Year', slug: 'her-freshman-year', url: 'https://www.herfreshmanyear.com', niche: 'College / casting 18+', siteType: 'Channel', notes: '' },
+  { rank: 138, tier: 'D', program: 'Paper Street Cash', name: 'Sex And Grades', slug: 'sex-and-grades', url: 'https://www.sexandgrades.com', niche: 'Schoolgirl study 18+', siteType: 'Channel', notes: '' },
+  { rank: 139, tier: 'D', program: 'Paper Street Cash', name: 'She Fucked Up', slug: 'she-fucked-up', url: 'https://www.shefuckedup.com', niche: 'Sextape / submitted', siteType: 'Channel', notes: '' },
+  { rank: 140, tier: 'D', program: 'Paper Street Cash', name: 'Latina Team', slug: 'latina-team', url: 'https://www.latinateam.com', niche: 'Latina', siteType: 'Channel', notes: '' },
+  { rank: 141, tier: 'D', program: 'Paper Street Cash', name: 'Spanish18', slug: 'spanish18', url: 'https://www.spanish18.com', niche: 'Spanish / Latina 18+', siteType: 'Channel', notes: '' },
+  { rank: 142, tier: 'D', program: 'Paper Street Cash', name: 'Freaky Fembots', slug: 'freaky-fembots', url: 'https://www.freakyfembots.com', niche: 'Fembot / machine', siteType: 'Channel', notes: '' },
+  { rank: 143, tier: 'D', program: 'ARX Bucks', name: 'Nude Yoga Porn', slug: 'nude-yoga-porn', url: 'https://nudeyogaporn.com', niche: 'Nude yoga to sex', siteType: 'Hub', notes: '' },
+  { rank: 144, tier: 'D', program: 'ARX Bucks', name: 'Japan Lust', slug: 'japan-lust', url: 'https://japanlust.com', niche: 'Japanese amateur', siteType: 'Hub', notes: '' },
+  { rank: 145, tier: 'D', program: 'ARX Bucks', name: 'Anal Vault', slug: 'anal-vault', url: 'https://analvault.com', niche: 'Anal', siteType: 'Hub', notes: '' },
+  { rank: 146, tier: 'D', program: 'ARX Bucks', name: 'Randy Pass', slug: 'randy-pass', url: 'https://randypass.com', niche: 'Hardcore hub / tour', siteType: 'Hub', notes: '' },
+  { rank: 147, tier: 'D', program: 'SexCash', name: 'PissVids', slug: 'pissvids', url: 'https://pissvids.com', niche: 'Watersports', siteType: 'Hub', notes: '' },
+  { rank: 148, tier: 'D', program: 'SexCash', name: 'BDSM Boxxx', slug: 'bdsm-boxxx', url: 'https://bdsm.pornbox.com', niche: 'BDSM', siteType: 'Channel', notes: '' },
+  { rank: 149, tier: 'D', program: 'SexCash', name: 'Foot Fetish', slug: 'foot-fetish', url: 'https://footfetish.pornbox.com', niche: 'Feet', siteType: 'Channel', notes: '' },
+  { rank: 150, tier: 'D', program: 'SexCash', name: 'XFreax', slug: 'xfreax', url: 'https://xfreax.com', niche: 'Extreme Euro', siteType: 'Hub', notes: '' },
+  { rank: 151, tier: 'D', program: 'Bang Affiliates', name: 'Bang', slug: 'bang', url: 'https://www.bang.com', niche: 'Gonzo pounding', siteType: 'Originals channel', notes: 'Tag on Bang.com' },
+];
+
+export const AFFILIATE_BY_SLUG = new Map(AFFILIATE_CHANNELS.map((c) => [c.slug, c]));
+
+
+
+================================================================================
+
+src\lib\admin-session.ts -:
+export const ADMIN_COOKIE = "pc_adm";
+const TTL_SECONDS = 60 * 60 * 24 * 7;
+
+function adminSecret(): string {
+  return process.env.ADMIN_SECRET_KEY || process.env.ADMIN_SECRET || "";
+}
+
+async function hmacHex(secret: string, message: string): Promise<string> {
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const buf = await crypto.subtle.sign("HMAC", key, enc.encode(message));
+  return [...new Uint8Array(buf)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let out = 0;
+  for (let i = 0; i < a.length; i++) out |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return out === 0;
+}
+
+export async function signAdminSession(): Promise<string | null> {
+  const secret = adminSecret();
+  if (!secret) return null;
+  const exp = Math.floor(Date.now() / 1000) + TTL_SECONDS;
+  const sig = await hmacHex(secret, `v1.${exp}`);
+  return `${exp}.${sig}`;
+}
+
+export async function verifyAdminSession(value: string | undefined | null): Promise<boolean> {
+  if (!value) return false;
+  const secret = adminSecret();
+  if (!secret) return false;
+  const [expStr, sig] = value.split(".");
+  if (!expStr || !sig) return false;
+  const exp = Number(expStr);
+  if (!Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return false;
+  const expected = await hmacHex(secret, `v1.${expStr}`);
+  return timingSafeEqual(sig, expected);
+}
+
+export const ADMIN_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: true,
+  sameSite: "strict" as const,
+  path: "/",
+  maxAge: TTL_SECONDS,
+};
+
+
+================================================================================
+
+src\lib\ads.ts -:
+import { prisma } from "@/lib/prisma";
+
+export type BannerAd = {
+  imageUrl: string;
+  trackingLink: string;
+};
+
+function normalize(banner: { imageUrl: string; trackingLink: string }): BannerAd {
+  let imageUrl = banner.imageUrl;
+  if (imageUrl.startsWith("//")) imageUrl = "https:" + imageUrl;
+  return { imageUrl, trackingLink: banner.trackingLink };
+}
+
+/**
+ * Server-side banner pick for LCP slots.
+ * Pass studio only on channel pages. Always falls back to the global slot
+ * so an empty targeting list never blanks the banner.
+ */
+export async function getTopBannerAd(
+  dimension: string,
+  studio?: string,
+): Promise<BannerAd | null> {
+  try {
+    if (studio) {
+      const targeted = await prisma.banner.findFirst({
+        where: {
+          dimension,
+          isActive: true,
+          targetStudios: { has: studio },
+        },
+        orderBy: { weight: "desc" },
+        select: { imageUrl: true, trackingLink: true },
+      });
+      if (targeted) return normalize(targeted);
+    }
+
+    const banner = await prisma.banner.findFirst({
+      where: { dimension, isActive: true },
+      orderBy: { weight: "desc" },
+      select: { imageUrl: true, trackingLink: true },
+    });
+
+    return banner ? normalize(banner) : null;
+  } catch {
+    return null;
+  }
+}
+
+
+================================================================================
+
+src\lib\channels.ts -:
+import { prisma } from "@/lib/prisma";
+import { studioSlug } from "@/src/lib/site";
+import {
+  AFFILIATE_CHANNELS,
+  type AffiliateTier,
+} from "@/src/data/affiliateChannels";
+
+export type ChannelCard = {
+  studio: string;
+  slug: string;
+  videoCount: number;
+  totalViews: number;
+  thumbnail: string | null;
+  officialUrl: string | null;
+  isNetwork: boolean;
+  niche: string;
+  program: string;
+  tier: AffiliateTier | null;
+  siteType: string;
+  rank: number;
+};
+
+type StudioRow = {
+  studio: string;
+  videoCount: number;
+  totalViews: bigint | number;
+  thumbnail: string | null;
+};
+
+export async function listChannels(): Promise<ChannelCard[]> {
+  try {
+    return await listChannelsUnsafe();
+  } catch (error) {
+    console.error("listChannels failed:", error);
+    return AFFILIATE_CHANNELS.map((channel) => catalogToCard(channel));
+  }
+}
+
+function catalogToCard(
+  channel: (typeof AFFILIATE_CHANNELS)[number],
+  extra?: Partial<ChannelCard>,
+): ChannelCard {
+  return {
+    studio: channel.name,
+    slug: channel.slug,
+    videoCount: 0,
+    totalViews: 0,
+    thumbnail: extra?.thumbnail ?? null,
+    officialUrl: extra?.officialUrl ?? channel.url,
+    isNetwork: channel.siteType === "Hub" || channel.siteType === "Bundle",
+    niche: channel.niche,
+    program: channel.program,
+    tier: channel.tier,
+    siteType: channel.siteType,
+    rank: channel.rank,
+    ...extra,
+  };
+}
+
+async function listChannelsUnsafe(): Promise<ChannelCard[]> {
+  const rows = await prisma.$queryRaw<StudioRow[]>`
+    WITH studio_stats AS (
+      SELECT
+        LOWER(BTRIM(studio)) AS studio_key,
+        (ARRAY_AGG(studio ORDER BY LENGTH(studio) DESC))[1] AS studio,
+        COUNT(*)::int AS "videoCount",
+        COALESCE(SUM(views), 0) AS "totalViews"
+      FROM "Video"
+      WHERE status = 'PUBLISHED'
+        AND studio IS NOT NULL
+        AND BTRIM(studio) <> ''
+      GROUP BY LOWER(BTRIM(studio))
+    )
+    SELECT
+      s.studio,
+      s."videoCount",
+      s."totalViews",
+      thumb.thumbnail
+    FROM studio_stats s
+    LEFT JOIN LATERAL (
+      SELECT v2.thumbnail
+      FROM "Video" v2
+      WHERE v2.status = 'PUBLISHED'
+        AND LOWER(BTRIM(v2.studio)) = s.studio_key
+        AND v2.thumbnail IS NOT NULL
+        AND v2.thumbnail <> ''
+      ORDER BY v2.views DESC
+      LIMIT 1
+    ) thumb ON true
+    ORDER BY s."videoCount" DESC
+  `;
+
+  const bySlug = new Map<string, ChannelCard>();
+
+  for (const item of AFFILIATE_CHANNELS) {
+    bySlug.set(item.slug, catalogToCard(item));
+  }
+
+  for (const row of rows) {
+    const slug = studioSlug(row.studio);
+    const existing = bySlug.get(slug);
+    const stats = {
+      videoCount: Number(row.videoCount),
+      totalViews: Number(row.totalViews),
+      thumbnail: row.thumbnail,
+    };
+    if (existing) {
+      existing.videoCount = stats.videoCount;
+      existing.totalViews = stats.totalViews;
+      if (stats.thumbnail) existing.thumbnail = stats.thumbnail;
+    } else {
+      bySlug.set(slug, {
+        studio: row.studio,
+        slug,
+        videoCount: stats.videoCount,
+        totalViews: stats.totalViews,
+        thumbnail: stats.thumbnail,
+        officialUrl: null,
+        isNetwork: false,
+        niche: "",
+        program: "",
+        tier: null,
+        siteType: "Channel",
+        rank: 9999,
+      });
+    }
+  }
+
+  const sponsors = await prisma.sponsor.findMany({
+    where: { isActive: true },
+    include: {
+      campaigns: {
+        where: { isActive: true },
+        take: 1,
+        orderBy: { updatedAt: "desc" },
+        include: {
+          banners: {
+            where: { isActive: true },
+            take: 1,
+            orderBy: { weight: "desc" },
+            select: { imageUrl: true, trackingLink: true },
+          },
+        },
+      },
+    },
+  });
+
+  for (const sponsor of sponsors) {
+    const campaign = sponsor.campaigns[0];
+    if (!campaign) continue;
+    const slug = studioSlug(sponsor.name);
+    const existing = bySlug.get(slug);
+    const banner = campaign.banners[0];
+    let imageUrl = banner?.imageUrl || null;
+    if (imageUrl?.startsWith("//")) imageUrl = "https:" + imageUrl;
+
+    if (existing) {
+      existing.officialUrl = campaign.baseLink;
+      existing.isNetwork = true;
+      if (!existing.thumbnail && imageUrl) existing.thumbnail = imageUrl;
+    } else {
+      bySlug.set(slug, {
+        studio: sponsor.name,
+        slug,
+        videoCount: 0,
+        totalViews: 0,
+        thumbnail: imageUrl,
+        officialUrl: campaign.baseLink,
+        isNetwork: true,
+        niche: "",
+        program: "",
+        tier: null,
+        siteType: "Hub",
+        rank: 5000,
+      });
+    }
+  }
+
+  return [...bySlug.values()].sort((a, b) => {
+    const tierRank = (t: AffiliateTier | null) =>
+      t === "S" ? 0 : t === "A" ? 1 : t === "B" ? 2 : t === "C" ? 3 : t === "D" ? 4 : 5;
+    if (tierRank(a.tier) !== tierRank(b.tier)) return tierRank(a.tier) - tierRank(b.tier);
+    if (a.rank !== b.rank) return a.rank - b.rank;
+    if (b.videoCount !== a.videoCount) return b.videoCount - a.videoCount;
+    return a.studio.localeCompare(b.studio);
+  });
+}
+
+export async function getChannelBySlug(slug: string): Promise<ChannelCard | null> {
+  const channels = await listChannels();
+  return channels.find((c) => c.slug === slug) || null;
+}
+
+export function featuredChannels(channels: ChannelCard[], limit = 12): ChannelCard[] {
+  const premium = channels.filter((c) => c.tier === "S" || c.tier === "A");
+  const pool = premium.length >= limit ? premium : channels;
+  return pool.slice(0, limit);
+}
+
+
+================================================================================
+
+src\lib\rate-limit.ts -:
+type Bucket = { count: number; resetAt: number };
+
+const buckets = new Map<string, Bucket>();
+
+function prune(now: number) {
+  if (buckets.size < 500) return;
+  for (const [key, bucket] of buckets) {
+    if (now > bucket.resetAt) buckets.delete(key);
+  }
+}
+
+export function rateLimit(
+  key: string,
+  limit: number,
+  windowMs: number,
+): { ok: boolean; remaining: number } {
+  const now = Date.now();
+  prune(now);
+  const current = buckets.get(key);
+  if (!current || now > current.resetAt) {
+    buckets.set(key, { count: 1, resetAt: now + windowMs });
+    return { ok: true, remaining: limit - 1 };
+  }
+  if (current.count >= limit) return { ok: false, remaining: 0 };
+  current.count += 1;
+  return { ok: true, remaining: limit - current.count };
+}
+
+export function clientIp(req: Request): string {
+  const cf = req.headers.get("cf-connecting-ip");
+  if (cf) return cf.trim();
+  const forwarded = req.headers.get("x-forwarded-for");
+  if (forwarded) return forwarded.split(",")[0].trim();
+  const real = req.headers.get("x-real-ip");
+  if (real) return real.trim();
+  return "unknown";
+}
+
+
+================================================================================
+
+src\lib\site.ts -:
+export const SITE_URL = "https://www.porncater.com";
+export const SITE_NAME = "PornCater";
+export const SITE_HOST = "www.porncater.com";
+
+/** Curated high-demand niches. Keep this list; do not auto-generate from random tags. */
+export const MEGA_CATEGORIES = [
+  "BBC",
+  "Lesbian",
+  "Cuckold",
+  "Blowjob",
+  "Creampie",
+  "MILF",
+  "Teen",
+  "Anal",
+  "Threesome",
+  "Interracial",
+  "Amateur",
+  "BDSM",
+  "POV",
+  "Asian",
+  "Ebony",
+  "Latina",
+  "Big Tits",
+  "Cosplay",
+  "Vintage",
+  "VR",
+] as const;
+
+export type MegaCategory = (typeof MEGA_CATEGORIES)[number];
+
+export function absUrl(path = "/"): string {
+  if (!path || path === "/") return `${SITE_URL}/`;
+  if (path.startsWith("http")) return path;
+  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export function videoPath(id: number, slug: string): string {
+  return `/video/${id}/${slug}`;
+}
+
+export function videoAbsUrl(id: number, slug: string): string {
+  return absUrl(videoPath(id, slug));
+}
+
+export function categoryPath(name: string): string {
+  return `/category/${name.trim().toLowerCase().replace(/\s+/g, "-")}`;
+}
+
+export function pornstarPath(slug: string): string {
+  return `/pornstars/${slug}`;
+}
+
+export function studioSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+export function channelPath(nameOrSlug: string): string {
+  return `/channels/${studioSlug(nameOrSlug)}`;
+}
+
+export function parseDurationSeconds(
+  seconds: number | string | null | undefined,
+): number | null {
+  if (seconds === null || seconds === undefined || seconds === "") return null;
+  const raw = String(seconds).trim();
+  if (!raw) return null;
+  if (raw.includes(":")) {
+    const parts = raw.split(":").map((p) => parseInt(p, 10));
+    if (parts.some((n) => Number.isNaN(n))) return null;
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    return null;
+  }
+  const num = Number(raw);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  return Math.floor(num);
+}
+
+export function isTrailerDuration(
+  seconds: number | string | null | undefined,
+): boolean {
+  const value = parseDurationSeconds(seconds);
+  return value !== null && value > 0 && value < 180;
+}
+
+export function formatDuration(
+  seconds: number | string | null | undefined,
+): string | null {
+  if (seconds === null || seconds === undefined || seconds === "") return null;
+
+  const raw = String(seconds).trim();
+  if (!raw) return null;
+
+  if (raw.includes(":")) {
+    const parts = raw.split(":").map((p) => parseInt(p, 10));
+    if (parts.some((n) => Number.isNaN(n))) return null;
+    if (parts.length === 2) {
+      const [m, s] = parts;
+      return `${m}:${s < 10 ? "0" : ""}${s}`;
+    }
+    if (parts.length === 3) {
+      const [h, m, s] = parts;
+      if (h <= 0) return `${m}:${s < 10 ? "0" : ""}${s}`;
+      return `${h}:${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
+    }
+    return null;
+  }
+
+  const num = Number(raw);
+  if (!Number.isFinite(num) || num <= 0) return null;
+  const total = Math.floor(num);
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  if (h > 0) return `${h}:${m < 10 ? "0" : ""}${m}:${s < 10 ? "0" : ""}${s}`;
+  return `${m}:${s < 10 ? "0" : ""}${s}`;
+}
+
+export function formatDurationLabel(
+  seconds: number | string | null | undefined,
+): string {
+  return formatDuration(seconds) ?? "";
+}
+
+export function formatIsoDuration(
+  durationStr: string | null | undefined,
+): string | undefined {
+  if (!durationStr) return undefined;
+
+  let totalSeconds = 0;
+  if (typeof durationStr === "string" && durationStr.includes(":")) {
+    const parts = durationStr.split(":").map(Number);
+    if (parts.some((n) => Number.isNaN(n))) return undefined;
+    if (parts.length === 3) totalSeconds = parts[0] * 3600 + parts[1] * 60 + parts[2];
+    else if (parts.length === 2) totalSeconds = parts[0] * 60 + parts[1];
+    else return undefined;
+  } else {
+    totalSeconds = parseInt(String(durationStr), 10);
+    if (!Number.isFinite(totalSeconds) || totalSeconds <= 0) return undefined;
+  }
+
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  let iso = "PT";
+  if (hours > 0) iso += `${hours}H`;
+  if (minutes > 0) iso += `${minutes}M`;
+  if (seconds > 0 || iso === "PT") iso += `${seconds}S`;
+  return iso;
+}
+
+export function publishedWhere() {
+  return { status: "PUBLISHED" as const };
+}
+
+
+================================================================================
+
 src\utils\bunnyLoader-old.ts -:
 // export default function bunnyLoader({ src, width, quality }: { src: string, width: number, quality?: number }) {
 //   if (src.startsWith('/')) return src;
@@ -2425,4 +3892,3 @@ export const extractVideoData = (videoFile: File): Promise<{ duration: string, t
 };
 
 ================================================================================
-
