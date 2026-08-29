@@ -199,7 +199,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/trending" className={getNavClass("/trending")}><TrendingUp size={18} /> Trending</Link>
             <Link href="/latest" className={getNavClass("/latest")}><Clock size={18} /> New Videos</Link>
             <Link href="/top-rated" className={getNavClass("/top-rated")}><Star size={18} /> Top Rated</Link>
-            <Link href="/channels" className={getNavClass("/channels")}><Tv size={18} /> Channels</Link>
+            {/* <Link href="/channels" className={getNavClass("/channels")}><Tv size={18} /> Channels</Link> */}
             <Link href="/pornstars" className={getNavClass("/pornstars")}><Sparkles size={18} /> Pornstars</Link>
           </div>
         </div>
