@@ -1,7 +1,8 @@
 import { Metadata } from "next";
 import Link from "next/link";
-import { Tv, ChevronLeft, ChevronRight } from "lucide-react";
+import { Tv } from "lucide-react";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import Pagination from "@/src/components/ui/Pagination";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 import JsonLd from "@/src/components/json-ld";
@@ -211,38 +212,11 @@ export default async function ChannelsDirectory({ searchParams }: DirectoryProps
               </div>
             </>
           )}
-
-          {totalPages > 1 && (
-            <div className="mt-12 pt-8 flex items-center justify-center gap-2">
-              {page > 1 ? (
-                <Link
-                  href={buildUrl(page - 1)}
-                  className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white transition-all rounded-sm mr-2"
-                >
-                  <ChevronLeft size={16} />
-                </Link>
-              ) : (
-                <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm mr-2">
-                  <ChevronLeft size={16} />
-                </div>
-              )}
-              <span className="text-zinc-500 text-xs uppercase tracking-widest font-bold px-3">
-                Page {page} of {totalPages}
-              </span>
-              {page < totalPages ? (
-                <Link
-                  href={buildUrl(page + 1)}
-                  className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-800/50 hover:text-white transition-all rounded-sm ml-2"
-                >
-                  <ChevronRight size={16} />
-                </Link>
-              ) : (
-                <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm ml-2">
-                  <ChevronRight size={16} />
-                </div>
-              )}
-            </div>
-          )}
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            hrefFor={(p) => buildUrl(p)}
+          />
         </section>
 
         <div className="w-full flex justify-center my-1 overflow-hidden">

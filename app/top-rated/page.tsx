@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { getTopBannerAd } from "@/src/lib/ads";
 import { Metadata } from "next";
 import {
-  Star, ChevronLeft, ChevronRight, ThumbsUp,
+  Star, ThumbsUp,
   SlidersHorizontal, Clock, Sparkles, MonitorPlay,
   Filter, TrendingUp, Menu, Search, Video, PlayCircle
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import SmartHeader from "@/src/components/ui/SmartHeader";
+import Pagination from "@/src/components/ui/Pagination";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
 
@@ -110,13 +111,6 @@ export default async function TopRatedPage({
   const totalPages = Math.max(1, Math.min(calculatedPages, hardPageLimit));
 
   // =========================================================================
-
-  const generatePagination = () => {
-    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
-    if (currentPage <= 3) return [1, 2, 3, 4, "...", totalPages];
-    if (currentPage >= totalPages - 2) return [1, "...", totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
-    return [1, "...", currentPage - 1, currentPage, currentPage + 1, "...", totalPages];
-  };
 
   const buildPageUrl = (page: number | string) => `/top-rated?page=${page}&time=${timeFilter}`;
   const canonicalUrl = `https://www.porncater.com/top-rated${currentPage !== 1 ? `?page=${currentPage}&time=${timeFilter}` : `?time=${timeFilter}`}`;
@@ -281,66 +275,11 @@ export default async function TopRatedPage({
           )}
 
         </div>
-
-        {/* ========================================================= */}
-        {/* PAGINATION CONTROLS                                       */}
-        {/* ========================================================= */}
-        {totalPages > 1 && (
-          <div className="mt-12 pt-8 flex items-center justify-center gap-2">
-
-            {/* Previous Page Button */}
-            {currentPage > 1 ? (
-              <Link
-                href={buildPageUrl(currentPage - 1)}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-600/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm mr-2"
-              >
-                <ChevronLeft size={16} />
-              </Link>
-            ) : (
-              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm mr-2 cursor-not-allowed">
-                <ChevronLeft size={16} />
-              </div>
-            )}
-
-            {/* The Page Numbers */}
-            {generatePagination().map((pageNum, index) => {
-              if (pageNum === "...") {
-                return (
-                  <span key={`ellipsis-${index}`} className="px-2 text-zinc-600">
-                    ...
-                  </span>
-                );
-              }
-
-              return (
-                <Link
-                  key={pageNum}
-                  href={buildPageUrl(pageNum)}
-                  className={`w-10 h-10 flex items-center justify-center text-xs font-mono transition-all rounded-sm border ${currentPage === pageNum
-                    ? "border-rose-600 bg-rose-900/20 text-white shadow-[0_0_10px_rgba(225,29,72,0.2)]"
-                    : "border-zinc-900/50 bg-zinc-900/30 text-zinc-500 hover:border-zinc-700 hover:text-zinc-300"
-                    }`}
-                >
-                  {pageNum}
-                </Link>
-              );
-            })}
-
-            {/* Next Page Button */}
-            {currentPage < totalPages ? (
-              <Link
-                href={buildPageUrl(currentPage + 1)}
-                className="w-10 h-10 flex items-center justify-center bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-rose-600/50 hover:bg-rose-900/20 hover:text-white transition-all rounded-sm ml-2"
-              >
-                <ChevronRight size={16} />
-              </Link>
-            ) : (
-              <div className="w-10 h-10 flex items-center justify-center bg-zinc-900/20 border border-zinc-900 text-zinc-700 rounded-sm ml-2 cursor-not-allowed">
-                <ChevronRight size={16} />
-              </div>
-            )}
-          </div>
-        )}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          hrefFor={(p) => buildPageUrl(p)}
+        />
       </section>
 
       {/* Bottom Ad Leaderboard */}
