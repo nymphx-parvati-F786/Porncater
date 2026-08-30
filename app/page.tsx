@@ -64,8 +64,12 @@ export default async function Home() {
       },
     }),
     prisma.pornstar.findMany({
+      where: { videos: { some: {} } },
       take: 36,
-      orderBy: { views: "desc" },
+      orderBy: [
+        { videos: { _count: "desc" } },
+        { views: "desc" },
+      ],
       select: { id: true, slug: true, name: true, avatarUrl: true, views: true },
     }),
     listChannels(),
@@ -212,7 +216,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {/* {premiumChannels.length > 0 && (
+        {premiumChannels.length > 0 && (
           <section className="max-w-[1600px] mx-auto px-4 py-12">
             <div className="flex items-center justify-between mb-6 border-b border-zinc-800 pb-2">
               <div className="flex items-center gap-3">
@@ -234,7 +238,7 @@ export default async function Home() {
               ))}
             </div>
           </section>
-        )} */}
+        )}
 
         <div className="w-full flex justify-center my-1 overflow-hidden">
           <AdRotator />

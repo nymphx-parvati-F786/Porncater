@@ -12,6 +12,7 @@ import SmartHeader from "@/src/components/ui/SmartHeader";
 import Pagination from "@/src/components/ui/Pagination";
 import AdBanner from "@/src/components/ui/ads/AffiliateAds/DynamicAdBanner";
 import AdRotator from "@/src/components/ui/ads/AdRotator/AdRotator";
+import ExoClickPopunder from "@/src/components/ui/ads/ExoClickAds/ExoClickPopunder";
 import { rotatePage, ROTATE_POOL_PAGES } from "@/src/lib/rotate";
 
 export const revalidate = 120; // Caches the page for 2 minutes
@@ -147,6 +148,8 @@ export default async function LatestPage({
 
       {/* 🔥 THE NEW SLIDING SMART HEADER */}
       <SmartHeader categories={megaCategories} />
+
+      <ExoClickPopunder desktopZoneId="6015300" mobileZoneId="6015308" triggerMethod="3" />
 
       {/* =========================================
           💰 TOP DYNAMIC AFFILIATE BANNER

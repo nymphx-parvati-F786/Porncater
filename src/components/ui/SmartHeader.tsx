@@ -199,7 +199,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
             <Link href="/trending" className={getNavClass("/trending")}><TrendingUp size={18} /> Trending</Link>
             <Link href="/latest" className={getNavClass("/latest")}><Clock size={18} /> New Videos</Link>
             <Link href="/top-rated" className={getNavClass("/top-rated")}><Star size={18} /> Top Rated</Link>
-            {/* <Link href="/channels" className={getNavClass("/channels")}><Tv size={18} /> Channels</Link> */}
+            <Link href="/channels" className={getNavClass("/channels")}><Tv size={18} /> Channels</Link>
             <Link href="/pornstars" className={getNavClass("/pornstars")}><Sparkles size={18} /> Pornstars</Link>
           </div>
         </div>
@@ -252,7 +252,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
 
           {/* Static Niches Label */}
           <div className="flex items-center gap-1 text-zinc-400 mr-1 shrink-0 px-1">
-            <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Tags</span>
+            <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
           </div>
 
           {/* Dynamic Main Bar Rendering */}
