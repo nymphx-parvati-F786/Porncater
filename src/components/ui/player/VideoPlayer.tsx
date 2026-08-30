@@ -62,6 +62,7 @@ export default function VideoPlayer({
   const rateBeforeHold = useRef(1);
   const ignoreClick = useRef(false);
   const handlersRef = useRef<Record<string, () => void>>({});
+  const showControlsRef = useRef(true);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -234,9 +235,13 @@ export default function VideoPlayer({
 
   const resetControls = useCallback(() => {
     setShowControls(true);
+    showControlsRef.current = true;
     if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
     if (isPlaying && !adState.isPlaying && !settingsOpen) {
-      controlsTimeout.current = setTimeout(() => setShowControls(false), 2400);
+      controlsTimeout.current = setTimeout(() => {
+        setShowControls(false);
+        showControlsRef.current = false;
+      }, 2400);
     }
   }, [isPlaying, adState.isPlaying, settingsOpen]);
 
@@ -514,17 +519,20 @@ export default function VideoPlayer({
     lastTapZone.current = zone;
 
     if (!isTouch) {
-      if (zone === "center") togglePlay();
-      else togglePlay();
+      togglePlay();
       resetControls();
       return;
     }
 
     if (singleTapTimeout.current) clearTimeout(singleTapTimeout.current);
     singleTapTimeout.current = setTimeout(() => {
-      if (zone === "center") togglePlay();
-      else setShowControls((s) => !s);
-      resetControls();
+      if (!showControlsRef.current) {
+        resetControls();
+      } else if (zone === "center") {
+        togglePlay();
+      } else {
+        resetControls();
+      }
       singleTapTimeout.current = null;
     }, DELAY);
   };
@@ -562,6 +570,7 @@ export default function VideoPlayer({
     } else if (!isLooping) {
       setIsPlaying(false);
       setShowControls(true);
+      showControlsRef.current = true;
       try {
         sessionStorage.removeItem(posKey(src));
       } catch {
@@ -652,7 +661,10 @@ export default function VideoPlayer({
       }`}
       onMouseMove={resetControls}
       onMouseLeave={() => {
-        if (isPlaying && !settingsOpen) setShowControls(false);
+        if (isPlaying && !settingsOpen) {
+          setShowControls(false);
+          showControlsRef.current = false;
+        }
         setHoverTime(null);
       }}
       onPointerDown={onPointerDownHold}
