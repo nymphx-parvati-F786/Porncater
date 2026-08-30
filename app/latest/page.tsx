@@ -149,7 +149,7 @@ export default async function LatestPage({
       {/* 🔥 THE NEW SLIDING SMART HEADER */}
       <SmartHeader categories={megaCategories} />
 
-      <ExoClickPopunder desktopZoneId="6015300" triggerMethod="3" />
+      <ExoClickPopunder desktopZoneId="6015300" mobileZoneId="6015308" triggerMethod="3" />
 
       {/* =========================================
           💰 TOP DYNAMIC AFFILIATE BANNER
