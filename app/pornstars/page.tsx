@@ -91,7 +91,10 @@ export default async function PornstarsDirectory({ searchParams }: DirectoryProp
       where: queryCondition,
       take: performersPerPage,
       skip: (currentPage - 1) * performersPerPage,
-      orderBy: { views: "desc" },
+      orderBy: [
+        { videos: { _count: "desc" } },
+        { views: "desc" },
+      ],
       include: {
         _count: {
           select: { videos: true },
