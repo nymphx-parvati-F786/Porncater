@@ -64,8 +64,12 @@ export default async function Home() {
       },
     }),
     prisma.pornstar.findMany({
+      where: { videos: { some: {} } },
       take: 36,
-      orderBy: { views: "desc" },
+      orderBy: [
+        { videos: { _count: "desc" } },
+        { views: "desc" },
+      ],
       select: { id: true, slug: true, name: true, avatarUrl: true, views: true },
     }),
     listChannels(),
