@@ -252,7 +252,7 @@ export default function SmartHeader({ categories }: { categories: string[] }) {
 
           {/* Static Niches Label */}
           <div className="flex items-center gap-1 text-zinc-400 mr-1 shrink-0 px-1">
-            <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Niches</span>
+            <Filter size={14} /> <span className="text-[10px] uppercase font-bold tracking-widest">Tags</span>
           </div>
 
           {/* Dynamic Main Bar Rendering */}
