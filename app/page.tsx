@@ -13,6 +13,7 @@ import { MEGA_CATEGORIES, SITE_URL, videoAbsUrl } from "@/src/lib/site";
 import { featuredChannels as pickFeatured, listChannels } from "@/src/lib/channels";
 import ChannelCard from "@/src/components/ui/ChannelCard";
 import { rotatePage } from "@/src/lib/rotate";
+import ExoClickPopunder from "@/src/components/ui/ads/ExoClickAds/ExoClickPopunder";
 
 export const revalidate = 60;
 
@@ -105,6 +106,8 @@ export default async function Home() {
       <h1 className="sr-only">Free HD Porn Videos & Premium Adult Cinema - PornCater</h1>
 
       <SmartHeader categories={[...MEGA_CATEGORIES]} />
+
+      <ExoClickPopunder desktopZoneId="6016628" mobileZoneId="6016638" triggerMethod="3" />
 
       <main>
         <div className="max-w-[1600px] mx-auto px-4 pt-4 pb-2 flex justify-center">

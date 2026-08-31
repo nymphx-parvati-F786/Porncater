@@ -2,6 +2,26 @@
 
 import { useEffect, useRef } from "react";
 
+const CAP_KEY = "porncater_popunder_at";
+const CAP_MS = 60 * 60 * 1000;
+
+function alreadyFiredThisHour() {
+  try {
+    const last = parseInt(localStorage.getItem(CAP_KEY) || "0", 10);
+    return last > 0 && Date.now() - last < CAP_MS;
+  } catch {
+    return false;
+  }
+}
+
+function markFired() {
+  try {
+    localStorage.setItem(CAP_KEY, String(Date.now()));
+  } catch {
+    /* private mode */
+  }
+}
+
 interface ExoClickPopunderProps {
   desktopZoneId: string;
   mobileZoneId?: string;
@@ -20,12 +40,16 @@ export default function ExoClickPopunder({
     if (injected.current) return;
     if (typeof window === "undefined") return;
     if (document.getElementById("popmagicldr")) return;
+    if (alreadyFiredThisHour()) return;
 
     const isMobile = window.innerWidth <= 768;
     const activeZone = isMobile ? mobileZoneId : desktopZoneId;
     if (!activeZone) return;
 
     injected.current = true;
+
+    const onDisplayed = () => markFired();
+    document.addEventListener(`creativeDisplayed-${activeZone}`, onDisplayed);
 
     const script = document.createElement("script");
     script.type = "application/javascript";
@@ -46,6 +70,7 @@ export default function ExoClickPopunder({
     document.body.appendChild(script);
 
     return () => {
+      document.removeEventListener(`creativeDisplayed-${activeZone}`, onDisplayed);
       if (document.body.contains(script)) {
         document.body.removeChild(script);
       }
