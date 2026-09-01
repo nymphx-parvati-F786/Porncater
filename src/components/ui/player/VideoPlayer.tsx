@@ -63,6 +63,7 @@ export default function VideoPlayer({
   const ignoreClick = useRef(false);
   const handlersRef = useRef<Record<string, () => void>>({});
   const showControlsRef = useRef(true);
+  const draggingRef = useRef(false);
 
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -88,6 +89,7 @@ export default function VideoPlayer({
   const [isIos, setIsIos] = useState(false);
   const [pipSupported, setPipSupported] = useState(false);
   const [error, setError] = useState(false);
+  const [isScrubbing, setIsScrubbing] = useState(false);
 
   const [preloadedAd, setPreloadedAd] = useState<{
     mediaUrl: string;
@@ -239,6 +241,7 @@ export default function VideoPlayer({
     if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
     if (isPlaying && !adState.isPlaying && !settingsOpen) {
       controlsTimeout.current = setTimeout(() => {
+        if (draggingRef.current) return;
         setShowControls(false);
         showControlsRef.current = false;
       }, 2400);
@@ -540,6 +543,7 @@ export default function VideoPlayer({
   const onTimeUpdate = () => {
     const v = videoRef.current;
     if (!v || !v.duration) return;
+    if (draggingRef.current) return;
     const p = (v.currentTime / v.duration) * 100;
     setProgress(p);
     setCurrentTime(v.currentTime);
@@ -582,28 +586,66 @@ export default function VideoPlayer({
   const seekToRatio = (ratio: number) => {
     const v = videoRef.current;
     if (!v || adState.isPlaying || !v.duration) return;
-    const t = Math.min(Math.max(ratio, 0), 1) * v.duration;
+    const clamped = Math.min(Math.max(ratio, 0), 1);
+    const t = clamped * v.duration;
     v.currentTime = t;
-    setProgress(ratio * 100);
+    setProgress(clamped * 100);
     setCurrentTime(t);
   };
 
-  const onBarPointer = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (adState.isPlaying) return;
+  const ratioFromClientX = (clientX: number) => {
     const bar = barRef.current;
-    if (!bar) return;
+    if (!bar) return 0;
     const rect = bar.getBoundingClientRect();
-    const ratio = (e.clientX - rect.left) / rect.width;
-    seekToRatio(ratio);
+    if (!rect.width) return 0;
+    return Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
   };
 
-  const onBarMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const previewAt = (ratio: number) => {
+    if (!duration) return;
     const bar = barRef.current;
-    if (!bar || !duration) return;
-    const rect = bar.getBoundingClientRect();
-    const ratio = Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
     setHoverTime(ratio * duration);
-    setHoverX(ratio * rect.width);
+    setHoverX(ratio * (bar?.getBoundingClientRect().width || 0));
+  };
+
+  const onBarPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (adState.isPlaying || e.button !== 0) return;
+    e.preventDefault();
+    e.stopPropagation();
+    draggingRef.current = true;
+    setIsScrubbing(true);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const ratio = ratioFromClientX(e.clientX);
+    seekToRatio(ratio);
+    previewAt(ratio);
+    resetControls();
+  };
+
+  const onBarPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const ratio = ratioFromClientX(e.clientX);
+    if (draggingRef.current) {
+      e.preventDefault();
+      seekToRatio(ratio);
+      previewAt(ratio);
+      return;
+    }
+    if (e.pointerType === "mouse") previewAt(ratio);
+  };
+
+  const onBarPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!draggingRef.current) return;
+    e.preventDefault();
+    e.stopPropagation();
+    seekToRatio(ratioFromClientX(e.clientX));
+    draggingRef.current = false;
+    setIsScrubbing(false);
+    try {
+      e.currentTarget.releasePointerCapture(e.pointerId);
+    } catch {
+      /* already released */
+    }
+    if (e.pointerType !== "mouse") setHoverTime(null);
+    resetControls();
   };
 
   const onVolume = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -844,12 +886,22 @@ export default function VideoPlayer({
       >
         <div
           ref={barRef}
-          className="relative w-full h-3 md:h-2 mb-2 group/bar cursor-pointer"
-          onPointerDown={onBarPointer}
-          onMouseMove={onBarMove}
-          onMouseLeave={() => setHoverTime(null)}
+          className={`relative w-full h-5 md:h-3 mb-1.5 group/bar select-none touch-none ${
+            isScrubbing ? "cursor-grabbing" : "cursor-pointer"
+          }`}
+          onPointerDown={onBarPointerDown}
+          onPointerMove={onBarPointerMove}
+          onPointerUp={onBarPointerUp}
+          onPointerCancel={onBarPointerUp}
+          onPointerLeave={() => {
+            if (!draggingRef.current) setHoverTime(null);
+          }}
         >
-          <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 md:h-[3px] group-hover/bar:h-1.5 bg-zinc-800">
+          <div
+            className={`absolute left-0 right-0 top-1/2 -translate-y-1/2 bg-zinc-800 ${
+              isScrubbing ? "h-1.5" : "h-1 md:h-[3px] group-hover/bar:h-1.5"
+            }`}
+          >
             <div
               className="absolute top-0 left-0 h-full bg-zinc-600"
               style={{ width: `${buffered}%` }}
@@ -860,8 +912,10 @@ export default function VideoPlayer({
             />
           </div>
           <div
-            className="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-red-600 pointer-events-none"
-            style={{ left: `calc(${progress}% - 4px)` }}
+            className={`absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-red-600 pointer-events-none ${
+              isScrubbing ? "w-4 h-4" : "w-3 h-3 md:w-2 md:h-2 group-hover/bar:w-3 group-hover/bar:h-3"
+            }`}
+            style={{ left: `${progress}%` }}
           />
           {hoverTime !== null && (
             <div
